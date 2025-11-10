@@ -17,8 +17,23 @@ let auth = null;
 // Carregar credenciais do Google
 async function loadGoogleAuth() {
   try {
-    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-    const token = JSON.parse(fs.readFileSync(TOKEN_PATH));
+    let credentials, token;
+
+    // Tentar ler das variáveis de ambiente primeiro (Railway)
+    if (process.env.GOOGLE_CREDENTIALS && process.env.GOOGLE_TOKEN) {
+      credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+      token = JSON.parse(process.env.GOOGLE_TOKEN);
+      console.log('📦 Credenciais carregadas das variáveis de ambiente');
+    }
+    // Se não encontrar, ler dos arquivos locais
+    else if (fs.existsSync(CREDENTIALS_PATH) && fs.existsSync(TOKEN_PATH)) {
+      credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+      token = JSON.parse(fs.readFileSync(TOKEN_PATH));
+      console.log('📁 Credenciais carregadas dos arquivos locais');
+    }
+    else {
+      throw new Error('Credenciais não encontradas');
+    }
 
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
@@ -27,7 +42,7 @@ async function loadGoogleAuth() {
     auth = oAuth2Client;
     console.log('✅ Google API autenticada com sucesso');
   } catch (error) {
-    console.warn('⚠️  Credenciais do Google não encontradas ou inválidas');
+    console.warn('⚠️  Credenciais do Google não encontradas ou inválidas:', error.message);
   }
 }
 
