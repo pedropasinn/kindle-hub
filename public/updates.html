@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizações - Hub Kindle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Atualizações Diárias</h1>
+            <a href="index.html" class="back-link">Voltar ao Início</a>
+        </div>
+
+        <div class="form-section">
+            <h2>Nova Atualização</h2>
+            <form id="updateForm">
+                <div class="form-group">
+                    <label for="updateTitle">Título:</label>
+                    <input type="text" id="updateTitle" required placeholder="Ex: Reunião com cliente, Progresso no projeto">
+                </div>
+                <div class="form-group">
+                    <label for="updateDate">Data:</label>
+                    <input type="date" id="updateDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="updateContent">Conteúdo:</label>
+                    <textarea id="updateContent" required rows="6" placeholder="Descreva o que aconteceu ou o progresso feito..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Adicionar Atualização</button>
+            </form>
+        </div>
+
+        <div class="list-section">
+            <h2>Histórico de Atualizações</h2>
+            <div id="updatesList" class="loading">Carregando atualizações...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Configurar data de hoje como padrão
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('updateDate').value = today;
+
+        // Carregar atualizações
+        async function loadUpdates() {
+            try {
+                const response = await fetch(`${API_URL}/api/updates`);
+                const updates = await response.json();
+                displayUpdates(updates);
+            } catch (error) {
+                document.getElementById('updatesList').innerHTML = '<p class="message error">Erro ao carregar atualizações</p>';
+            }
+        }
+
+        // Exibir atualizações
+        function displayUpdates(updates) {
+            const container = document.getElementById('updatesList');
+            
+            if (updates.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhuma atualização cadastrada</p>';
+                return;
+            }
+
+            container.innerHTML = updates.map(update => `
+                <div class="item">
+                    <div class="item-title">${update.title}</div>
+                    <div class="item-meta">${formatDate(update.date)}</div>
+                    <div class="item-content" style="white-space: pre-wrap; margin-top: 10px;">${update.content}</div>
+                </div>
+            `).join('');
+        }
+
+        // Adicionar nova atualização
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('updateTitle').value;
+            const date = document.getElementById('updateDate').value;
+            const content = document.getElementById('updateContent').value;
+
+            try {
+                await fetch(`${API_URL}/api/updates`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, date, content })
+                });
+
+                document.getElementById('updateForm').reset();
+                document.getElementById('updateDate').value = today;
+                loadUpdates();
+            } catch (error) {
+                alert('Erro ao adicionar atualização');
+            }
+        });
+
+        // Formatar data
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
+        }
+
+        // Carregar ao iniciar
+        loadUpdates();
+    </script>
+</body>
+</html>

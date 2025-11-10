@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orações - Hub Kindle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Orações</h1>
+            <a href="index.html" class="back-link">Voltar ao Início</a>
+        </div>
+
+        <div class="form-section">
+            <h2>Cadastrar Nova Oração</h2>
+            <form id="prayerForm">
+                <div class="form-group">
+                    <label for="prayerName">Nome da Oração:</label>
+                    <input type="text" id="prayerName" required placeholder="Ex: Pai Nosso, Ave Maria">
+                </div>
+                <div class="form-group">
+                    <label for="prayerCategory">Categoria:</label>
+                    <input type="text" id="prayerCategory" placeholder="Ex: Manhã, Noite, Terço">
+                </div>
+                <div class="form-group">
+                    <label for="prayerText">Texto da Oração:</label>
+                    <textarea id="prayerText" required rows="8"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Adicionar Oração</button>
+            </form>
+        </div>
+
+        <div class="list-section">
+            <h2>Minhas Orações</h2>
+            <div id="prayersList" class="loading">Carregando orações...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Carregar orações
+        async function loadPrayers() {
+            try {
+                const response = await fetch(`${API_URL}/api/prayers`);
+                const prayers = await response.json();
+                displayPrayers(prayers);
+            } catch (error) {
+                document.getElementById('prayersList').innerHTML = '<p class="message error">Erro ao carregar orações</p>';
+            }
+        }
+
+        // Exibir orações
+        function displayPrayers(prayers) {
+            const container = document.getElementById('prayersList');
+            
+            if (prayers.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhuma oração cadastrada</p>';
+                return;
+            }
+
+            // Agrupar por categoria
+            const grouped = {};
+            prayers.forEach(prayer => {
+                const category = prayer.category || 'Sem categoria';
+                if (!grouped[category]) {
+                    grouped[category] = [];
+                }
+                grouped[category].push(prayer);
+            });
+
+            let html = '';
+            Object.keys(grouped).sort().forEach(category => {
+                html += `<h3 style="margin: 30px 0 15px 0; font-size: 20px; border-bottom: 2px solid #000;">${category}</h3>`;
+                
+                grouped[category].forEach(prayer => {
+                    html += `
+                        <div class="item">
+                            <div class="item-title">${prayer.name}</div>
+                            <div class="item-content" style="white-space: pre-wrap;">${prayer.text}</div>
+                            <div class="item-actions">
+                                <button class="btn-small" onclick="deletePrayer(${prayer.id})">Excluir</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Adicionar nova oração
+        document.getElementById('prayerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('prayerName').value;
+            const category = document.getElementById('prayerCategory').value;
+            const text = document.getElementById('prayerText').value;
+
+            try {
+                await fetch(`${API_URL}/api/prayers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, category, text })
+                });
+
+                document.getElementById('prayerForm').reset();
+                loadPrayers();
+            } catch (error) {
+                alert('Erro ao adicionar oração');
+            }
+        });
+
+        // Excluir oração
+        async function deletePrayer(id) {
+            if (confirm('Deseja realmente excluir esta oração?')) {
+                try {
+                    await fetch(`${API_URL}/api/prayers/${id}`, { method: 'DELETE' });
+                    loadPrayers();
+                } catch (error) {
+                    alert('Erro ao excluir oração');
+                }
+            }
+        }
+
+        // Carregar ao iniciar
+        loadPrayers();
+    </script>
+</body>
+</html>

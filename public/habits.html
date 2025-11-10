@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hábitos - Hub Kindle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Hábitos</h1>
+            <a href="index.html" class="back-link">Voltar ao Início</a>
+        </div>
+
+        <div class="form-section">
+            <h2>Registrar Hábito do Dia</h2>
+            <form id="habitForm">
+                <div class="form-group">
+                    <label for="habitName">Nome do Hábito:</label>
+                    <input type="text" id="habitName" required placeholder="Ex: Exercício, Leitura, Meditação">
+                </div>
+                <div class="form-group">
+                    <label for="habitDate">Data:</label>
+                    <input type="date" id="habitDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Adicionar Hábito</button>
+            </form>
+        </div>
+
+        <div class="list-section">
+            <h2>Hábitos de Hoje</h2>
+            <div id="todayHabits" class="loading">Carregando...</div>
+        </div>
+
+        <div class="list-section">
+            <h2>Histórico de Hábitos</h2>
+            <div id="allHabits" class="loading">Carregando...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Configurar data de hoje como padrão
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('habitDate').value = today;
+
+        // Carregar hábitos de hoje
+        async function loadTodayHabits() {
+            try {
+                const response = await fetch(`${API_URL}/api/habits/today`);
+                const habits = await response.json();
+                displayTodayHabits(habits);
+            } catch (error) {
+                document.getElementById('todayHabits').innerHTML = '<p class="message error">Erro ao carregar hábitos</p>';
+            }
+        }
+
+        // Carregar todos os hábitos
+        async function loadAllHabits() {
+            try {
+                const response = await fetch(`${API_URL}/api/habits`);
+                const habits = await response.json();
+                displayAllHabits(habits);
+            } catch (error) {
+                document.getElementById('allHabits').innerHTML = '<p class="message error">Erro ao carregar histórico</p>';
+            }
+        }
+
+        // Exibir hábitos de hoje
+        function displayTodayHabits(habits) {
+            const container = document.getElementById('todayHabits');
+            
+            if (habits.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhum hábito registrado hoje</p>';
+                return;
+            }
+
+            container.innerHTML = habits.map(habit => `
+                <div class="item ${habit.completed ? 'completed' : ''}">
+                    <div class="item-title">${habit.name}</div>
+                    <div class="item-meta">Data: ${formatDate(habit.date)}</div>
+                    <div class="item-actions">
+                        <button class="btn-small" onclick="toggleHabit(${habit.id}, ${habit.completed ? 0 : 1})">
+                            ${habit.completed ? 'Desmarcar' : 'Concluir'}
+                        </button>
+                        <button class="btn-small" onclick="deleteHabit(${habit.id})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Exibir todos os hábitos
+        function displayAllHabits(habits) {
+            const container = document.getElementById('allHabits');
+            
+            if (habits.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhum hábito cadastrado</p>';
+                return;
+            }
+
+            // Agrupar por data
+            const grouped = {};
+            habits.forEach(habit => {
+                if (!grouped[habit.date]) {
+                    grouped[habit.date] = [];
+                }
+                grouped[habit.date].push(habit);
+            });
+
+            let html = '';
+            Object.keys(grouped).sort().reverse().forEach(date => {
+                const dateHabits = grouped[date];
+                const completed = dateHabits.filter(h => h.completed).length;
+                const total = dateHabits.length;
+                
+                html += `
+                    <div class="item">
+                        <div class="item-title">${formatDate(date)}</div>
+                        <div class="item-content">
+                            Concluídos: ${completed}/${total}<br>
+                            ${dateHabits.map(h => `${h.completed ? '✓' : '○'} ${h.name}`).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Adicionar novo hábito
+        document.getElementById('habitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('habitName').value;
+            const date = document.getElementById('habitDate').value;
+
+            try {
+                await fetch(`${API_URL}/api/habits`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, date })
+                });
+
+                document.getElementById('habitName').value = '';
+                loadTodayHabits();
+                loadAllHabits();
+            } catch (error) {
+                alert('Erro ao adicionar hábito');
+            }
+        });
+
+        // Marcar/desmarcar hábito
+        async function toggleHabit(id, completed) {
+            try {
+                await fetch(`${API_URL}/api/habits/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed })
+                });
+                loadTodayHabits();
+                loadAllHabits();
+            } catch (error) {
+                alert('Erro ao atualizar hábito');
+            }
+        }
+
+        // Excluir hábito
+        async function deleteHabit(id) {
+            if (confirm('Deseja realmente excluir este hábito?')) {
+                try {
+                    await fetch(`${API_URL}/api/habits/${id}`, { method: 'DELETE' });
+                    loadTodayHabits();
+                    loadAllHabits();
+                } catch (error) {
+                    alert('Erro ao excluir hábito');
+                }
+            }
+        }
+
+        // Formatar data
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            return `${days[date.getDay()]}, ${date.toLocaleDateString('pt-BR')}`;
+        }
+
+        // Carregar ao iniciar
+        loadTodayHabits();
+        loadAllHabits();
+    </script>
+</body>
+</html>

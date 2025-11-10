@@ -1,0 +1,18 @@
+{
+  "name": "kindle-hub",
+  "version": "1.0.0",
+  "description": "Hub minimalista para Kindle com agenda, hábitos e orações",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["kindle", "hub", "dashboard"],
+  "author": "Pedro",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5"
+  }
+}

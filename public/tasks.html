@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarefas - Hub Kindle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Tarefas</h1>
+            <a href="index.html" class="back-link">Voltar ao Início</a>
+        </div>
+
+        <div class="form-section">
+            <h2>Nova Tarefa</h2>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="title">Título:</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descrição:</label>
+                    <textarea id="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Prioridade:</label>
+                    <select id="priority">
+                        <option value="low">Baixa</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dueDate">Data de vencimento:</label>
+                    <input type="date" id="dueDate">
+                </div>
+                <button type="submit" class="btn btn-primary">Adicionar Tarefa</button>
+            </form>
+        </div>
+
+        <div class="list-section">
+            <h2>Minhas Tarefas</h2>
+            <div id="tasksList" class="loading">Carregando tarefas...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Carregar tarefas
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_URL}/api/tasks`);
+                const tasks = await response.json();
+                displayTasks(tasks);
+            } catch (error) {
+                document.getElementById('tasksList').innerHTML = '<p class="message error">Erro ao carregar tarefas</p>';
+            }
+        }
+
+        // Exibir tarefas
+        function displayTasks(tasks) {
+            const container = document.getElementById('tasksList');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhuma tarefa cadastrada</p>';
+                return;
+            }
+
+            const priorityLabels = {
+                'low': 'Baixa',
+                'normal': 'Normal',
+                'high': 'Alta'
+            };
+
+            container.innerHTML = tasks.map(task => `
+                <div class="item ${task.completed ? 'completed' : ''}">
+                    <div class="item-title">${task.title}</div>
+                    ${task.description ? `<div class="item-content">${task.description}</div>` : ''}
+                    <div class="item-meta">
+                        Prioridade: ${priorityLabels[task.priority] || 'Normal'}
+                        ${task.due_date ? ` | Vencimento: ${formatDate(task.due_date)}` : ''}
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-small" onclick="toggleTask(${task.id}, ${task.completed ? 0 : 1})">
+                            ${task.completed ? 'Reabrir' : 'Concluir'}
+                        </button>
+                        <button class="btn-small" onclick="deleteTask(${task.id})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Adicionar nova tarefa
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const priority = document.getElementById('priority').value;
+            const dueDate = document.getElementById('dueDate').value;
+
+            try {
+                await fetch(`${API_URL}/api/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, priority, due_date: dueDate })
+                });
+
+                document.getElementById('taskForm').reset();
+                loadTasks();
+            } catch (error) {
+                alert('Erro ao adicionar tarefa');
+            }
+        });
+
+        // Marcar/desmarcar tarefa
+        async function toggleTask(id, completed) {
+            try {
+                await fetch(`${API_URL}/api/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed })
+                });
+                loadTasks();
+            } catch (error) {
+                alert('Erro ao atualizar tarefa');
+            }
+        }
+
+        // Excluir tarefa
+        async function deleteTask(id) {
+            if (confirm('Deseja realmente excluir esta tarefa?')) {
+                try {
+                    await fetch(`${API_URL}/api/tasks/${id}`, { method: 'DELETE' });
+                    loadTasks();
+                } catch (error) {
+                    alert('Erro ao excluir tarefa');
+                }
+            }
+        }
+
+        // Formatar data
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Carregar ao iniciar
+        loadTasks();
+    </script>
+</body>
+</html>

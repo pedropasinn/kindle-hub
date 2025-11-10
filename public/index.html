@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Kindle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="clock-container">
+            <div id="clock" class="clock">00:00:00</div>
+            <div id="date" class="date">Carregando...</div>
+        </div>
+
+        <nav class="nav-buttons">
+            <a href="agenda.html" class="nav-button">Agenda</a>
+            <a href="tasks.html" class="nav-button">Tarefas</a>
+            <a href="habits.html" class="nav-button">Hábitos</a>
+            <a href="prayers.html" class="nav-button">Orações</a>
+            <a href="updates.html" class="nav-button">Atualizações</a>
+        </nav>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            
+            // Relógio
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // Data
+            const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            const dayName = days[now.getDay()];
+            const day = now.getDate();
+            const month = months[now.getMonth()];
+            const year = now.getFullYear();
+            
+            document.getElementById('date').textContent = `${dayName}, ${day} de ${month} de ${year}`;
+        }
+
+        // Atualizar a cada segundo
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
