@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exame de Consciência - Hub Kindle</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .exame-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #000;
+            background: #fff;
+        }
+
+        .exame-item {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-left: 4px solid #000;
+            background: #f9f9f9;
+        }
+
+        .exame-label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .exame-textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 10px;
+            font-size: 16px;
+            font-family: Georgia, 'Times New Roman', serif;
+            border: 2px solid #ccc;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .exame-textarea:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .save-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #000;
+            color: #fff;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #333;
+        }
+
+        .save-message {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e6ffe6;
+            border: 1px solid #00aa00;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Exame de Consciência</h1>
+            <a href="plano-inclinado.html" class="back-link">Voltar ao Plano Inclinado</a>
+        </div>
+
+        <div class="exame-container">
+            <div class="exame-item">
+                <div class="exame-label">1. O que fiz hoje que agradou a Deus?</div>
+                <textarea id="frase1" class="exame-textarea" placeholder="Escreva aqui sua reflexão..."></textarea>
+            </div>
+
+            <div class="exame-item">
+                <div class="exame-label">2. Em que momentos falhei em servir ao próximo?</div>
+                <textarea id="frase2" class="exame-textarea" placeholder="Escreva aqui sua reflexão..."></textarea>
+            </div>
+
+            <div class="exame-item">
+                <div class="exame-label">3. Onde encontrei Deus hoje?</div>
+                <textarea id="frase3" class="exame-textarea" placeholder="Escreva aqui sua reflexão..."></textarea>
+            </div>
+
+            <div class="exame-item">
+                <div class="exame-label">4. O que desejo melhorar amanhã?</div>
+                <textarea id="frase4" class="exame-textarea" placeholder="Escreva aqui sua reflexão..."></textarea>
+            </div>
+
+            <button class="save-btn" onclick="salvarExame()">Salvar Reflexões</button>
+            <div id="saveMessage" class="save-message">✓ Reflexões salvas com sucesso!</div>
+        </div>
+    </div>
+
+    <script>
+        // Carregar reflexões salvas
+        function carregarExame() {
+            for (let i = 1; i <= 4; i++) {
+                const saved = localStorage.getItem(`exame_frase${i}`);
+                if (saved) {
+                    document.getElementById(`frase${i}`).value = saved;
+                }
+            }
+        }
+
+        // Salvar reflexões
+        function salvarExame() {
+            for (let i = 1; i <= 4; i++) {
+                const value = document.getElementById(`frase${i}`).value;
+                localStorage.setItem(`exame_frase${i}`, value);
+            }
+
+            // Mostrar mensagem de sucesso
+            const msg = document.getElementById('saveMessage');
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 3000);
+        }
+
+        // Auto-salvar a cada 30 segundos
+        setInterval(() => {
+            for (let i = 1; i <= 4; i++) {
+                const value = document.getElementById(`frase${i}`).value;
+                if (value) {
+                    localStorage.setItem(`exame_frase${i}`, value);
+                }
+            }
+        }, 30000);
+
+        // Carregar ao iniciar
+        carregarExame();
+    </script>
+</body>
+</html>

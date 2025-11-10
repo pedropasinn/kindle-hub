@@ -346,7 +346,10 @@
                 let timeStr = '';
                 if (event.start.dateTime) {
                     const start = new Date(event.start.dateTime);
+                    start.setHours(start.getHours() - 3); // Subtrair 3 horas
                     const end = event.end.dateTime ? new Date(event.end.dateTime) : null;
+                    if (end) end.setHours(end.getHours() - 3); // Subtrair 3 horas
+
                     timeStr = start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                     if (end) {
                         timeStr += ' - ' + end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });

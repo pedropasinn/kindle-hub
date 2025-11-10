@@ -24,10 +24,12 @@ body {
 }
 
 .clock {
-    font-size: 72px;
+    font-family: "Courier New", monospace;
+    font-size: 120px;
     font-weight: bold;
     letter-spacing: 2px;
     margin-bottom: 20px;
+    line-height: 1;
 }
 
 .date {

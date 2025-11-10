@@ -20,6 +20,12 @@
             padding-bottom: 8px;
         }
 
+        .habits-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 20px;
+        }
+
         .habit-item {
             display: flex;
             align-items: center;
@@ -67,7 +73,11 @@
     <div class="page-container">
         <div class="header">
             <h1>Plano Inclinado</h1>
-            <a href="index.html" class="back-link">Voltar ao Início</a>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <a href="index.html" class="back-link">Voltar ao Início</a>
+                <a href="exame.html" class="back-link">Exame</a>
+                <a href="oracoes.html" class="back-link">Orações</a>
+            </div>
         </div>
 
         <div class="habits-section">
@@ -128,7 +138,7 @@
             const { dailyState } = loadState();
             const container = document.getElementById('dailyHabits');
 
-            container.innerHTML = dailyHabits.map((habit, index) => {
+            const html = dailyHabits.map((habit, index) => {
                 const isChecked = dailyState[habit] || false;
                 return `
                     <div class="habit-item ${isChecked ? 'completed' : ''}">
@@ -141,6 +151,8 @@
                     </div>
                 `;
             }).join('');
+
+            container.innerHTML = `<div class="habits-grid">${html}</div>`;
         }
 
         // Renderizar hábitos semanais
