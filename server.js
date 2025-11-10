@@ -145,50 +145,6 @@ app.get('/api/calendar/events', async (req, res) => {
   }
 });
 
-// ============= ROTAS DO GOOGLE TASKS =============
-app.get('/api/google-tasks', async (req, res) => {
-  if (!auth) {
-    return res.status(500).json({ error: 'Google API não autenticada' });
-  }
-
-  try {
-    const tasks = google.tasks({ version: 'v1', auth });
-    const response = await tasks.tasks.list({
-      tasklist: '@default',
-      maxResults: 100,
-    });
-
-    res.json(response.data.items || []);
-  } catch (error) {
-    console.error('Erro ao buscar tarefas do Google:', error.message);
-    res.status(500).json({ error: 'Erro ao buscar tarefas do Google Tasks', details: error.message });
-  }
-});
-
-app.put('/api/google-tasks/:taskId', async (req, res) => {
-  if (!auth) {
-    return res.status(500).json({ error: 'Google API não autenticada' });
-  }
-
-  try {
-    const { taskId } = req.params;
-    const { status } = req.body;
-
-    const tasks = google.tasks({ version: 'v1', auth });
-    await tasks.tasks.update({
-      tasklist: '@default',
-      task: taskId,
-      requestBody: { status },
-    });
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Erro ao atualizar tarefa do Google:', error.message);
-    res.status(500).json({ error: 'Erro ao atualizar tarefa do Google Tasks', details: error.message });
-  }
-});
-
-
 // ============= ROTAS DO NOTION (PLANO DE VIDA) =============
 app.get('/api/notion/habits', async (req, res) => {
   if (!notionClient) {

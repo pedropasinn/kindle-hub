@@ -1,6 +1,6 @@
 # 📚 Kindle Hub
 
-Hub minimalista para Kindle com agenda, hábitos, tarefas e orações.
+Hub minimalista para Kindle com agenda, hábitos e orações.
 
 ## 🚀 Deploy Rápido
 
@@ -29,7 +29,6 @@ npm start
 
 - [CONFIG.md](CONFIG.md) - Configuração geral do projeto
 - [RAILWAY_SETUP.md](RAILWAY_SETUP.md) - Como configurar no Railway
-- [GOOGLE_TASKS_SETUP.md](GOOGLE_TASKS_SETUP.md) - Como configurar Google Tasks
 
 ## 🔑 Gerar Token do Google
 
@@ -45,24 +44,20 @@ node generate-token-auto.js "SEU_CODIGO_AQUI"
 ## ✅ Features
 
 - ✅ Google Calendar - visualizar eventos
-- ✅ Google Tasks - listar e marcar tarefas como concluídas
-- ✅ Notion - gerenciar hábitos diários e semanais
+- ✅ Notion - gerenciar hábitos diários e semanais (Plano de Vida)
 - ✅ Reset automático de hábitos à meia-noite
 - ✅ Interface otimizada para e-ink (Kindle)
+- ✅ Páginas de Orações, Exame e Contemplação
 
 ## 📦 Tecnologias
 
 - Node.js + Express
-- Google APIs (Calendar + Tasks)
+- Google Calendar API
 - Notion API
 - SQLite (para dados locais)
 - Vanilla JS (frontend)
 
 ## 🐛 Troubleshooting
-
-### Google Tasks não funciona
-- Verifique se o token tem os scopes corretos
-- Rode `node generate-token.js` para gerar um novo token
 
 ### Notion não salva
 - Verifique se `habitName` está sendo enviado no body
