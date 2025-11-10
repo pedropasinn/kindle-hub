@@ -174,7 +174,10 @@
                 const response = await fetch(`/api/notion/habits/${pageId}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ concluido: checked })
+                    body: JSON.stringify({
+                        concluido: checked,
+                        habitName: habitName
+                    })
                 });
 
                 if (response.ok) {

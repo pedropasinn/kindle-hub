@@ -75,18 +75,30 @@
             }
 
             container.innerHTML = html;
+
+            // Adicionar event listeners aos checkboxes
+            container.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const taskId = this.getAttribute('data-task-id');
+                    const completed = this.checked;
+                    toggleTask(taskId, completed);
+                });
+            });
         }
 
         // Renderizar uma tarefa individual
         function renderTask(task) {
             const isCompleted = task.status === 'completed';
             const dueDate = task.due ? formatDate(task.due) : null;
+            const checkboxId = 'task-' + Math.random().toString(36).substring(7);
 
             return `
                 <div class="item ${isCompleted ? 'completed' : ''}" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; margin-bottom: 8px; border: 2px solid #ddd; background: ${isCompleted ? '#f5f5f5' : '#fff'};">
                     <input type="checkbox"
+                           id="${checkboxId}"
+                           data-task-id="${escapeHtml(task.id)}"
                            ${isCompleted ? 'checked' : ''}
-                           onchange="toggleTask('${task.id}', this.checked)"
+                           class="task-checkbox"
                            style="width: 20px; height: 20px; cursor: pointer; margin-top: 2px;">
                     <div style="flex: 1;">
                         <div class="item-title" style="font-size: 16px; font-weight: bold; ${isCompleted ? 'text-decoration: line-through; color: #999;' : ''}">
