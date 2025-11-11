@@ -103,6 +103,34 @@
         .nav-btn:active {
             background: #e0e0e0;
         }
+
+        /* Spinner de carregamento */
+        .loading-spinner {
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -124,7 +152,10 @@
                 <div id="imagemInfo" class="imagem-info">—</div>
 
                 <div id="imagemAtual" class="imagem-atual">
-                    <div class="sem-imagem">Carregando...</div>
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Carregando imagens...</div>
+                    </div>
                 </div>
 
                 <div class="navegacao">
@@ -139,6 +170,8 @@
         let misterioAtual = 'gozosos';
         let indiceAtual = 0;
         let imagens = [];
+        let imagensPreCarregadas = {}; // Cache de imagens pré-carregadas
+        let imagensCarregando = new Set(); // Controle de imagens em carregamento
 
         const misterios = {
             gozosos: {
@@ -229,6 +262,49 @@
             }
 
             exibirImagem();
+            preCarregarTodasImagens(); // Pré-carregar todas as imagens do mistério atual
+        }
+
+        // Função para pré-carregar todas as imagens do mistério atual
+        function preCarregarTodasImagens() {
+            imagens.forEach((imagemPath, index) => {
+                preCarregarImagem(imagemPath);
+            });
+        }
+
+        // Função para pré-carregar uma imagem específica
+        function preCarregarImagem(imagemPath) {
+            // Se já está carregada ou em carregamento, ignorar
+            if (imagensPreCarregadas[imagemPath] || imagensCarregando.has(imagemPath)) {
+                return;
+            }
+
+            imagensCarregando.add(imagemPath);
+
+            const img = new Image();
+            img.onload = function() {
+                imagensPreCarregadas[imagemPath] = img;
+                imagensCarregando.delete(imagemPath);
+                console.log('Imagem pré-carregada:', imagemPath);
+            };
+            img.onerror = function() {
+                imagensCarregando.delete(imagemPath);
+                console.error('Erro ao pré-carregar:', imagemPath);
+            };
+            img.src = imagemPath;
+        }
+
+        // Função para pré-carregar imagens adjacentes (anterior e próxima)
+        function preCarregarAdjacentes() {
+            if (imagens.length === 0) return;
+
+            // Pré-carregar próxima imagem
+            const proximoIndice = (indiceAtual + 1) % imagens.length;
+            preCarregarImagem(imagens[proximoIndice]);
+
+            // Pré-carregar imagem anterior
+            const anteriorIndice = (indiceAtual - 1 + imagens.length) % imagens.length;
+            preCarregarImagem(imagens[anteriorIndice]);
         }
 
         function exibirImagem() {
@@ -249,15 +325,29 @@
 
             info.textContent = `${misterio.nome} - ${titulo} (${numero}/${total})`;
 
-            const img = new Image();
-            img.onload = function() {
+            // Verificar se a imagem já foi pré-carregada
+            if (imagensPreCarregadas[imagemPath]) {
+                // Usar imagem do cache - exibição instantânea!
                 container.innerHTML = '';
-                container.appendChild(img);
-            };
-            img.onerror = function() {
-                container.innerHTML = `<div class="sem-imagem">Imagem não encontrada:<br>${imagemPath}</div>`;
-            };
-            img.src = imagemPath;
+                const imgClone = imagensPreCarregadas[imagemPath].cloneNode();
+                container.appendChild(imgClone);
+                preCarregarAdjacentes(); // Pré-carregar adjacentes para navegação suave
+            } else {
+                // Mostrar loading e carregar imagem
+                container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Carregando...</div></div>';
+
+                const img = new Image();
+                img.onload = function() {
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                    imagensPreCarregadas[imagemPath] = img; // Adicionar ao cache
+                    preCarregarAdjacentes(); // Pré-carregar adjacentes
+                };
+                img.onerror = function() {
+                    container.innerHTML = `<div class="sem-imagem">Imagem não encontrada:<br>${imagemPath}</div>`;
+                };
+                img.src = imagemPath;
+            }
 
             salvarPreferencias();
         }
