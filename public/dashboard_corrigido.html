@@ -305,7 +305,7 @@
       border-color:#4682b4;
     }
     .contador-evento.oculto{
-      display:none;
+      display:none !important;
     }
     .btn-fechar-contador{
       position:absolute;
@@ -339,7 +339,7 @@
     /* Aba inferior para reabrir contador */
     .aba-contador{
       position:fixed;
-      bottom:0;
+      bottom:-50px;
       left:50%;
       transform:translateX(-50%);
       background:#000;
@@ -351,10 +351,9 @@
       font-weight:bold;
       font-size:14px;
       transition:all 0.3s ease;
-      display:none;
     }
     .aba-contador.visivel{
-      display:block;
+      bottom:0;
     }
     .aba-contador:hover{
       background:#333;
@@ -631,6 +630,8 @@
       contador.classList.add('oculto');
       aba.classList.add('visivel');
       console.log('Contador fechado com sucesso');
+      console.log('Classes do contador:', contador.className);
+      console.log('Classes da aba:', aba.className);
     } else {
       console.error('Elementos não encontrados', {contador: !!contador, aba: !!aba});
     }
@@ -640,11 +641,19 @@
   }
 
   function abrirContador(){
+    console.log('abrirContador chamado');
     var contador = document.getElementById('contadorEvento');
     var aba = document.getElementById('abaContador');
 
-    contador.classList.remove('oculto');
-    aba.classList.remove('visivel');
+    if(contador && aba){
+      contador.classList.remove('oculto');
+      aba.classList.remove('visivel');
+      console.log('Contador aberto com sucesso');
+      console.log('Classes do contador:', contador.className);
+      console.log('Classes da aba:', aba.className);
+    } else {
+      console.error('Elementos não encontrados', {contador: !!contador, aba: !!aba});
+    }
 
     // Salvar preferência
     localStorage.setItem('contadorVisivel', 'true');
@@ -738,11 +747,20 @@
     // Só mostrar contador para hoje
     var contador = document.getElementById('contadorEvento');
     if(key !== hj || eventosValidos.length === 0){
-      contador.style.display = 'none';
+      // Se não for hoje ou não houver eventos, esconder contador e aba
+      contador.classList.add('oculto');
+      document.getElementById('abaContador').classList.remove('visivel');
       return;
     }
 
-    contador.style.display = 'block';
+    // Só remover a classe oculto se o contador deve estar visível
+    // Mas respeitar a preferência do usuário
+    var contadorDeveEstarVisivel = localStorage.getItem('contadorVisivel') !== 'false';
+    
+    if(contadorDeveEstarVisivel){
+      contador.classList.remove('oculto');
+      document.getElementById('abaContador').classList.remove('visivel');
+    }
     var agora = n.getHours() * 60 + n.getMinutes();
     var eventoAtual = null;
     var proximoEvento = null;
@@ -835,7 +853,8 @@
       }
     } else {
       // Todos os eventos já passaram
-      contador.style.display = 'none';
+      contador.classList.add('oculto');
+      document.getElementById('abaContador').classList.remove('visivel');
       estadoAtual = 'vazio';
     }
 
