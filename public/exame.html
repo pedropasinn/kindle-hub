@@ -30,7 +30,7 @@
 
         .ag-container h3 {
             font-size: 18px;
-            margin-top: 20px;
+            margin-top: 10px;
             margin-bottom: 10px;
             font-weight: bold;
         }
@@ -52,43 +52,6 @@
         .cinza {
             color: #666;
         }
-
-        /* Botão Voltar ao Topo */
-        #btnVoltarTopo {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: #373737;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease, background 0.2s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #btnVoltarTopo.visivel {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        #btnVoltarTopo:hover {
-            background: #333;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-        }
-
-        #btnVoltarTopo:active {
-            transform: scale(0.95);
-        }
     </style>
 </head>
 <body>
@@ -101,45 +64,20 @@
         <div class="ag-container">
             <h1><strong>Jesus, afasta de mim o que me afasta de ti!</strong></h1>
 
-            <h2>De Cristo para Cristo. Consegui preparar nas qualidades dos meus irmãos, mais do que nos seus defeitos?</h2>
+            <h3>De Cristo para Cristo. Consegui preparar nas qualidades dos meus irmãos, mais do que nos seus defeitos?</h3>
 
-            <h2>A tristeza é o próprio mal. Fiquei perdendo tempo racionalizando sobre o que me aconteceu?</h2>
+            <h3>A tristeza é o próprio mal. Fiquei perdendo tempo racionalizando sobre o que me aconteceu?</h3>
 
-            <h2>Vivi bem o tempo da noite? Fiquei usando o telefone antes de dormir?</h2>
+            <h2>Vivi bem o tempo da noite? Fiquei usando o telefone antes de dormir?</h3>
 
-            <h2>Fiquei vendo videos enquanto escovava os dentes?</h2>
+            <h3>Fiquei vendo videos enquanto escovava os dentes?</h3>
 
             <h1><strong>Ato de contrição</strong></h1>
             
-            <h2>Senhor, me arrependo de todo o coração de vos ter ofendido. Dai-me a graça de não mais pecar.</h2>
+            <h3>Senhor, me arrependo de todo o coração de vos ter ofendido. Dai-me a graça de não mais pecar.</h3>
 
             
         </div>
     </div>
-
-    <!-- Botão Voltar ao Topo -->
-    <button id="btnVoltarTopo" title="Voltar ao topo">↑</button>
-
-    <script>
-        // Controle do botão "Voltar ao Topo"
-        const btnVoltarTopo = document.getElementById('btnVoltarTopo');
-
-        // Mostrar/ocultar botão baseado na posição do scroll
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
-                btnVoltarTopo.classList.add('visivel');
-            } else {
-                btnVoltarTopo.classList.remove('visivel');
-            }
-        });
-
-        // Rolar suavemente ao topo ao clicar
-        btnVoltarTopo.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    </script>
 </body>
 </html>
