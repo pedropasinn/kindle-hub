@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-3">
+  <meta charset="utf-8">
   <title>Calendário – Versão Kindle</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -359,6 +359,57 @@
       background:#333;
       padding-top:12px;
     }
+
+    /* Aba superior (Agenda) ancorada na divisão direita */
+    .aba-agenda{
+      position:fixed;
+      top:8px;
+      /* Quando eventos estão visíveis, ancoro na % do relógio */
+      left:calc(var(--relogio-percent) * 1vw);
+      /* Trago a aba um pouco para a ESQUERDA da divisória */
+      transform:translateX(calc(-100% - 8px));
+      background:#000;
+      color:#fff;
+      padding:8px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      z-index:1100;
+      font-weight:bold;
+      font-size:14px;
+      user-select:none;
+      transition:left .25s ease, transform .2s ease, background .2s ease, opacity .2s ease;
+    }
+    .aba-agenda:hover{
+      background:#333;
+      transform:translateX(calc(-100% - 8px)) translateY(-1px);
+    }
+    .aba-agenda.aberta{
+      opacity:.95;
+    }
+
+    /* Quando os eventos estão ocultos, a "divisória" é a borda direita do viewport */
+    body.eventos-ocultos .aba-agenda{
+      left:100vw;
+      transform:translateX(calc(-100% - 8px));
+    }
+
+    /* Topo de eventos grudado e alinhado à esquerda */
+    .topo-eventos{
+      position:sticky;
+      top:0;
+      z-index:2;
+      justify-content:flex-start;
+      padding-left:12px;
+    }
+    .titulo{
+      text-align:left;
+    }
+
+    /* Esconder checkbox antiga de Mostrar Eventos */
+    #checkMostrarEventos,
+    label[for="checkMostrarEventos"]{
+      display:none !important;
+    }
   </style>
 </head>
 <body>
@@ -460,6 +511,9 @@
 
     <!-- Aba inferior para reabrir o contador -->
     <div id="abaContador" class="aba-contador" onclick="abrirContador()">Eventos</div>
+
+    <!-- Aba superior para toggle da agenda -->
+    <div id="abaAgenda" class="aba-agenda" onclick="toggleAgenda()">Agenda</div>
 
     <!-- LADO DIREITO: EVENTOS -->
     <section class="secao-eventos">
@@ -597,27 +651,43 @@
     localStorage.setItem('rotacao', vp.className);
   }
 
-  function toggleEventos(){
-    var checkbox = document.getElementById('checkMostrarEventos');
+  function setMostrarEventos(flag){
     var secaoEventos = document.querySelector('.secao-eventos');
     var secaoRelogio = document.querySelector('.secao-relogio');
+    var abaAgenda = document.getElementById('abaAgenda');
 
-    if(checkbox.checked){
-      // Mostrar eventos - relógio menor (130px)
+    if(flag){
       secaoEventos.classList.remove('oculto');
       secaoRelogio.classList.remove('expandido');
+      document.body.classList.remove('eventos-ocultos');
+      document.body.classList.add('eventos-visiveis');
+
       ajustarTamanho(130);
-      document.getElementById('sliderTamanho').value = 130;
+      var s = document.getElementById('sliderTamanho');
+      if(s) s.value = 130;
+      if(abaAgenda) abaAgenda.classList.add('aberta');
     } else {
-      // Ocultar eventos - relógio maior (200px)
       secaoEventos.classList.add('oculto');
       secaoRelogio.classList.add('expandido');
-      ajustarTamanho(200);
-      document.getElementById('sliderTamanho').value = 200;
-    }
+      document.body.classList.remove('eventos-visiveis');
+      document.body.classList.add('eventos-ocultos');
 
-    // Salvar preferência
-    localStorage.setItem('mostrarEventos', checkbox.checked);
+      ajustarTamanho(200);
+      var s2 = document.getElementById('sliderTamanho');
+      if(s2) s2.value = 200;
+      if(abaAgenda) abaAgenda.classList.remove('aberta');
+    }
+    localStorage.setItem('mostrarEventos', flag ? 'true' : 'false');
+  }
+
+  function toggleEventos(){
+    var checkbox = document.getElementById('checkMostrarEventos');
+    setMostrarEventos(!!checkbox.checked);
+  }
+
+  function toggleAgenda(){
+    var atual = localStorage.getItem('mostrarEventos') !== 'false';
+    setMostrarEventos(!atual);
   }
 
   // ====== CONTROLES DO CONTADOR DE EVENTOS ======
@@ -730,6 +800,18 @@
   // Variável global para rastrear estado anterior do contador
   var estadoContadorAnterior = null;
 
+  // Funções helper para gerenciar o contador
+  function usuarioFechouContador(){
+    return localStorage.getItem('contadorVisivel') === 'false';
+  }
+
+  function setEstadoContador(estado){ // 'atual' | 'proximo' | null
+    var contador = document.getElementById('contadorEvento');
+    contador.classList.remove('atual','proximo');
+    if (estado) contador.classList.add(estado);
+    // Importante: não tocar na classe 'oculto' aqui.
+  }
+
   function atualizarContador(){
     var key = ymd(dataSel);
     var evts = eventosData[key] || [];
@@ -744,22 +826,26 @@
       }
     }
 
-    // Só mostrar contador para hoje
     var contador = document.getElementById('contadorEvento');
-    if(key !== hj || eventosValidos.length === 0){
-      // Se não for hoje ou não houver eventos, esconder contador e aba
+    var aba = document.getElementById('abaContador');
+
+    // Respeitar escolha do usuário
+    var contadorDeveEstarVisivel = !usuarioFechouContador();
+    if (key !== hj || eventosValidos.length === 0){
+      // Se não for hoje ou não houver eventos, esconder tudo
       contador.classList.add('oculto');
-      document.getElementById('abaContador').classList.remove('visivel');
+      aba.classList.remove('visivel');
+      estadoContadorAnterior = 'vazio';
       return;
     }
 
-    // Só remover a classe oculto se o contador deve estar visível
-    // Mas respeitar a preferência do usuário
-    var contadorDeveEstarVisivel = localStorage.getItem('contadorVisivel') !== 'false';
-    
-    if(contadorDeveEstarVisivel){
+    if (contadorDeveEstarVisivel){
       contador.classList.remove('oculto');
-      document.getElementById('abaContador').classList.remove('visivel');
+      aba.classList.remove('visivel');
+    } else {
+      // Mantém oculto e mostra a aba
+      contador.classList.add('oculto');
+      aba.classList.add('visivel');
     }
     var agora = n.getHours() * 60 + n.getMinutes();
     var eventoAtual = null;
@@ -789,7 +875,7 @@
 
     if(eventoAtual){
       // Evento acontecendo agora
-      contador.className = 'contador-evento atual';
+      setEstadoContador('atual');
       titulo.textContent = eventoAtual.titulo;
 
       var fimMin = minutos(eventoAtual.fim);
@@ -818,13 +904,13 @@
       }
     } else if(proximoEvento){
       // Próximo evento
-      contador.className = 'contador-evento proximo';
+      setEstadoContador('proximo');
       titulo.textContent = proximoEvento.titulo;
 
       var inicioMin = minutos(proximoEvento.inicio);
       var diff = inicioMin - agora;
 
-      estadoAtual = 'proximo:' + proximoEvento.titulo + ':' + diff;
+      estadoAtual = 'proximo:' + proximoEvento.titulo;
 
       if(diff <= 0){
         tempo.textContent = 'Começando...';
@@ -862,7 +948,7 @@
     estadoContadorAnterior = estadoAtual;
 
     // Abrir contador automaticamente se houver mudança importante
-    if(deveAbrir){
+    if(deveAbrir && !usuarioFechouContador()){
       abrirContador();
     }
   }
@@ -898,15 +984,9 @@
     var mostrarEventos = localStorage.getItem('mostrarEventos');
     if(mostrarEventos === 'false'){
       document.getElementById('checkMostrarEventos').checked = false;
-      document.querySelector('.secao-eventos').classList.add('oculto');
-      document.querySelector('.secao-relogio').classList.add('expandido');
-      // Ajustar relógio para 200px quando eventos ocultos
-      ajustarTamanho(200);
-      document.getElementById('sliderTamanho').value = 200;
+      setMostrarEventos(false);
     } else {
-      // Ajustar relógio para 130px quando eventos visíveis
-      ajustarTamanho(130);
-      document.getElementById('sliderTamanho').value = 130;
+      setMostrarEventos(true);
     }
 
     // Carregar tamanho do relógio salvo (se existir, sobrescreve o padrão acima)
