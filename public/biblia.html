@@ -198,6 +198,44 @@
             margin: 20px 0;
         }
 
+        /* Botão Voltar ao Topo */
+        #btnVoltarTopo {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #000;
+            color: #fff;
+            border: 3px solid #000;
+            border-radius: 50%;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, background 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        #btnVoltarTopo.visivel {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #btnVoltarTopo:hover {
+            background: #333;
+            transform: scale(1.1);
+        }
+
+        #btnVoltarTopo:active {
+            transform: scale(0.95);
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .selectors {
@@ -215,6 +253,14 @@
 
             .chapter-nav h2 {
                 order: -1;
+            }
+
+            #btnVoltarTopo {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
             }
         }
     </style>
@@ -267,34 +313,52 @@
         </div>
     </div>
 
+    <!-- Botão Voltar ao Topo -->
+    <button id="btnVoltarTopo" title="Voltar ao topo">↑</button>
+
     <script>
         // ========== ESTADO GLOBAL ==========
-        let bibliaData = null;
-        let currentTestament = 'antigoTestamento';
-        let currentBookIndex = 0;
-        let currentChapter = 1;
+        var bibliaData = null;
+        var currentTestament = 'antigoTestamento';
+        var currentBookIndex = 0;
+        var currentChapter = 1;
 
         // ========== INICIALIZAÇÃO ==========
 
         /**
-         * Carrega o JSON da Bíblia
+         * Carrega o JSON da Bíblia (compatível com navegadores antigos)
          */
-        async function loadBibleData() {
-            try {
-                const response = await fetch('/biblias/bibliaAveMaria.json');
-                if (!response.ok) {
-                    throw new Error('Erro ao carregar Bíblia');
-                }
-                bibliaData = await response.json();
+        function loadBibleData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/biblias/bibliaAveMaria.json', true);
 
-                // Inicializa interface
-                populateBookDropdown();
-                renderChapter();
-            } catch (error) {
-                console.error('Erro ao carregar Bíblia:', error);
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        bibliaData = JSON.parse(xhr.responseText);
+
+                        // Inicializa interface
+                        populateBookDropdown();
+                        renderChapter();
+                    } catch (error) {
+                        console.error('Erro ao parsear JSON:', error);
+                        document.getElementById('verseContainer').innerHTML =
+                            '<div class="error">Erro ao processar dados da Bíblia.</div>';
+                    }
+                } else {
+                    console.error('Erro HTTP:', xhr.status);
+                    document.getElementById('verseContainer').innerHTML =
+                        '<div class="error">Erro ao carregar a Bíblia. Por favor, recarregue a página.</div>';
+                }
+            };
+
+            xhr.onerror = function() {
+                console.error('Erro de rede');
                 document.getElementById('verseContainer').innerHTML =
-                    '<div class="error">Erro ao carregar a Bíblia. Por favor, recarregue a página.</div>';
-            }
+                    '<div class="error">Erro de conexão. Verifique sua rede.</div>';
+            };
+
+            xhr.send();
         }
 
         // ========== SELETORES ==========
@@ -305,16 +369,17 @@
         function populateBookDropdown() {
             if (!bibliaData) return;
 
-            const books = bibliaData[currentTestament];
-            const select = document.getElementById('bookSelect');
+            var books = bibliaData[currentTestament];
+            var select = document.getElementById('bookSelect');
+            var i, option;
 
             select.innerHTML = '';
-            books.forEach((book, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = book.nome;
+            for (i = 0; i < books.length; i++) {
+                option = document.createElement('option');
+                option.value = i;
+                option.textContent = books[i].nome;
                 select.appendChild(option);
-            });
+            }
 
             select.value = currentBookIndex;
             populateChapterDropdown();
@@ -326,16 +391,18 @@
         function populateChapterDropdown() {
             if (!bibliaData) return;
 
-            const book = bibliaData[currentTestament][currentBookIndex];
-            const select = document.getElementById('chapterSelect');
+            var book = bibliaData[currentTestament][currentBookIndex];
+            var select = document.getElementById('chapterSelect');
+            var i, cap, option;
 
             select.innerHTML = '';
-            book.capitulos.forEach((cap, index) => {
-                const option = document.createElement('option');
+            for (i = 0; i < book.capitulos.length; i++) {
+                cap = book.capitulos[i];
+                option = document.createElement('option');
                 option.value = cap.capitulo;
                 option.textContent = cap.capitulo;
                 select.appendChild(option);
-            });
+            }
 
             select.value = currentChapter;
         }
@@ -361,7 +428,7 @@
          * Quando usuário seleciona um livro diferente
          */
         function onBookChange() {
-            const select = document.getElementById('bookSelect');
+            var select = document.getElementById('bookSelect');
             currentBookIndex = parseInt(select.value);
             currentChapter = 1;
 
@@ -373,7 +440,7 @@
          * Quando usuário seleciona um capítulo diferente
          */
         function onChapterChange() {
-            const select = document.getElementById('chapterSelect');
+            var select = document.getElementById('chapterSelect');
             currentChapter = parseInt(select.value);
             renderChapter();
         }
@@ -386,14 +453,15 @@
         function goToPreviousChapter() {
             if (!bibliaData) return;
 
-            const book = bibliaData[currentTestament][currentBookIndex];
+            var book = bibliaData[currentTestament][currentBookIndex];
+            var prevBook;
 
             if (currentChapter > 1) {
                 currentChapter--;
             } else if (currentBookIndex > 0) {
                 // Vai para o último capítulo do livro anterior
                 currentBookIndex--;
-                const prevBook = bibliaData[currentTestament][currentBookIndex];
+                prevBook = bibliaData[currentTestament][currentBookIndex];
                 currentChapter = prevBook.capitulos.length;
                 populateBookDropdown();
             } else {
@@ -411,8 +479,8 @@
         function goToNextChapter() {
             if (!bibliaData) return;
 
-            const book = bibliaData[currentTestament][currentBookIndex];
-            const maxChapters = book.capitulos.length;
+            var book = bibliaData[currentTestament][currentBookIndex];
+            var maxChapters = book.capitulos.length;
 
             if (currentChapter < maxChapters) {
                 currentChapter++;
@@ -436,17 +504,18 @@
         function updateNavigationButtons() {
             if (!bibliaData) return;
 
-            const book = bibliaData[currentTestament][currentBookIndex];
-            const maxChapters = book.capitulos.length;
-            const isFirstBook = currentBookIndex === 0;
-            const isLastBook = currentBookIndex === bibliaData[currentTestament].length - 1;
+            var book = bibliaData[currentTestament][currentBookIndex];
+            var maxChapters = book.capitulos.length;
+            var isFirstBook = currentBookIndex === 0;
+            var isLastBook = currentBookIndex === bibliaData[currentTestament].length - 1;
+            var btnPrev, btnNext;
 
             // Botão Anterior
-            const btnPrev = document.getElementById('btnPrev');
+            btnPrev = document.getElementById('btnPrev');
             btnPrev.disabled = (currentChapter === 1 && isFirstBook);
 
             // Botão Próximo
-            const btnNext = document.getElementById('btnNext');
+            btnNext = document.getElementById('btnNext');
             btnNext.disabled = (currentChapter === maxChapters && isLastBook);
         }
 
@@ -458,44 +527,118 @@
         function renderChapter() {
             if (!bibliaData) return;
 
-            const book = bibliaData[currentTestament][currentBookIndex];
-            const chapter = book.capitulos.find(c => c.capitulo === currentChapter);
+            var book = bibliaData[currentTestament][currentBookIndex];
+            var chapter = null;
+            var i, verse;
+            var container, html;
+
+            // Buscar capítulo manualmente (compatível com ES5)
+            for (i = 0; i < book.capitulos.length; i++) {
+                if (book.capitulos[i].capitulo === currentChapter) {
+                    chapter = book.capitulos[i];
+                    break;
+                }
+            }
 
             if (!chapter) {
                 console.error('Capítulo não encontrado:', currentChapter);
                 return;
             }
 
-            // Atualiza título
+            // Atualiza título (sem template literals)
             document.getElementById('chapterTitle').textContent =
-                `${book.nome} ${currentChapter}`;
+                book.nome + ' ' + currentChapter;
 
             // Renderiza versículos
-            const container = document.getElementById('verseContainer');
-            let html = '';
+            container = document.getElementById('verseContainer');
+            html = '';
 
-            chapter.versiculos.forEach(verse => {
-                html += `
-                    <div class="verse">
-                        <span class="verse-number">${verse.versiculo}</span>
-                        <span class="verse-text">${verse.texto}</span>
-                    </div>
-                `;
-            });
+            for (i = 0; i < chapter.versiculos.length; i++) {
+                verse = chapter.versiculos[i];
+                html += '<div class="verse">';
+                html += '<span class="verse-number">' + verse.versiculo + '</span>';
+                html += '<span class="verse-text">' + verse.texto + '</span>';
+                html += '</div>';
+            }
 
             container.innerHTML = html;
 
             // Atualiza botões de navegação
             updateNavigationButtons();
 
-            // Scroll para o topo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll para o topo (compatível com navegadores antigos)
+            window.scrollTo(0, 0);
+        }
+
+        // ========== BOTÃO VOLTAR AO TOPO ==========
+
+        /**
+         * Controla visibilidade do botão baseado no scroll
+         */
+        function handleScrollButton() {
+            var btnVoltarTopo = document.getElementById('btnVoltarTopo');
+            var scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+            if (scrollPosition > 300) {
+                if (btnVoltarTopo.className.indexOf('visivel') === -1) {
+                    btnVoltarTopo.className += ' visivel';
+                }
+            } else {
+                btnVoltarTopo.className = btnVoltarTopo.className.replace(' visivel', '').replace('visivel', '');
+            }
+        }
+
+        /**
+         * Scroll suave para o topo (compatível com Kindle)
+         */
+        function scrollToTop() {
+            var currentPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+            if (currentPosition > 0) {
+                window.scrollTo(0, 0);
+            }
         }
 
         // ========== INICIALIZAÇÃO ==========
 
+        /**
+         * Inicializa eventos da página
+         */
+        function initPage() {
+            var btnVoltarTopo = document.getElementById('btnVoltarTopo');
+
+            // Event listener para scroll
+            if (window.addEventListener) {
+                window.addEventListener('scroll', handleScrollButton);
+            } else if (window.attachEvent) {
+                window.attachEvent('onscroll', handleScrollButton);
+            }
+
+            // Event listener para botão voltar ao topo
+            if (btnVoltarTopo) {
+                if (btnVoltarTopo.addEventListener) {
+                    btnVoltarTopo.addEventListener('click', scrollToTop);
+                } else if (btnVoltarTopo.attachEvent) {
+                    btnVoltarTopo.attachEvent('onclick', scrollToTop);
+                }
+            }
+
+            // Carrega dados da Bíblia
+            loadBibleData();
+        }
+
         // Carrega Bíblia quando página carrega
-        window.addEventListener('DOMContentLoaded', loadBibleData);
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else if (document.attachEvent) {
+            document.attachEvent('onreadystatechange', function() {
+                if (document.readyState === 'complete') {
+                    initPage();
+                }
+            });
+        } else {
+            window.onload = initPage;
+        }
     </script>
 </body>
 </html>
