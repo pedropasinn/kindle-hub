@@ -103,13 +103,12 @@
         .selector-group select:focus {
             outline: none;
             border-color: #333;
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
         }
 
         /* Chapter Navigation - Grid Layout */
         .chapter-nav {
             display: grid;
-            grid-template-columns: 45px 1fr 45px;  /* botão | título | botão */
+            grid-template-columns: 48px 1fr 48px;  /* botão | título | botão */
             align-items: center;
             gap: 10px;
             margin: 20px 0;
@@ -120,29 +119,33 @@
         }
 
         .chapter-nav h2 {
+            grid-column: 2;                  /* Coluna do meio */
             margin: 0;
             font-size: 18px;
             text-align: center;
-            grid-column: 2;                  /* Fica na coluna do meio */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            min-height: 42px;                /* Mesma altura do botão */
+            display: flex;
+            align-items: center;             /* Centro vertical */
+            justify-content: center;         /* Centro horizontal */
+            line-height: 1.2;
         }
 
         .nav-btn {
-            padding: 0;
-            background: #fff;
-            border: 3px solid #000;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            width: 45px;
-            height: 40px;
+            box-sizing: border-box;
+            width: 48px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0;
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
         #btnPrev {
@@ -172,19 +175,20 @@
         /* Para telas pequenas (Kindle) */
         @media (max-width: 650px) {
             .chapter-nav {
-                grid-template-columns: 40px 1fr 40px;  /* Botões menores */
+                grid-template-columns: 42px 1fr 42px;  /* Botões menores */
                 padding: 8px 10px;
                 gap: 8px;
             }
 
             .nav-btn {
-                width: 40px;
-                height: 36px;
+                width: 42px;
+                height: 38px;
                 font-size: 14px;
             }
 
             .chapter-nav h2 {
                 font-size: 16px;
+                min-height: 38px;            /* Mesma altura dos botões no Kindle */
             }
         }
 
@@ -256,7 +260,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         #btnVoltarTopo.visivel {

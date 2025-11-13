@@ -229,7 +229,6 @@
       align-items: center;
       gap: 8px;
       font-family: Arial, sans-serif;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     `;
 
     document.body.appendChild(widgetElement);
