@@ -254,14 +254,14 @@
 
     if (state.mode === 'clock') {
       // Modo relógio - mostra hora atual
-      displayText = `⏱︎ ${getCurrentTime()}`;
+      displayText = `${getCurrentTime()}`;
     } else {
       // Modo timer - mostra tempo restante
       const remaining = getRemainingTime(state);
       if (remaining <= 0) {
-        displayText = '⏱︎ 00:00';
+        displayText = '00:00';
       } else {
-        displayText = `⏱︎ ${formatTime(remaining)}`;
+        displayText = `${formatTime(remaining)}`;
       }
     }
 
@@ -324,7 +324,7 @@
     `;
 
     const title = document.createElement('div');
-    title.textContent = '⏱︎ Timer Encerrado!';
+    title.textContent = 'Timer Encerrado!';
     title.style.cssText = `
       font-size: 28px;
       font-weight: bold;

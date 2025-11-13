@@ -6,6 +6,8 @@
     <title>Bíblia Ave Maria - Kindle Hub</title>
     <link rel="stylesheet" href="style.css">
     <script src="timer.js"></script>
+    <!-- Carrega versão embutida da Bíblia (prioridade para Kindle offline) -->
+    <script src="biblias/bibliaAveMaria.js"></script>
     <style>
         .bible-container {
             max-width: 900px;
@@ -326,39 +328,81 @@
         // ========== INICIALIZAÇÃO ==========
 
         /**
-         * Carrega o JSON da Bíblia (compatível com navegadores antigos)
+         * Carrega o JSON da Bíblia (híbrido: embutido prioritário + XHR robusto como fallback)
+         * Otimizado para Kindle com WebKit antigo
          */
         function loadBibleData() {
+            // PRIORIDADE 1: Tenta usar versão embutida (100% offline, sem XHR)
+            if (window.BIBLIA_AVE_MARIA) {
+                console.log('Usando versão embutida da Bíblia (modo offline)');
+                bibliaData = window.BIBLIA_AVE_MARIA;
+                populateBookDropdown();
+                renderChapter();
+                return;
+            }
+
+            // FALLBACK: XHR robusto com tratamento para Kindle
+            console.log('Versão embutida não encontrada. Tentando XHR...');
+
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/biblias/bibliaAveMaria.json', true);
+            // Caminho relativo (sem barra inicial) para compatibilidade file://
+            xhr.open('GET', 'biblias/bibliaAveMaria.json?v=1', true);
 
-            xhr.onload = function() {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        bibliaData = JSON.parse(xhr.responseText);
+            // Força MIME type correto (importante para Kindles antigos)
+            if (xhr.overrideMimeType) {
+                xhr.overrideMimeType('application/json');
+            }
 
-                        // Inicializa interface
-                        populateBookDropdown();
-                        renderChapter();
-                    } catch (error) {
-                        console.error('Erro ao parsear JSON:', error);
-                        document.getElementById('verseContainer').innerHTML =
-                            '<div class="error">Erro ao processar dados da Bíblia.</div>';
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    // Sucesso HTTP normal (200-299)
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            bibliaData = JSON.parse(xhr.responseText);
+                            populateBookDropdown();
+                            renderChapter();
+                            console.log('Bíblia carregada via XHR (HTTP)');
+                        } catch (e) {
+                            console.error('JSON inválido:', e);
+                            document.getElementById('verseContainer').innerHTML =
+                                '<div class="error">Erro ao processar dados da Bíblia.</div>';
+                        }
+                        return;
                     }
-                } else {
-                    console.error('Erro HTTP:', xhr.status);
+
+                    // IMPORTANTE: Kindle em file:// retorna status 0 mesmo com conteúdo válido
+                    if (xhr.status === 0 && xhr.responseText) {
+                        try {
+                            bibliaData = JSON.parse(xhr.responseText);
+                            populateBookDropdown();
+                            renderChapter();
+                            console.log('Bíblia carregada via XHR (file://)');
+                            return;
+                        } catch (e2) {
+                            console.error('JSON inválido (status 0):', e2);
+                        }
+                    }
+
+                    // Erro real
+                    console.error('Falha ao carregar JSON. Status:', xhr.status);
                     document.getElementById('verseContainer').innerHTML =
-                        '<div class="error">Erro ao carregar a Bíblia. Por favor, recarregue a página.</div>';
+                        '<div class="error">Erro ao carregar a Bíblia. Por favor, recarregue a página.<br>Dica: Verifique se a pasta "biblias" está no mesmo local do arquivo HTML.</div>';
                 }
             };
 
             xhr.onerror = function() {
-                console.error('Erro de rede');
+                console.error('Erro de rede/XHR');
                 document.getElementById('verseContainer').innerHTML =
-                    '<div class="error">Erro de conexão. Verifique sua rede.</div>';
+                    '<div class="error">Erro de conexão ao carregar a Bíblia.<br>Certifique-se de que o arquivo bibliaAveMaria.js foi carregado.</div>';
             };
 
-            xhr.send();
+            try {
+                xhr.send(null);
+            } catch (sendErr) {
+                console.error('Send falhou:', sendErr);
+                document.getElementById('verseContainer').innerHTML =
+                    '<div class="error">Não foi possível iniciar a leitura do arquivo.<br>Use a versão embutida (bibliaAveMaria.js).</div>';
+            }
         }
 
         // ========== SELETORES ==========
