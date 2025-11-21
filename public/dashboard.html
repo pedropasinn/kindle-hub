@@ -782,14 +782,14 @@
         </div>
 
         <!-- RELÓGIO PRINCIPAL -->
-        <div id="relogioContainer" class="display-container" style="cursor: pointer;" onclick="toggleDisplayMode()">
-          <div id="relogio" class="relogio">00:00</div>
+        <div id="relogioContainer" class="display-container">
+          <div id="relogio" class="relogio" style="cursor: pointer;" onclick="toggleDisplayMode()">00:00</div>
         </div>
 
         <!-- TIMER PRINCIPAL (escondido por padrão) -->
-        <div id="timerMainContainer" class="display-container hidden" style="cursor: pointer;" onclick="toggleDisplayMode()">
+        <div id="timerMainContainer" class="display-container hidden">
           <!-- Timer Circular (60 barras radiais) -->
-          <div class="timer-container-main">
+          <div class="timer-container-main" style="cursor: pointer;" onclick="toggleDisplayMode()">
             <svg class="timer-circle" viewBox="0 0 200 200">
               <!-- Barras geradas via JS -->
             </svg>
@@ -799,22 +799,22 @@
 
           <!-- Preset Buttons (aparecem quando timer parado) -->
           <div id="presetButtons" class="preset-buttons">
-            <button class="btn-preset" onclick="startPreset('5min')">5 min</button>
-            <button class="btn-preset" onclick="startPreset('10min')">10 min</button>
-            <button class="btn-preset" onclick="startPreset('30min')">30 min</button>
-            <button class="btn-preset" onclick="startPreset('2h')">2 horas</button>
+            <button class="btn-preset" onclick="event.stopPropagation(); startPreset('5min')">5 min</button>
+            <button class="btn-preset" onclick="event.stopPropagation(); startPreset('10min')">10 min</button>
+            <button class="btn-preset" onclick="event.stopPropagation(); startPreset('30min')">30 min</button>
+            <button class="btn-preset" onclick="event.stopPropagation(); startPreset('2h')">2 horas</button>
           </div>
 
           <!-- Input Manual -->
           <div id="manualInput" class="manual-input">
-            <input type="number" id="customMinutes" placeholder="Minutos" min="1" max="999">
-            <button id="btnStartCustom" class="btn-start-custom" onclick="startCustomTimer()">Iniciar</button>
+            <input type="number" id="customMinutes" placeholder="Minutos" min="1" max="999" onclick="event.stopPropagation()">
+            <button id="btnStartCustom" class="btn-start-custom" onclick="event.stopPropagation(); startCustomTimer()">Iniciar</button>
           </div>
 
           <!-- Controles (aparecem quando timer ativo) -->
           <div id="timerControls" class="timer-controls hidden">
-            <button id="btnPlayPause" class="btn-control" onclick="togglePlayPause()">▶</button>
-            <button id="btnStop" class="btn-control" onclick="stopTimerUI()">■</button>
+            <button id="btnPlayPause" class="btn-control" onclick="event.stopPropagation(); togglePlayPause()">▶</button>
+            <button id="btnStop" class="btn-control" onclick="event.stopPropagation(); stopTimerUI()">■</button>
           </div>
         </div>
 
