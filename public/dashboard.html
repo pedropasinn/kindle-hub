@@ -749,6 +749,24 @@
       background: #555;
       transform: scale(0.98);
     }
+
+    /* Ícones do Hub */
+    .icone-calendario,
+    .icone-plano,
+    .icone-anotacoes,
+    .icone-girar {
+      width: 44px;
+      height: 44px;
+      display: block;
+      transition: transform 0.2s ease;
+      border-radius: 4px;
+    }
+    .icone-calendario:hover,
+    .icone-plano:hover,
+    .icone-anotacoes:hover,
+    .icone-girar:hover {
+      transform: scale(1.1);
+    }
   </style>
   <script src="timer.js"></script>
   <script src="points-popup.js"></script>
@@ -762,56 +780,30 @@
         <button class="btn-toggle" onclick="toggleMenu()">⋮</button>
         <div class="conteudo-controles">
           <!-- Hub: Atalhos -->
-          <details open>
-            <summary style="cursor: pointer; font-weight: bold; padding: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 10px;">Hub</summary>
-            <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
-              <a href="agenda.html" style="padding: 10px; background: #fff; border: 2px solid #000; text-decoration: none; color: #000; font-weight: bold; text-align: center; border-radius: 4px;">Agenda</a>
-              <a href="plano-inclinado.html" style="padding: 10px; background: #fff; border: 2px solid #000; text-decoration: none; color: #000; font-weight: bold; text-align: center; border-radius: 4px;">Plano de Vida</a>
-              <a href="anotacoes.html" style="padding: 10px; background: #fff; border: 2px solid #000; text-decoration: none; color: #000; font-weight: bold; text-align: center; border-radius: 4px;">Anotações</a>
-            </div>
-          </details>
-
-          <!-- Configurações -->
-          <details>
-            <summary style="cursor: pointer; font-weight: bold; padding: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 10px;">Config.</summary>
-            <div style="padding: 10px;">
-          <div class="grupo-controle">
-            <label class="label-controle">
-              Tamanho do Relógio
-              <span class="valor-controle" id="valorTamanho">120px</span>
-            </label>
-            <input
-              type="range"
-              class="slider-controle"
-              id="sliderTamanho"
-              min="60"
-              max="200"
-              value="120"
-              step="10"
-              oninput="ajustarTamanho(this.value)">
+          <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <a href="agenda.html" style="padding: 8px; background: transparent; border: none; text-decoration: none; color: #000; font-weight: bold; text-align: center; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
+              <img id="iconeCalendario" class="icone-calendario" src="/icones/icone_calendario/1.png" alt="Agenda">
+            </a>
+            <a href="plano-inclinado.html" style="padding: 8px; background: transparent; border: none; text-decoration: none; color: #000; font-weight: bold; text-align: center; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
+              <img class="icone-plano" src="/icones/cruz.png" alt="Plano de Vida">
+            </a>
+            <a href="anotacoes.html" style="padding: 8px; background: transparent; border: none; text-decoration: none; color: #000; font-weight: bold; text-align: center; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
+              <img class="icone-anotacoes" src="/icones/notas.png" alt="Anotações">
+            </a>
+            <button onclick="girarTela()" style="padding: 8px; background: transparent; border: none; cursor: pointer; border-radius: 4px; display: flex; justify-content: center; align-items: center;">
+              <img class="icone-girar" src="/icones/girar.png" alt="Girar Tela">
+            </button>
           </div>
 
-          <div class="grupo-controle">
-            <label class="label-controle">Selecionar Dia</label>
-            <div class="botoes-dia">
-              <button class="btn-dia" id="btnOntem" onclick="irParaDia(-1)">Ontem</button>
-              <button class="btn-dia ativo" id="btnHoje" onclick="irParaDia(0)">Hoje</button>
-              <button class="btn-dia" id="btnAmanha" onclick="irParaDia(1)">Amanhã</button>
-            </div>
+          <!-- Controles ocultos para manter funcionalidades do sistema -->
+          <div style="display:none;">
+            <input type="range" id="sliderTamanho" min="60" max="200" value="120" step="10">
+            <input type="checkbox" id="checkMostrarEventos" checked>
+            <button class="btn-dia" id="btnOntem"></button>
+            <button class="btn-dia ativo" id="btnHoje"></button>
+            <button class="btn-dia" id="btnAmanha"></button>
+            <span class="valor-controle" id="valorTamanho">120px</span>
           </div>
-
-          <div class="grupo-controle">
-            <button class="btn-girar" id="btnRot" onclick="girarTela()">Girar 90°</button>
-          </div>
-
-          <div class="grupo-controle">
-            <div class="checkbox-container">
-              <input type="checkbox" id="checkMostrarEventos" checked onchange="toggleEventos()">
-              <label for="checkMostrarEventos">Mostrar Eventos</label>
-            </div>
-          </div>
-            </div>
-          </details>
         </div>
       </div>
 
@@ -1353,11 +1345,18 @@
             avisoTempo.textContent = diffProx + ' minutos';
           }
           avisoNome.textContent = proximoEvento.titulo;
+
+          estadoAtual += '+aviso:' + proximoEvento.titulo + ':' + diffProx;
+
+          // Abrir quando o aviso aparecer pela primeira vez (10 minutos)
+          if(estadoContadorAnterior && !estadoContadorAnterior.includes('+aviso:' + proximoEvento.titulo)){
+            deveAbrir = true;
+          }
         }
       }
 
       // Abrir se evento começou agora
-      if(estadoContadorAnterior && estadoContadorAnterior !== estadoAtual){
+      if(estadoContadorAnterior && estadoContadorAnterior !== estadoAtual && !estadoContadorAnterior.includes('+aviso:')){
         deveAbrir = true;
       }
     } else if(proximoEvento){
@@ -1388,8 +1387,8 @@
         }
         label.textContent = 'para começar';
 
-        // Abrir quando faltam 5 minutos ou menos
-        if(diff <= 5 && estadoContadorAnterior && !estadoContadorAnterior.includes('proximo:' + proximoEvento.titulo)){
+        // Abrir quando faltam 10 minutos ou menos
+        if(diff <= 10 && estadoContadorAnterior && !estadoContadorAnterior.includes('proximo:' + proximoEvento.titulo)){
           deveAbrir = true;
         }
       }
@@ -1410,7 +1409,10 @@
 
     // Abrir contador automaticamente se houver mudança importante
     if(deveAbrir && !usuarioFechouContador()){
+      console.log('Abrindo contador automaticamente. Estado atual:', estadoAtual);
       abrirContador();
+    } else if(deveAbrir && usuarioFechouContador()){
+      console.log('Contador deveria abrir, mas usuário fechou manualmente.');
     }
   }
 
@@ -1778,10 +1780,22 @@
     }
   }
 
+  // ====== ÍCONE DE CALENDÁRIO DINÂMICO ======
+  function atualizarIconeCalendario(){
+    var hoje = agoraCorrigido();
+    var diaDoMes = hoje.getDate(); // 1-31
+    var icone = document.getElementById('iconeCalendario');
+    if(icone){
+      icone.src = '/icones/icone_calendario/' + diaDoMes + '.png';
+      icone.alt = 'Agenda - Dia ' + diaDoMes;
+    }
+  }
+
   // ====== INICIALIZAÇÃO ======
   carregarPreferencias();
   carregarEventos(); // Carregar eventos do Google Calendar
   atualizar();
+  atualizarIconeCalendario(); // Atualizar ícone do calendário
 
   // Inicializa timer UI quando KindleTimer estiver disponível
   if (window.KindleTimer) {
@@ -1803,6 +1817,9 @@
 
   // Recarregar eventos a cada 5 minutos
   setInterval(carregarEventos, 300000);
+
+  // Atualizar ícone do calendário a cada minuto (para detectar mudança de dia)
+  setInterval(atualizarIconeCalendario, 60000);
   </script>
 </body>
 </html>
