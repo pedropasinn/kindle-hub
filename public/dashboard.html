@@ -172,11 +172,24 @@
       padding:20px;
     }
     .data-semana-linha{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:30px;
-      margin-bottom:12px;
+      display:table;
+      margin:0 auto 12px;
+      table-layout:fixed;
+    }
+    .data{
+      display:table-cell;
+      font-size:24px;
+      text-align:right;
+      color:#333;
+      padding-right:30px;
+      vertical-align:middle;
+    }
+    .semana{
+      display:table-cell;
+      font-size:24px;
+      color:#666;
+      text-align:left;
+      vertical-align:middle;
     }
     .relogio{
       font-family:"Courier New", monospace;
@@ -187,16 +200,6 @@
       margin-bottom:12px;
       text-align:center;
       color:#000;
-    }
-    .data{
-      font-size:24px;
-      text-align:center;
-      color:#333;
-    }
-    .semana{
-      font-size:24px;
-      color:#666;
-      text-align:center;
     }
 
     /* Eventos com rolagem */
@@ -266,75 +269,112 @@
       border-radius:4px;
     }
 
-    /* Contador de Próximo Evento */
+    /* Contador de Próximo Evento - Modelo 4: Layout Horizontal */
     .contador-evento{
       margin:20px;
-      background:#fff;
-      border:3px solid #000;
-      border-radius:8px;
-      padding:16px;
+      background:transparent;
+      border:none;
+      border-radius:0;
+      padding:0;
       position:relative;
-    }
-    .contador-titulo{
-      font-size:18px;
-      font-weight:bold;
-      margin-bottom:8px;
-      color:#000;
-      text-align:center;
-    }
-    .contador-tempo{
-      font-size:32px;
-      font-weight:bold;
-      color:#000;
-      text-align:center;
-      font-family:"Courier New", monospace;
-      margin-bottom:4px;
-    }
-    .contador-label{
-      font-size:14px;
-      color:#666;
-      text-align:center;
-    }
-    .contador-evento.atual{
-      background:#fff9e6;
-      border-color:#ffd700;
-    }
-    .contador-evento.proximo{
-      background:#f0f8ff;
-      border-color:#4682b4;
     }
     .contador-evento.oculto{
       display:none !important;
     }
     .contador-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:15px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
     }
     .contador-grid.centralizado{
-      grid-template-columns:1fr;
+      flex-direction:column;
     }
+
+    /* Card de Próximo Evento - Modelo 4 Horizontal */
     .evento-card{
-      border:none;
-      border-radius:0;
-      padding:12px;
-      background:transparent;
+      border:2px solid #999999;
+      background:#FAFAFA;
+      padding:18px 24px;
+      display:table;
+      width:100%;
+      table-layout:fixed;
     }
-    .evento-card .contador-titulo{
-      font-size:16px;
+
+    .evento-time-section{
+      display:table-cell;
+      width:140px;
+      text-align:center;
+      padding-right:24px;
+      border-right:2px solid #DDDDDD;
+      vertical-align:middle;
     }
-    .evento-card .contador-tempo{
+
+    .contador-tempo{
+      font-size:42px;
+      font-weight:300;
+      line-height:1;
+      color:#000000;
+    }
+
+    .contador-label{
+      font-size:11px;
+      color:#999999;
+      text-transform:uppercase;
+      margin-top:6px;
+      letter-spacing:0.5px;
+    }
+
+    .evento-info{
+      display:table-cell;
+      padding-left:24px;
+      vertical-align:middle;
+    }
+
+    .contador-titulo{
       font-size:28px;
+      font-weight:600;
+      color:#000000;
+      margin-bottom:4px;
     }
-    .evento-card .contador-label{
-      font-size:13px;
+
+    .contador-subtitle{
+      font-size:14px;
+      color:#666666;
     }
+
+    /* Variações para evento atual (borda preta e fundo branco) */
     #eventoAtualCard{
-      background:transparent;
+      border:2px solid #999999;
+      background:#FFFFFF;
     }
+
+    /* Próximo evento mantém estilo padrão */
     #eventoProximoCard{
-      background:transparent;
+      border:2px solid #999999;
+      background:#FAFAFA;
     }
+
+    /* Aviso de próximo evento se aproximando */
+    .proximo-evento-aviso{
+      position:absolute;
+      bottom:3px;
+      right:3px;
+      padding:8px 12px;
+      border-radius:4px;
+      font-size:12px;
+      font-weight:500;
+      display:none;
+      max-width:300px;
+      line-height:1.4;
+    }
+    .proximo-evento-aviso.visivel{
+      display:block;
+    }
+    .proximo-evento-aviso-tempo{
+      font-weight:600;
+      color:#333333;
+    }
+
     .btn-fechar-contador{
       position:absolute;
       top:8px;
@@ -828,20 +868,35 @@
       <div id="contadorEvento" class="contador-evento">
         <button id="btnFecharContador" class="btn-fechar-contador" title="Fechar" onclick="fecharContador()">×</button>
 
+        <!-- Aviso de próximo evento se aproximando -->
+        <div id="proximoEventoAviso" class="proximo-evento-aviso">
+          <span class="proximo-evento-aviso-tempo" id="avisoTempo"></span> para <span id="avisoNome"></span>
+        </div>
+
         <!-- Container com grid para 2 eventos -->
         <div id="contadorGrid" class="contador-grid">
-          <!-- Evento Atual (esquerda) -->
+          <!-- Evento Atual -->
           <div id="eventoAtualCard" class="evento-card" style="display: none;">
-            <div class="contador-titulo" id="contadorTitulo">—</div>
-            <div class="contador-tempo" id="contadorTempo">—</div>
-            <div class="contador-label" id="contadorLabel">—</div>
+            <div class="evento-time-section">
+              <div class="contador-tempo" id="contadorTempo">—</div>
+              <div class="contador-label" id="contadorLabel">—</div>
+            </div>
+            <div class="evento-info">
+              <div class="contador-titulo" id="contadorTitulo">—</div>
+              <div class="contador-subtitle">—</div>
+            </div>
           </div>
 
-          <!-- Próximo Evento (direita) -->
+          <!-- Próximo Evento -->
           <div id="eventoProximoCard" class="evento-card" style="display: none;">
-            <div class="contador-titulo" id="contadorTituloProximo">—</div>
-            <div class="contador-tempo" id="contadorTempoProximo">—</div>
-            <div class="contador-label" id="contadorLabelProximo">—</div>
+            <div class="evento-time-section">
+              <div class="contador-tempo" id="contadorTempoProximo">—</div>
+              <div class="contador-label" id="contadorLabelProximo">—</div>
+            </div>
+            <div class="evento-info">
+              <div class="contador-titulo" id="contadorTituloProximo">—</div>
+              <div class="contador-subtitle">—</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1228,9 +1283,9 @@
     var titulo = document.getElementById('contadorTitulo');
     var tempo = document.getElementById('contadorTempo');
     var label = document.getElementById('contadorLabel');
-    var tituloProximo = document.getElementById('contadorTituloProximo');
-    var tempoProximo = document.getElementById('contadorTempoProximo');
-    var labelProximo = document.getElementById('contadorLabelProximo');
+    var avisoProximo = document.getElementById('proximoEventoAviso');
+    var avisoTempo = document.getElementById('avisoTempo');
+    var avisoNome = document.getElementById('avisoNome');
 
     var estadoAtual = null;
     var deveAbrir = false;
@@ -1239,12 +1294,30 @@
     eventoAtualCard.style.display = 'none';
     eventoProximoCard.style.display = 'none';
     contadorGrid.classList.remove('centralizado');
+    avisoProximo.classList.remove('visivel');
+
+    // Função auxiliar para calcular duração do evento
+    function calcularDuracao(inicio, fim){
+      var inicioMin = minutos(inicio);
+      var fimMin = minutos(fim);
+      var duracao = fimMin - inicioMin;
+      return duracao + 'min';
+    }
+
+    // Função auxiliar para obter o subtítulo do evento (horário e duração)
+    function getSubtituloEvento(evento){
+      return evento.inicio + ' - ' + evento.fim + ' (' + calcularDuracao(evento.inicio, evento.fim) + ')';
+    }
+
+    var subtituloAtual = document.querySelector('#eventoAtualCard .contador-subtitle');
 
     if(eventoAtual){
       // Mostrar evento atual
       setEstadoContador('atual');
-      eventoAtualCard.style.display = 'block';
+      contadorGrid.classList.add('centralizado');
+      eventoAtualCard.style.display = 'table';
       titulo.textContent = eventoAtual.titulo;
+      subtituloAtual.textContent = getSubtituloEvento(eventoAtual);
 
       var fimMin = minutos(eventoAtual.fim);
       var diff = fimMin - agora;
@@ -1266,21 +1339,21 @@
         label.textContent = 'para terminar';
       }
 
-      // Se há próximo evento nos próximos 5 minutos, mostrar também
-      if(proximoDentro5Min){
-        eventoProximoCard.style.display = 'block';
-        tituloProximo.textContent = proximoDentro5Min.titulo;
-
-        var inicioMinProx = minutos(proximoDentro5Min.inicio);
+      // Verificar se há próximo evento nos próximos 10 minutos
+      if(proximoEvento){
+        var inicioMinProx = minutos(proximoEvento.inicio);
         var diffProx = inicioMinProx - agora;
 
-        tempoProximo.textContent = diffProx + ' min';
-        labelProximo.textContent = 'para começar';
-
-        estadoAtual += '+proximo:' + proximoDentro5Min.titulo;
-      } else {
-        // Se não há próximo evento em 5 min, centralizar o evento atual
-        contadorGrid.classList.add('centralizado');
+        if(diffProx <= 10 && diffProx > 0){
+          // Mostrar aviso
+          avisoProximo.classList.add('visivel');
+          if(diffProx === 1){
+            avisoTempo.textContent = '1 minuto';
+          } else {
+            avisoTempo.textContent = diffProx + ' minutos';
+          }
+          avisoNome.textContent = proximoEvento.titulo;
+        }
       }
 
       // Abrir se evento começou agora
@@ -1291,8 +1364,9 @@
       // Apenas próximo evento - centralizar sempre
       setEstadoContador('proximo');
       contadorGrid.classList.add('centralizado');
-      eventoProximoCard.style.display = 'block';
-      tituloProximo.textContent = proximoEvento.titulo;
+      eventoAtualCard.style.display = 'table';
+      titulo.textContent = proximoEvento.titulo;
+      subtituloAtual.textContent = getSubtituloEvento(proximoEvento);
 
       var inicioMin = minutos(proximoEvento.inicio);
       var diff = inicioMin - agora;
@@ -1300,19 +1374,19 @@
       estadoAtual = 'proximo:' + proximoEvento.titulo;
 
       if(diff <= 0){
-        tempoProximo.textContent = 'Começando...';
-        labelProximo.textContent = '';
+        tempo.textContent = 'Começando...';
+        label.textContent = '';
         deveAbrir = true;
       } else {
         var horas = Math.floor(diff / 60);
         var mins = diff % 60;
 
         if(horas > 0){
-          tempoProximo.textContent = horas + 'h ' + mins + 'min';
+          tempo.textContent = horas + 'h ' + mins + 'min';
         } else {
-          tempoProximo.textContent = mins + ' min';
+          tempo.textContent = mins + ' min';
         }
-        labelProximo.textContent = 'para começar';
+        label.textContent = 'para começar';
 
         // Abrir quando faltam 5 minutos ou menos
         if(diff <= 5 && estadoContadorAnterior && !estadoContadorAnterior.includes('proximo:' + proximoEvento.titulo)){
