@@ -703,6 +703,133 @@ app.post('/api/notion/annotations', async (req, res) => {
   }
 });
 
+// Endpoint PUT para atualizar anotação existente
+app.put('/api/notion/annotations/:id', async (req, res) => {
+  if (!notionClient) {
+    return res.status(500).json({ error: 'Notion não configurado' });
+  }
+
+  try {
+    const { id } = req.params;
+    const { title, content, tags } = req.body;
+    const notionToken = process.env.NOTION_TOKEN || fs.readFileSync(path.join(__dirname, 'notion-token.txt'), 'utf8').trim();
+
+    // 1. Atualizar propriedades da página (título e tags)
+    const updatePropsResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${notionToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        properties: {
+          Nome: {
+            title: [{ text: { content: title || 'Sem título' } }]
+          },
+          Pasta: {
+            multi_select: tags ? tags.map(tag => ({ name: tag })) : []
+          }
+        }
+      })
+    });
+
+    if (!updatePropsResponse.ok) {
+      const errorData = await updatePropsResponse.json();
+      throw new Error(`Notion API error: ${updatePropsResponse.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    // 2. Buscar blocos existentes para deletar
+    const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${id}/children`, {
+      headers: {
+        'Authorization': `Bearer ${notionToken}`,
+        'Notion-Version': '2022-06-28'
+      }
+    });
+
+    if (blocksResponse.ok) {
+      const blocks = await blocksResponse.json();
+
+      // 3. Deletar blocos antigos
+      for (const block of blocks.results) {
+        await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${notionToken}`,
+            'Notion-Version': '2022-06-28'
+          }
+        });
+      }
+    }
+
+    // 4. Adicionar novo conteúdo
+    if (content) {
+      const appendResponse = await fetch(`https://api.notion.com/v1/blocks/${id}/children`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${notionToken}`,
+          'Notion-Version': '2022-06-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          children: [{
+            object: 'block',
+            type: 'paragraph',
+            paragraph: {
+              rich_text: [{ text: { content } }]
+            }
+          }]
+        })
+      });
+
+      if (!appendResponse.ok) {
+        const errorData = await appendResponse.json();
+        console.warn('Erro ao atualizar conteúdo:', errorData);
+      }
+    }
+
+    res.json({ success: true, pageId: id });
+  } catch (error) {
+    console.error('Erro ao atualizar anotação:', error);
+    res.status(500).json({ error: 'Erro ao atualizar anotação no Notion' });
+  }
+});
+
+// Endpoint DELETE para excluir (arquivar) anotação
+app.delete('/api/notion/annotations/:id', async (req, res) => {
+  if (!notionClient) {
+    return res.status(500).json({ error: 'Notion não configurado' });
+  }
+
+  try {
+    const { id } = req.params;
+    const notionToken = process.env.NOTION_TOKEN || fs.readFileSync(path.join(__dirname, 'notion-token.txt'), 'utf8').trim();
+
+    // Arquivar a página no Notion (não deleta permanentemente)
+    const response = await fetch(`https://api.notion.com/v1/pages/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${notionToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        archived: true
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Notion API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    res.json({ success: true, message: 'Anotação arquivada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir anotação:', error);
+    res.status(500).json({ error: 'Erro ao excluir anotação no Notion' });
+  }
+});
+
 // ============= ROTA DA API DE PONTOS (CAMINHO/SULCO/FORJA) =============
 app.get('/api/escriva/random-point', async (req, res) => {
   try {

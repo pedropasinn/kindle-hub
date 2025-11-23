@@ -3,395 +3,662 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anotações - Hub Kindle</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="timer.js"></script>
-    <script src="points-popup.js"></script>
+    <title>Kindle Notes App</title>
+    <!-- Phosphor Icons: Biblioteca de ícones leve e nítida, ideal para simular o design e-ink -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
-        .anotacoes-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
+        /* --- RESET & VARIÁVEIS --- */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #000000;
+            --font-main: Helvetica, Arial, sans-serif; /* Fontes sem serifa limpas para legibilidade em e-ink */
+            --radius: 12px;
+            --spacing: 16px;
         }
 
-        .tags-filter {
-            margin: 20px 0;
-            padding: 15px;
-            border: 2px solid #000;
-            background: #f5f5f5;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        .tags-filter h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        .tags-grid {
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden; /* Comportamento de App */
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+        }
+
+        /* --- UTILITÁRIOS --- */
+        .hidden { display: none !important; }
+        .flex { display: flex; align-items: center; }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+        }
+        
+        /* --- CABEÇALHO GERAL --- */
+        header {
+            padding: var(--spacing);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid transparent; 
+        }
+        header h1 { font-size: 30px; font-weight: bold; }
+
+        /* --- TELA 1: LISTA (HOME) --- */
+        #screen-list {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Container unificado para Busca e Filtros */
+        .search-and-filter {
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Espaço entre a busca e os botões */
+            padding: 0 var(--spacing);
+            margin-bottom: 16px;
+        }
+
+        .search-bar {
+            flex: 1; /* Ocupa o espaço restante */
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 16px; /* Ajuste leve para alinhar visualmente com os botões */
+            display: flex;
+            align-items: center;
             gap: 8px;
+            height: 42px; /* Altura fixa para garantir alinhamento */
         }
-
-        .tag-btn {
-            padding: 8px 16px;
-            background: #fff;
-            border: 2px solid #000;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .tag-btn:hover {
-            background: #e8e8e8;
-        }
-
-        .tag-btn.active {
-            background: #000;
-            color: #fff;
-        }
-
-        .actions-bar {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 12px 24px;
-            background: #fff;
-            border: 3px solid #000;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .action-btn:hover {
-            background: #f0f0f0;
-        }
-
-        .annotations-list {
-            margin: 20px 0;
-        }
-
-        .annotation-item {
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #000;
-            background: #fff;
-            cursor: pointer;
-        }
-
-        .annotation-item:hover {
-            background: #f5f5f5;
-        }
-
-        .annotation-title {
+        .search-bar input {
+            border: none;
+            outline: none;
+            width: 100%;
             font-size: 18px;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0; /* Impede que os botões encolham */
+        }
+        
+        .dropdown-btn {
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0 14px;
+            background: white;
+            font-size: 16px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-family: inherit;
+            cursor: pointer;
+            height: 42px; /* Mesma altura da busca */
+            white-space: nowrap;
+            position: relative; /* Para posicionar o dropdown */
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px); /* Abaixo do botão */
+            right: 0;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 12px;
+            box-shadow: 4px 4px 0px #000;
+            z-index: 10;
+            padding: 8px;
+            width: 200px;
+        }
+
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .refresh-btn {
+            border: 2px solid black;
+            border-radius: 50%;
+            width: 42px; /* Mesma altura da busca */
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Chips de navegação horizontal */
+        .chips-scroller {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 0 var(--spacing) 16px var(--spacing);
+            scrollbar-width: none; /* Firefox */
+            border-bottom: 1px solid #ccc;
+        }
+        .chips-scroller::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        
+        .chip {
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 18px;
             font-weight: bold;
+            font-size: 15px;
+            white-space: nowrap;
+            background: white;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .chip.active {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        /* Lista de Notas */
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 var(--spacing);
+        }
+        .note-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #999;
+            cursor: pointer;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
         }
-
-        .annotation-tags {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .annotation-tag {
+        .note-title { font-weight: bold; font-size: 20px; }
+        .note-tag {
+            border: 2px solid #666;
+            border-radius: 14px;
             padding: 4px 10px;
-            background: #e8e8e8;
-            border: 1px solid #666;
             font-size: 12px;
+            font-weight: bold;
+            color: #444;
         }
-
-        .annotation-date {
-            font-size: 12px;
+        .note-preview {
+            font-size: 16px;
+            line-height: 1.4;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+        .note-date {
+            text-align: right;
+            font-size: 14px;
             color: #666;
-            margin-top: 8px;
         }
 
-        /* Modal */
-        .modal {
-            display: none;
+        /* --- TELA 2: MODAL (POPUP) --- */
+        .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0, 0.5); /* Fundo escurecido para contraste */
+            backdrop-filter: grayscale(1); /* Ajuda na simulação e-ink */
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-window {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
+            max-width: 500px; /* Limite de largura para telas maiores */
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 6px 6px 0px #000; /* Sombra sólida estilo e-ink */
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 2px solid #000;
+            background: #f4f4f4; /* Leve destaque no header */
+            border-radius: 14px 14px 0 0;
+        }
+        .modal-header h2 { font-size: 20px; font-weight: bold; }
+        
+        .modal-body {
             padding: 20px;
             overflow-y: auto;
-        }
-
-        .modal-content {
-            background: #fff;
-            border: 3px solid #000;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 30px;
-        }
-
-        .modal-header {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin: 20px 0;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #000;
-            font-size: 16px;
-            font-family: Arial, sans-serif;
-        }
-
-        .form-group textarea {
-            min-height: 200px;
-            resize: vertical;
-        }
-
-        .form-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: 2px solid #000;
-            background: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .btn:hover {
-            background: #f0f0f0;
-        }
-
-        .btn-primary {
-            background: #000;
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #333;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
             font-size: 18px;
-            color: #666;
+            line-height: 1.5;
+            text-align: justify;
+            flex: 1;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
+        /* --- TELA 3: EDITOR (FULL SCREEN) --- */
+        #screen-editor {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: white;
+        }
+        
+        #screen-editor header {
+            border-bottom: 2px solid #000;
+            padding: 12px 16px;
         }
 
-        .empty-state h3 {
+        .editor-content {
+            flex: 1;
+            padding: 20px;
             font-size: 20px;
-            margin-bottom: 10px;
+            line-height: 1.6;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: var(--font-main);
+            color: #000;
         }
 
-        .status-message {
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid;
-            font-weight: bold;
+        /* Ajustes Mobile */
+        @media (max-width: 400px) {
+            /* Ajuste para telas muito estreitas na barra de busca */
+            .dropdown-btn span { display: none; } /* Esconde o texto "Ordenar" se ficar muito apertado */
+            .dropdown-btn { padding: 0 10px; }
         }
 
-        .status-success {
-            background: #d4edda;
-            border-color: #28a745;
-            color: #155724;
-        }
-
-        .status-error {
-            background: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
-        }
     </style>
 </head>
 <body>
-    <div class="page-container">
-        <div class="header">
-            <h1>Anotações do Notion</h1>
-            <a href="dashboard.html" class="back-link" style="display: inline-flex; align-items: center;">
-                <img src="/icones/casa.png" alt="Home" style="width: 24px; height: 24px;">
-            </a>
+
+    <!-- === TELA 1: LISTA === -->
+    <div id="screen-list">
+        <header>
+            <div class="flex" style="gap:16px">
+                <a href="dashboard.html" style="display:flex;align-items:center;">
+                    <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
+                </a>
+                <a href="plano-inclinado.html" style="display:flex;align-items:center;">
+                    <img src="/icones/cruz.png" alt="Plano inclinado" style="width:40px;height:40px;">
+                </a>
+            </div>
+            <h1>Anotações</h1>
+            <div style="width: 70px"></div> <!-- Espaçador visual -->
+        </header>
+
+        <!-- Busca e Ações na mesma linha -->
+        <div class="search-and-filter">
+            <div class="search-bar">
+                <i class="ph ph-magnifying-glass" style="font-size: 20px;"></i>
+                <input type="text" placeholder="Buscar">
+            </div>
+
+            <div class="action-buttons">
+                <div style="position: relative;"> <!-- Wrapper para o botão e menu -->
+                    <button class="dropdown-btn">
+                        <span>Ordenar</span> <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div id="sort-menu" class="dropdown-menu hidden">
+                        <button data-sort="recent">Mais Recentes</button>
+                        <button data-sort="oldest">Mais Antigas</button>
+                        <button data-sort="alpha-az">Ordem Alfabética (A-Z)</button>
+                        <button data-sort="alpha-za">Ordem Alfabética (Z-A)</button>
+                    </div>
+                </div>
+                <button class="icon-btn refresh-btn">
+                    <i class="ph ph-arrows-clockwise" style="font-size: 20px;"></i>
+                </button>
+                <button class="icon-btn refresh-btn" onclick="createNewNote()">
+                    <i class="ph ph-plus" style="font-size: 20px;"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="anotacoes-container">
-            <!-- Filtro por Tags -->
-            <div class="tags-filter">
-                <h3>Filtrar por Categoria:</h3>
-                <div class="tags-grid">
-                    <button class="tag-btn active" onclick="filterByTag(null)">Todas</button>
-                    <button class="tag-btn" onclick="filterByTag('Círculo')">Círculo</button>
-                    <button class="tag-btn" onclick="filterByTag('Direção')">Direção</button>
-                    <button class="tag-btn" onclick="filterByTag('B10')">B10</button>
-                    <button class="tag-btn" onclick="filterByTag('Aula de doutrina')">Aula de doutrina</button>
-                    <button class="tag-btn" onclick="filterByTag('Dia de Turno')">Dia de Turno</button>
-                    <button class="tag-btn" onclick="filterByTag('Oração Mental')">Oração Mental</button>
-                    <button class="tag-btn" onclick="filterByTag('Confissão')">Confissão</button>
-                    <button class="tag-btn" onclick="filterByTag('Recolhimento')">Recolhimento</button>
-                    <button class="tag-btn" onclick="filterByTag('Curso Anual')">Curso Anual</button>
-                    <button class="tag-btn" onclick="filterByTag('Retiro')">Retiro</button>
-                </div>
-            </div>
+        <!-- Categorias (Chips) -->
+        <div class="chips-scroller">
+            <!-- Os chips serão gerados dinamicamente pelo JavaScript -->
+        </div>
 
-            <!-- Ações -->
-            <div class="actions-bar">
-                <button class="action-btn" onclick="openNewAnnotationModal()">+ Nova Anotação</button>
-                <button class="action-btn" onclick="loadAnnotations()">🔄 Atualizar</button>
-            </div>
-
-            <!-- Status Message -->
-            <div id="statusMessage"></div>
-
-            <!-- Loading -->
-            <div id="loadingMessage" class="loading" style="display: none;">
-                Carregando anotações do Notion...
-            </div>
-
-            <!-- Lista de Anotações -->
-            <div id="annotationsList" class="annotations-list"></div>
+        <!-- Lista -->
+        <div class="notes-list">
+            <!-- As anotações serão carregadas dinamicamente do Notion -->
         </div>
     </div>
 
-    <!-- Modal de Nova/Editar Anotação -->
-    <div id="annotationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Nova Anotação</div>
-
-            <form id="annotationForm" onsubmit="saveAnnotation(event)">
-                <div class="form-group">
-                    <label for="annotationTitle">Título *</label>
-                    <input type="text" id="annotationTitle" required placeholder="Título da anotação">
-                </div>
-
-                <div class="form-group">
-                    <label for="annotationContent">Conteúdo</label>
-                    <textarea id="annotationContent" placeholder="Escreva sua anotação aqui..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="annotationTags">Categoria *</label>
-                    <select id="annotationTags" required>
-                        <option value="">Selecione uma categoria</option>
-                        <option value="Círculo">Círculo</option>
-                        <option value="Direção">Direção</option>
-                        <option value="B10">B10</option>
-                        <option value="Aula de doutrina">Aula de doutrina</option>
-                        <option value="Dia de Turno">Dia de Turno</option>
-                        <option value="Oração Mental">Oração Mental</option>
-                        <option value="Confissão">Confissão</option>
-                        <option value="Recolhimento">Recolhimento</option>
-                        <option value="Curso Anual">Curso Anual</option>
-                        <option value="Retiro">Retiro</option>
-                    </select>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar no Notion</button>
-                </div>
-            </form>
+    <!-- === TELA 2: MODAL (Overlay) === -->
+    <div id="modal-view" class="modal-overlay hidden" onclick="closeModal(event)">
+        <div class="modal-window" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="icon-btn" onclick="openEditor()">
+                    <i class="ph ph-pencil-simple" style="font-size: 28px;"></i>
+                </button>
+                <h2>Pequeno tirano</h2>
+                <button class="icon-btn" onclick="deleteAnnotation()">
+                    <i class="ph ph-trash" style="font-size: 28px;"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Pequeno Tirano... Criança vai tacando pedras pela rua, até que quebra uma janela... decide não contar, com medo. Mas, como bom era o pai, se tivesse contato o pai pagaria sem pestanejar iria levar o menino para casa explica-lo do mal que tinha cometido e de como estava feliz dele ter assumido a culpa, ficaria feliz por ver seu pai feliz. Mas, ele não contou... deixou tudo para trás, inclusive a janela, ela ficou ali, quebrada... nunca souberam quem foi, nunca foi encontrado o culpado. O menino agora é um infame quebrador de janelas um verdadeiro detona ralph.</p>
+                <br>
+                <p>Não há como deixar as janelas da nossa vida quebradas, estamos deixando os outros passando frio pela brisas geladas que entram em suas vidas conta dos nossos erros. O mal entra por estas janelas, tanto na nossa casa quanto na dos outros. Precisamos blindar nossas janelas? É mais fácil blindar a janela de todas as pessoas? Ou conter os infames atiradores de pedras?</p>
+            </div>
         </div>
+    </div>
+
+    <!-- === TELA 3: EDITOR === -->
+    <div id="screen-editor" class="hidden">
+        <header>
+            <button class="icon-btn" onclick="closeEditor()">
+                <i class="ph ph-arrow-left" style="font-weight: bold; font-size: 32px;"></i>
+            </button>
+            <div class="flex" style="align-items: center; gap: 8px;">
+                <input type="text" id="editor-title-input" style="font-size: 22px; font-weight:bold; border: none; outline: none; background: transparent; flex: 1; min-width: 0;" value="Pequeno tirano">
+                <button class="icon-btn" onclick="toggleTitleEdit()" style="padding: 4px;">
+                    <i class="ph ph-pencil-simple" style="font-size: 20px;"></i>
+                </button>
+            </div>
+            <button class="icon-btn" onclick="saveAndClose()">
+                <i class="ph ph-floppy-disk" style="font-size: 32px;"></i>
+            </button>
+        </header>
+
+        <textarea class="editor-content">Pequeno Tirano... Criança vai tacando pedras pela rua, até que quebra uma janela... decide não contar, com medo. Mas, como bom era o pai, se tivesse contato o pai pagaria sem pestanejar iria levar o menino para casa explica-lo do mal que tinha cometido e de como estava feliz dele ter assumido a culpa, ficaria feliz por ver seu pai feliz. Mas, ele não contou... deixou tudo para trás, inclusive a janela, ela ficou ali, quebrada... nunca souberam quem foi, nunca foi encontrado o culpado. O menino agora é um infame quebrador de janelas um verdadeiro detona ralph. Não há como deixar as janelas da nossa vida quebradas, estamos deixando os outros passando frio pela brisas geladas que entram em suas vidas conta dos nossos erros. O mal entra por estas janelas, tanto na nossa casa quanto na dos outros. Precisamos blindar nossas janelas? É mais fácil blindar a janela de todas as pessoas? Ou conter os infames atiradores de pedras? Ficamos tentados vendo pedras pelo caminho... mas com a vontade fortalecida e o pensamento no amor do pai por nós torna nada razoável jogar uma Pedra por ai. # O Pequeno Tirano Era uma vez um menino que</textarea>
     </div>
 
     <script>
+        // ============= CONFIGURAÇÃO =============
+        const CATEGORIES = [
+            'Círculo', 'Direção', 'B10', 'Aula de doutrina', 'Dia de Turno',
+            'Oração Mental', 'Confissão', 'Recolhimento', 'Curso Anual', 'Retiro'
+        ];
+
+        // ============= ELEMENTOS =============
+        const screenList = document.getElementById('screen-list');
+        const modalView = document.getElementById('modal-view');
+        const screenEditor = document.getElementById('screen-editor');
+        const notesList = document.querySelector('.notes-list');
+        const searchInput = document.querySelector('.search-bar input');
+        const refreshBtn = document.querySelector('.refresh-btn');
+        const chips = document.querySelectorAll('.chip');
+        const sortBtn = document.querySelector('.dropdown-btn');
+        const sortMenu = document.getElementById('sort-menu');
+
+        // ============= ESTADO GLOBAL =============
         let allAnnotations = [];
         let currentFilter = null;
+        let currentQuery = '';
+        let currentAnnotation = null;
+        let currentSort = 'recent'; // 'recent', 'oldest', 'alpha-az', 'alpha-za'
 
-        // Mostrar mensagem de status
-        function showStatus(message, type = 'success') {
-            const statusEl = document.getElementById('statusMessage');
-            statusEl.className = `status-message status-${type}`;
-            statusEl.textContent = message;
-            statusEl.style.display = 'block';
 
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 5000);
+        // ============= FUNÇÕES AUXILIARES =============
+        function formatDate(dateString) {
+            if (!dateString) return 'Data desconhecida';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
         }
 
-        // Filtrar por tag
-        function filterByTag(tag) {
-            currentFilter = tag;
+        function extractPreview(content) {
+            if (!content) return 'Sem conteúdo disponível';
 
-            // Atualizar botões ativos
-            document.querySelectorAll('.tag-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
+            // Se content é um objeto, tentar extrair texto
+            if (typeof content === 'object') {
+                content = JSON.stringify(content);
+            }
 
-            // Renderizar lista filtrada
-            renderAnnotations();
+            // Converter para string se não for
+            content = String(content);
+
+            // Remover tags HTML
+            let text = content.replace(/<[^>]*>/g, '');
+
+            // Remover marcações markdown
+            text = text.replace(/\*\*/g, ''); // negrito
+            text = text.replace(/\*/g, ''); // itálico
+            text = text.replace(/__/g, ''); // sublinhado
+            text = text.replace(/>/g, ''); // citações
+            text = text.replace(/^-\s/gm, ''); // listas
+            text = text.replace(/^#\s/gm, ''); // títulos
+
+            // Limpar espaços extras
+            text = text.replace(/\s+/g, ' ').trim();
+
+            // Se ainda estiver vazio após limpeza
+            if (!text || text.length === 0) {
+                return 'Sem conteúdo disponível';
+            }
+
+            return text.substring(0, 150);
         }
 
-        // Abrir modal de nova anotação
-        function openNewAnnotationModal() {
-            document.getElementById('annotationModal').style.display = 'block';
-            document.getElementById('annotationForm').reset();
-            document.querySelector('.modal-header').textContent = 'Nova Anotação';
+        // ============= CARREGAMENTO DE DADOS =============
+        async function loadAnnotations() {
+            try {
+                notesList.innerHTML = '<div style="text-align:center;padding:30px;color:#666;">Carregando...</div>';
+
+                const response = await fetch('/api/notion/annotations');
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${await response.text()}`);
+                }
+
+                const data = await response.json();
+                allAnnotations = Array.isArray(data) ? data : [];
+                renderAnnotations();
+            } catch (err) {
+                console.error('Erro ao carregar anotações:', err);
+                notesList.innerHTML = `
+                    <div style="text-align:center;padding:30px;color:#666;">
+                        <p>Erro ao carregar anotações</p>
+                        <p style="font-size:12px;margin-top:8px;">${err.message}</p>
+                    </div>
+                `;
+            }
         }
 
-        // Fechar modal
-        function closeModal() {
-            document.getElementById('annotationModal').style.display = 'none';
+        function renderAnnotations() {
+            // 1. Filtrar
+            let filtered = currentFilter
+                ? allAnnotations.filter(a => (a.tags || []).includes(currentFilter))
+                : [...allAnnotations]; // Usar uma cópia para não alterar o original
 
-            // Reabilitar campos
-            document.getElementById('annotationTitle').disabled = false;
-            document.getElementById('annotationContent').disabled = false;
-            document.getElementById('annotationTags').disabled = false;
+            // 2. Buscar
+            if (currentQuery) {
+                filtered = filtered.filter(a => {
+                    const t = (a.title || '').toLowerCase();
+                    const c = (a.content || '').toLowerCase();
+                    return t.includes(currentQuery) || c.includes(currentQuery);
+                });
+            }
+            
+            // 3. Ordenar
+            sortAnnotations(filtered);
 
-            // Mostrar botão de salvar novamente
-            document.querySelector('.btn-primary').style.display = 'inline-block';
-        }
 
-        // Salvar anotação no Notion
-        async function saveAnnotation(event) {
-            event.preventDefault();
-
-            const title = document.getElementById('annotationTitle').value;
-            const content = document.getElementById('annotationContent').value;
-            const tag = document.getElementById('annotationTags').value;
-
-            if (!title || !tag) {
-                alert('Por favor, preencha o título e selecione uma categoria.');
+            if (filtered.length === 0) {
+                notesList.innerHTML = `
+                    <div style="text-align:center;padding:50px;color:#666;">
+                        <h3 style="margin:0 0 8px 0;font-size:20px;color:#333;">Nenhuma anotação encontrada</h3>
+                        <p>Crie uma anotação ou ajuste o filtro</p>
+                    </div>
+                `;
                 return;
             }
 
+            notesList.innerHTML = filtered.map(a => {
+                const title = a.title || 'Sem título';
+                const tags = a.tags || [];
+                const primaryTag = tags[0] || 'Sem categoria';
+                const date = formatDate(a.createdTime);
+                const preview = extractPreview(a.content);
+
+                // Debug: verificar o que está vindo
+                console.log('Anotação:', { title, content: a.content, preview });
+
+                return `
+                    <div class="note-item" onclick="openAnnotation('${a.id}')">
+                        <div class="note-header">
+                            <span class="note-title">${title}</span>
+                            <span class="note-tag">${primaryTag}</span>
+                        </div>
+                        <div class="note-preview">${preview}</div>
+                        <div class="note-date">${date}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============= ORDENAÇÃO, BUSCA E FILTROS =============
+         function sortAnnotations(array) {
+            switch (currentSort) {
+                case 'recent':
+                    array.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+                    break;
+                case 'oldest':
+                    array.sort((a, b) => new Date(a.createdTime) - new Date(b.createdTime));
+                    break;
+                case 'alpha-az':
+                    array.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+                    break;
+                case 'alpha-za':
+                    array.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+                    break;
+            }
+        }
+        function onSearchChange() {
+            currentQuery = searchInput.value.trim().toLowerCase();
+            renderAnnotations();
+        }
+
+        function filterByTag(tag, btnEl) {
+            // Primeiro, remove 'active' de todos os chips
+            const allChips = document.querySelectorAll('.chips-scroller .chip');
+            allChips.forEach(chip => chip.classList.remove('active'));
+
+            // Se um botão foi clicado, adiciona 'active' a ele
+            if (btnEl) {
+                btnEl.classList.add('active');
+            }
+            
+            currentFilter = tag || null;
+            renderAnnotations();
+        }
+
+
+        // ============= ABRIR ANOTAÇÃO =============
+        async function openAnnotation(annotationId) {
             try {
-                const response = await fetch('/api/notion/annotations', {
-                    method: 'POST',
+                const response = await fetch(`/api/notion/annotations/${annotationId}`);
+                if (!response.ok) throw new Error('Erro ao carregar anotação');
+
+                const annotation = await response.json();
+                currentAnnotation = annotation;
+
+                // Atualizar modal com os dados
+                const modalTitle = modalView.querySelector('.modal-header h2');
+                const modalBody = modalView.querySelector('.modal-body');
+
+                modalTitle.textContent = annotation.title || 'Sem título';
+                modalBody.innerHTML = `<p>${annotation.content || 'Sem conteúdo'}</p>`;
+
+                // Abrir modal
+                modalView.classList.remove('hidden');
+            } catch (err) {
+                console.error('Erro ao abrir anotação:', err);
+                alert('Erro ao carregar anotação');
+            }
+        }
+
+        // ============= NAVEGAÇÃO =============
+        function openModal() {
+            modalView.classList.remove('hidden');
+        }
+
+        function closeModal(event) {
+            if (event && event.target === modalView) {
+                modalView.classList.add('hidden');
+            }
+        }
+
+        function openEditor() {
+            if (!currentAnnotation) return;
+
+            // Preencher editor
+            const editorTitleInput = document.getElementById('editor-title-input');
+            const editorTextarea = screenEditor.querySelector('.editor-content');
+
+            editorTitleInput.value = currentAnnotation.title || 'Sem título';
+            editorTitleInput.disabled = true; // Começa desabilitado
+            editorTextarea.value = currentAnnotation.content || '';
+
+            // Navegar para o editor
+            modalView.classList.add('hidden');
+            screenList.classList.add('hidden');
+            screenEditor.classList.remove('hidden');
+        }
+
+        function toggleTitleEdit() {
+            const editorTitleInput = document.getElementById('editor-title-input');
+            editorTitleInput.disabled = !editorTitleInput.disabled;
+
+            if (!editorTitleInput.disabled) {
+                editorTitleInput.focus();
+                editorTitleInput.select();
+            }
+        }
+
+        function closeEditor() {
+            // Simplesmente volta sem salvar
+            screenEditor.classList.add('hidden');
+            screenList.classList.remove('hidden');
+            openModal();
+        }
+
+        async function saveAndClose() {
+            if (!currentAnnotation) return;
+
+            try {
+                const editorTitleInput = document.getElementById('editor-title-input');
+                const editorTextarea = screenEditor.querySelector('.editor-content');
+                const title = editorTitleInput.value.trim() || 'Sem título';
+                const content = editorTextarea.value;
+
+                const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        title,
-                        content,
-                        tags: [tag]
+                        title: title,
+                        content: content,
+                        tags: currentAnnotation.tags || []
                     })
                 });
 
@@ -399,147 +666,144 @@
                     throw new Error('Erro ao salvar anotação');
                 }
 
-                const data = await response.json();
+                // Atualizar currentAnnotation com os novos dados
+                currentAnnotation.title = title;
+                currentAnnotation.content = content;
 
-                showStatus('✅ Anotação salva com sucesso no Notion!', 'success');
-                closeModal();
+                screenEditor.classList.add('hidden');
+                screenList.classList.remove('hidden');
 
-                // Recarregar lista
+                // Recarregar anotações
                 await loadAnnotations();
-            } catch (error) {
-                console.error('Erro ao salvar anotação:', error);
-                showStatus('❌ Erro ao salvar anotação. Verifique a conexão com o Notion.', 'error');
+            } catch (err) {
+                console.error('Erro ao salvar:', err);
+                alert('Erro ao salvar anotação: ' + err.message);
             }
         }
 
-        // Abrir anotação em modal
-        async function openAnnotation(annotationId) {
-            try {
-                const response = await fetch(`/api/notion/annotations/${annotationId}`);
-                if (!response.ok) {
-                    throw new Error('Erro ao carregar anotação');
-                }
-
-                const annotation = await response.json();
-
-                // Preencher modal com os dados
-                document.querySelector('#annotationModal .modal-header').textContent = annotation.title;
-                document.getElementById('annotationTitle').value = annotation.title;
-                document.getElementById('annotationContent').value = annotation.content;
-
-                // Selecionar a tag correta
-                const tagsSelect = document.getElementById('annotationTags');
-                if (annotation.tags.length > 0) {
-                    tagsSelect.value = annotation.tags[0];
-                } else {
-                    tagsSelect.value = '';
-                }
-
-                // Desabilitar edição (apenas visualização)
-                document.getElementById('annotationTitle').disabled = true;
-                document.getElementById('annotationContent').disabled = true;
-                document.getElementById('annotationTags').disabled = true;
-
-                // Esconder botão de salvar
-                document.querySelector('.btn-primary').style.display = 'none';
-
-                // Mostrar modal
-                document.getElementById('annotationModal').style.display = 'block';
-            } catch (error) {
-                console.error('Erro ao abrir anotação:', error);
-                showStatus('Erro ao carregar anotação', 'error');
-            }
-        }
-
-        // Renderizar lista de anotações
-        function renderAnnotations() {
-            const container = document.getElementById('annotationsList');
-
-            // Filtrar anotações
-            const filtered = currentFilter
-                ? allAnnotations.filter(a => a.tags.includes(currentFilter))
-                : allAnnotations;
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Nenhuma anotação encontrada</h3>
-                        <p>Crie sua primeira anotação ou ajuste os filtros.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filtered.map(annotation => {
-                const title = annotation.title || 'Sem título';
-                const tags = annotation.tags || [];
-                const date = annotation.createdTime ? new Date(annotation.createdTime).toLocaleDateString('pt-BR') : 'Data desconhecida';
-
-                return `
-                    <div class="annotation-item" onclick="openAnnotation('${annotation.id}')">
-                        <div class="annotation-title">${title}</div>
-                        <div class="annotation-tags">
-                            ${tags.map(tag => `<span class="annotation-tag">${tag}</span>`).join('')}
-                        </div>
-                        <div class="annotation-date">
-                            Criado em: ${date}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Carregar anotações do Notion
-        async function loadAnnotations() {
-            const loadingEl = document.getElementById('loadingMessage');
-            const listEl = document.getElementById('annotationsList');
+        async function deleteAnnotation() {
+            if (!currentAnnotation) return;
 
             try {
-                loadingEl.style.display = 'block';
-                listEl.innerHTML = '';
-
-                const url = '/api/notion/annotations';
-                console.log('Carregando anotações de:', url);
-
-                const response = await fetch(url);
+                const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
+                    method: 'DELETE'
+                });
 
                 if (!response.ok) {
-                    const errorData = await response.text();
-                    console.error('Erro na resposta:', response.status, errorData);
-                    throw new Error(`Erro ${response.status}: ${errorData}`);
+                    throw new Error('Erro ao excluir anotação');
                 }
 
-                const data = await response.json();
-                console.log('Anotações recebidas:', data.length, 'itens');
-                console.log('Primeira anotação:', data[0]);
+                // Fechar modal
+                modalView.classList.add('hidden');
 
-                allAnnotations = data;
-                loadingEl.style.display = 'none';
-
-                renderAnnotations();
-            } catch (error) {
-                console.error('Erro ao carregar anotações:', error);
-                loadingEl.style.display = 'none';
-                listEl.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Erro ao carregar anotações</h3>
-                        <p>Verifique se o Notion está configurado corretamente.</p>
-                        <p style="font-size: 12px; color: #999; margin-top: 10px;">Erro: ${error.message}</p>
-                    </div>
-                `;
+                // Recarregar anotações
+                await loadAnnotations();
+            } catch (err) {
+                console.error('Erro ao excluir:', err);
+                alert('Erro ao excluir anotação: ' + err.message);
             }
         }
 
-        // Fechar modal ao clicar fora
-        window.onclick = function(event) {
-            const modal = document.getElementById('annotationModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        };
+        async function createNewNote() {
+            try {
+                const response = await fetch('/api/notion/annotations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: 'Nova Anotação',
+                        content: '',
+                        tags: []
+                    })
+                });
 
-        // Inicializar
-        loadAnnotations();
+                if (!response.ok) {
+                    throw new Error('Erro ao criar anotação');
+                }
+
+                const newAnnotation = await response.json();
+                currentAnnotation = newAnnotation;
+
+                // Abrir diretamente no editor
+                const editorTitleInput = document.getElementById('editor-title-input');
+                const editorTextarea = screenEditor.querySelector('.editor-content');
+
+                editorTitleInput.value = 'Nova Anotação';
+                editorTitleInput.disabled = false; // Permitir edição imediata
+                editorTextarea.value = '';
+
+                // Navegar para o editor
+                screenList.classList.add('hidden');
+                screenEditor.classList.remove('hidden');
+
+                // Focar no título para facilitar edição
+                editorTitleInput.focus();
+                editorTitleInput.select();
+            } catch (err) {
+                console.error('Erro ao criar nota:', err);
+                alert('Erro ao criar anotação: ' + err.message);
+            }
+        }
+
+
+        // ============= CONFIGURAR FILTROS =============
+        function setupChips() {
+            const chipsContainer = document.querySelector('.chips-scroller');
+            chipsContainer.innerHTML = '';
+
+            // Criar chip "Todas"
+            const allChip = document.createElement('button');
+            allChip.className = 'chip active';
+            allChip.textContent = 'Todas';
+            allChip.onclick = () => filterByTag(null, allChip);
+            chipsContainer.appendChild(allChip);
+
+            // Criar chips para cada categoria
+            CATEGORIES.forEach(category => {
+                const chip = document.createElement('button');
+                chip.className = 'chip';
+                chip.textContent = category;
+                chip.onclick = () => filterByTag(category, chip);
+                chipsContainer.appendChild(chip);
+            });
+        }
+
+        // ============= INICIALIZAÇÃO =============
+        window.addEventListener('DOMContentLoaded', () => {
+            // Configurar busca
+            searchInput.addEventListener('input', onSearchChange);
+
+            // Configurar botão de atualizar
+            refreshBtn.addEventListener('click', loadAnnotations);
+
+            // Configurar Ordenação
+            sortBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Impede que o listener de 'window' feche o menu imediatamente
+                sortMenu.classList.toggle('hidden');
+            });
+
+            sortMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    currentSort = e.target.dataset.sort;
+                    sortMenu.classList.add('hidden');
+                    renderAnnotations();
+                }
+            });
+
+            // Fechar dropdown ao clicar fora
+            window.addEventListener('click', () => {
+                if (!sortMenu.classList.contains('hidden')) {
+                    sortMenu.classList.add('hidden');
+                }
+            });
+
+            // Configurar chips
+            setupChips();
+
+            // Carregar anotações
+            loadAnnotations();
+
+            console.log('✅ App inicializado');
+        });
     </script>
 </body>
 </html>
