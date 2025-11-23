@@ -66,7 +66,7 @@
         .search-and-filter {
             display: flex;
             align-items: center;
-            gap: 12px; /* Espaço entre a busca e os botões */
+            gap: 8px; /* Espaço entre a busca e os botões */
             padding: 0 var(--spacing);
             margin-bottom: 16px;
         }
@@ -92,9 +92,18 @@
 
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             align-items: center;
             flex-shrink: 0; /* Impede que os botões encolham */
+        }
+
+        .action-buttons > * {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .action-buttons > *:not(:first-child) {
+            margin-left: 12px;
         }
         
         .dropdown-btn {
@@ -149,6 +158,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         /* Chips de navegação horizontal */
