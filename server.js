@@ -517,7 +517,7 @@ app.get('/api/notion/annotations', async (req, res) => {
     const data = await response.json();
     console.log(`📝 Notion retornou ${data.results.length} anotações`);
 
-    const annotations = data.results.map(page => {
+    const annotations = await Promise.all(data.results.map(async (page) => {
       // Debug: mostrar propriedades disponíveis
       if (data.results.indexOf(page) === 0) {
         console.log('🔍 Propriedades disponíveis na primeira página:', Object.keys(page.properties));
@@ -543,14 +543,58 @@ app.get('/api/notion/annotations', async (req, res) => {
         tags = page.properties.Categoria.multi_select.map(t => t.name);
       }
 
+      // Buscar blocos de conteúdo para criar preview
+      let preview = '';
+      try {
+        const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${page.id}/children`, {
+          headers: {
+            'Authorization': `Bearer ${notionToken}`,
+            'Notion-Version': '2022-06-28'
+          }
+        });
+
+        if (blocksResponse.ok) {
+          const blocks = await blocksResponse.json();
+
+          // Extrair texto dos blocos para criar preview
+          const contentText = blocks.results.map(block => {
+            if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
+              return block.paragraph.rich_text.map(t => t.plain_text).join('');
+            }
+            if (block.type === 'heading_1' && block.heading_1.rich_text.length > 0) {
+              return block.heading_1.rich_text.map(t => t.plain_text).join('');
+            }
+            if (block.type === 'heading_2' && block.heading_2.rich_text.length > 0) {
+              return block.heading_2.rich_text.map(t => t.plain_text).join('');
+            }
+            if (block.type === 'heading_3' && block.heading_3.rich_text.length > 0) {
+              return block.heading_3.rich_text.map(t => t.plain_text).join('');
+            }
+            if (block.type === 'bulleted_list_item' && block.bulleted_list_item.rich_text.length > 0) {
+              return block.bulleted_list_item.rich_text.map(t => t.plain_text).join('');
+            }
+            if (block.type === 'numbered_list_item' && block.numbered_list_item.rich_text.length > 0) {
+              return block.numbered_list_item.rich_text.map(t => t.plain_text).join('');
+            }
+            return '';
+          }).filter(t => t).join(' ');
+
+          // Limitar preview a ~150 caracteres
+          preview = contentText.substring(0, 150);
+        }
+      } catch (error) {
+        console.error(`Erro ao buscar preview da nota ${page.id}:`, error.message);
+      }
+
       return {
         id: page.id,
         title: title,
         tags: tags,
         url: page.url,
-        createdTime: page.created_time
+        createdTime: page.created_time,
+        preview: preview
       };
-    });
+    }));
 
     res.json(annotations);
   } catch (error) {

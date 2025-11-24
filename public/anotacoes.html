@@ -6,6 +6,7 @@
     <title>Kindle Notes App</title>
     <!-- Phosphor Icons: Biblioteca de ícones leve e nítida, ideal para simular o design e-ink -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="timer.js" defer></script>
 
     <style>
         /* --- RESET & VARIÁVEIS --- */
@@ -92,7 +93,7 @@
 
         .action-buttons {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: center;
             flex-shrink: 0; /* Impede que os botões encolham */
         }
@@ -219,6 +220,7 @@
             line-height: 1.4;
             color: #333;
             display: -webkit-box;
+            line-clamp: 2;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
@@ -235,69 +237,82 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0, 0.5); /* Fundo escurecido para contraste */
-            backdrop-filter: grayscale(1); /* Ajuda na simulação e-ink */
+            background: rgba(0,0,0, 0.5);
+            backdrop-filter: grayscale(1);
             z-index: 100;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 16px;
         }
-        .modal-window {
+
+        /* Estilo BASE compartilhado (Aparência de Cartão E-ink) */
+        .modal-window, 
+        #screen-editor {
             background: white;
             border: 2px solid var(--border-color);
             border-radius: 16px;
             width: 100%;
-            max-width: 500px; /* Limite de largura para telas maiores */
-            height: 85vh;
+            max-width: 500px; /* Mantém a largura controlada em ambos */
+            height: 85vh;     /* Altura unificada */
             display: flex;
             flex-direction: column;
-            box-shadow: 6px 6px 0px #000; /* Sombra sólida estilo e-ink */
+            box-shadow: 6px 6px 0px #000; /* Sombra sólida idêntica */
             position: relative;
         }
-        .modal-header {
+
+        /* Para garantir que o editor centralize se estiver solto na tela */
+        #screen-editor {
+            margin: 0 auto; 
+        }
+
+        /* --- CABEÇALHOS UNIFICADOS --- */
+        .modal-header,
+        #screen-editor header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
             border-bottom: 2px solid #000;
-            background: #f4f4f4; /* Leve destaque no header */
-            border-radius: 14px 14px 0 0;
+            background: #f4f4f4; /* Ambos agora têm o fundo cinza */
+            border-radius: 14px 14px 0 0; /* Arredondamento apenas no topo */
         }
-        .modal-header h2 { font-size: 20px; font-weight: bold; }
-        
-        .modal-body {
+
+        .modal-header h2 { font-size: 20px; font-weight: bold; margin: 0; }
+
+        /* --- CORPO / ÁREA DE TEXTO UNIFICADA --- */
+        .modal-body,
+        .modal-body-edit,
+        .editor-content {
             padding: 20px;
             overflow-y: auto;
-            font-size: 18px;
-            line-height: 1.5;
+            font-size: 18px;   /* Tamanho padronizado */
+            line-height: 1.5;  /* Espaçamento padronizado */
             text-align: justify;
-            flex: 1;
-        }
-
-        /* --- TELA 3: EDITOR (FULL SCREEN) --- */
-        #screen-editor {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background: white;
-        }
-        
-        #screen-editor header {
-            border-bottom: 2px solid #000;
-            padding: 12px 16px;
-        }
-
-        .editor-content {
-            flex: 1;
-            padding: 20px;
-            font-size: 20px;
-            line-height: 1.6;
+            flex: 1;           /* Ocupa todo o espaço restante */
+            font-family: var(--font-main);
+            color: #000;
+            
+            /* Reset de input/textarea */
             border: none;
             outline: none;
             resize: none;
-            font-family: var(--font-main);
-            color: #000;
+            background: transparent;
+            width: 100%;
+        }
+
+        /* --- INPUTS ESPECÍFICOS --- */
+
+        /* Título editável no Modal */
+        .modal-title-edit {
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            text-align: left; /* Ajustado para alinhar com o layout padrão */
+            cursor: pointer;
         }
 
         /* Ajustes Mobile */
@@ -369,19 +384,31 @@
     <div id="modal-view" class="modal-overlay hidden" onclick="closeModal(event)">
         <div class="modal-window" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <button class="icon-btn" onclick="openEditor()">
+                <!-- Botão esquerdo: Lápis (modo view) ou Voltar (modo edit) -->
+                <button class="icon-btn" id="modal-left-btn" onclick="toggleEditMode()">
                     <i class="ph ph-pencil-simple" style="font-size: 28px;"></i>
                 </button>
-                <h2>Pequeno tirano</h2>
-                <button class="icon-btn" onclick="deleteAnnotation()">
+
+                <!-- Título: h2 (modo view) ou input (modo edit) -->
+                <h2 id="modal-title-view">Pequeno tirano</h2>
+                <input type="text" id="modal-title-edit" class="modal-title-edit hidden" value="Pequeno tirano" onclick="enableModalTitleEdit()">
+
+                <!-- Seletor de tag (só aparece em modo edit) -->
+                <select id="modal-tag-selector" class="hidden" style="border: 2px solid #000; border-radius: 8px; padding: 8px 12px; font-size: 16px; background: white; font-family: inherit; cursor: pointer; margin-right: 8px;">
+                    <option value="">Sem tag</option>
+                </select>
+
+                <!-- Botão direito: Excluir (modo view) ou Salvar (modo edit) -->
+                <button class="icon-btn" id="modal-right-btn" onclick="deleteAnnotation()">
                     <i class="ph ph-trash" style="font-size: 28px;"></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="modal-body-view">
                 <p>Pequeno Tirano... Criança vai tacando pedras pela rua, até que quebra uma janela... decide não contar, com medo. Mas, como bom era o pai, se tivesse contato o pai pagaria sem pestanejar iria levar o menino para casa explica-lo do mal que tinha cometido e de como estava feliz dele ter assumido a culpa, ficaria feliz por ver seu pai feliz. Mas, ele não contou... deixou tudo para trás, inclusive a janela, ela ficou ali, quebrada... nunca souberam quem foi, nunca foi encontrado o culpado. O menino agora é um infame quebrador de janelas um verdadeiro detona ralph.</p>
                 <br>
                 <p>Não há como deixar as janelas da nossa vida quebradas, estamos deixando os outros passando frio pela brisas geladas que entram em suas vidas conta dos nossos erros. O mal entra por estas janelas, tanto na nossa casa quanto na dos outros. Precisamos blindar nossas janelas? É mais fácil blindar a janela de todas as pessoas? Ou conter os infames atiradores de pedras?</p>
             </div>
+            <textarea class="modal-body modal-body-edit hidden" id="modal-body-edit"></textarea>
         </div>
     </div>
 
@@ -391,12 +418,12 @@
             <button class="icon-btn" onclick="closeEditor()">
                 <i class="ph ph-arrow-left" style="font-weight: bold; font-size: 32px;"></i>
             </button>
-            <div class="flex" style="align-items: center; gap: 8px;">
-                <input type="text" id="editor-title-input" style="font-size: 22px; font-weight:bold; border: none; outline: none; background: transparent; flex: 1; min-width: 0;" value="Pequeno tirano">
-                <button class="icon-btn" onclick="toggleTitleEdit()" style="padding: 4px;">
-                    <i class="ph ph-pencil-simple" style="font-size: 20px;"></i>
-                </button>
+            <div class="flex" style="align-items: center; gap: 8px; flex: 1;">
+                <input type="text" id="editor-title-input" style="font-size: 22px; font-weight:bold; border: none; outline: none; background: transparent; flex: 1; min-width: 0; cursor: pointer;" value="Pequeno tirano" readonly onclick="enableTitleEdit()">
             </div>
+            <select id="editor-tag-selector" style="border: 2px solid #000; border-radius: 8px; padding: 8px 12px; font-size: 16px; background: white; font-family: inherit; cursor: pointer; margin-right: 8px;">
+                <option value="">Sem tag</option>
+            </select>
             <button class="icon-btn" onclick="saveAndClose()">
                 <i class="ph ph-floppy-disk" style="font-size: 32px;"></i>
             </button>
@@ -429,6 +456,7 @@
         let currentQuery = '';
         let currentAnnotation = null;
         let currentSort = 'recent'; // 'recent', 'oldest', 'alpha-az', 'alpha-za'
+        let isEditMode = false; // Controla se o modal está em modo de edição
 
 
         // ============= FUNÇÕES AUXILIARES =============
@@ -438,113 +466,128 @@
             return date.toLocaleDateString('pt-BR');
         }
 
-        function extractPreview(content) {
-            if (!content) return 'Sem conteúdo disponível';
+// ============= FUNÇÕES DE SEGURANÇA (SUBSTITUA AS ANTERIORES) =============
 
-            // Se content é um objeto, tentar extrair texto
-            if (typeof content === 'object') {
-                content = JSON.stringify(content);
+        // 1. Função de Preview simplificada - usa o campo preview da API
+        function extractPreview(annotation) {
+            try {
+                // Se for nulo/indefinido
+                if (!annotation) return 'Sem conteúdo';
+
+                // O preview já vem processado do servidor
+                const preview = annotation.preview || '';
+
+                // Se ficou vazio
+                if (!preview.trim()) return 'Sem conteúdo';
+
+                return preview;
+
+            } catch (err) {
+                console.error("Erro ao gerar preview:", err);
+                return 'Erro na visualização';
             }
-
-            // Converter para string se não for
-            content = String(content);
-
-            // Remover tags HTML
-            let text = content.replace(/<[^>]*>/g, '');
-
-            // Remover marcações markdown
-            text = text.replace(/\*\*/g, ''); // negrito
-            text = text.replace(/\*/g, ''); // itálico
-            text = text.replace(/__/g, ''); // sublinhado
-            text = text.replace(/>/g, ''); // citações
-            text = text.replace(/^-\s/gm, ''); // listas
-            text = text.replace(/^#\s/gm, ''); // títulos
-
-            // Limpar espaços extras
-            text = text.replace(/\s+/g, ' ').trim();
-
-            // Se ainda estiver vazio após limpeza
-            if (!text || text.length === 0) {
-                return 'Sem conteúdo disponível';
-            }
-
-            return text.substring(0, 150);
         }
 
-        // ============= CARREGAMENTO DE DADOS =============
+        // 2. Carregamento com logs visíveis
         async function loadAnnotations() {
             try {
-                notesList.innerHTML = '<div style="text-align:center;padding:30px;color:#666;">Carregando...</div>';
+                console.log("Iniciando carregamento...");
+                notesList.innerHTML = '<div style="text-align:center;padding:30px;">Carregando...</div>';
 
                 const response = await fetch('/api/notion/annotations');
+                
                 if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${await response.text()}`);
+                    throw new Error(`Erro API: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log("Dados recebidos da API:", data);
+
+                // Garante que é um array, senão cria um vazio
                 allAnnotations = Array.isArray(data) ? data : [];
+                
+                if (allAnnotations.length === 0) {
+                    console.warn("Array de anotações está vazio!");
+                }
+
                 renderAnnotations();
             } catch (err) {
-                console.error('Erro ao carregar anotações:', err);
-                notesList.innerHTML = `
-                    <div style="text-align:center;padding:30px;color:#666;">
-                        <p>Erro ao carregar anotações</p>
-                        <p style="font-size:12px;margin-top:8px;">${err.message}</p>
-                    </div>
-                `;
+                console.error('Erro fatal no load:', err);
+                notesList.innerHTML = `<div style="color:red; text-align:center;">Erro: ${err.message}</div>`;
             }
         }
 
+        // 3. Renderização com proteção contra quebras
         function renderAnnotations() {
-            // 1. Filtrar
-            let filtered = currentFilter
-                ? allAnnotations.filter(a => (a.tags || []).includes(currentFilter))
-                : [...allAnnotations]; // Usar uma cópia para não alterar o original
+            try {
+                // Verificação de segurança dos elementos DOM
+                if (!notesList) {
+                    console.error("Elemento .notes-list não encontrado no HTML");
+                    return;
+                }
 
-            // 2. Buscar
-            if (currentQuery) {
-                filtered = filtered.filter(a => {
-                    const t = (a.title || '').toLowerCase();
-                    const c = (a.content || '').toLowerCase();
-                    return t.includes(currentQuery) || c.includes(currentQuery);
-                });
-            }
-            
-            // 3. Ordenar
-            sortAnnotations(filtered);
+                // Filtragem
+                let filtered = [...allAnnotations];
+                
+                // Aplica filtro de Tag
+                if (currentFilter) {
+                    filtered = filtered.filter(a => {
+                        return Array.isArray(a.tags) && a.tags.includes(currentFilter);
+                    });
+                }
 
+                // Aplica busca
+                if (currentQuery) {
+                    filtered = filtered.filter(a => {
+                        const t = (a.title || '').toLowerCase();
+                        // Conversão segura para string na busca
+                        const c = JSON.stringify(a).toLowerCase(); 
+                        return t.includes(currentQuery) || c.includes(currentQuery);
+                    });
+                }
 
-            if (filtered.length === 0) {
-                notesList.innerHTML = `
-                    <div style="text-align:center;padding:50px;color:#666;">
-                        <h3 style="margin:0 0 8px 0;font-size:20px;color:#333;">Nenhuma anotação encontrada</h3>
-                        <p>Crie uma anotação ou ajuste o filtro</p>
-                    </div>
-                `;
-                return;
-            }
+                sortAnnotations(filtered);
 
-            notesList.innerHTML = filtered.map(a => {
-                const title = a.title || 'Sem título';
-                const tags = a.tags || [];
-                const primaryTag = tags[0] || 'Sem categoria';
-                const date = formatDate(a.createdTime);
-                const preview = extractPreview(a.content);
-
-                // Debug: verificar o que está vindo
-                console.log('Anotação:', { title, content: a.content, preview });
-
-                return `
-                    <div class="note-item" onclick="openAnnotation('${a.id}')">
-                        <div class="note-header">
-                            <span class="note-title">${title}</span>
-                            <span class="note-tag">${primaryTag}</span>
+                // Renderização
+                if (filtered.length === 0) {
+                    notesList.innerHTML = `
+                        <div style="text-align:center;padding:50px;color:#666;">
+                            <h3>Nenhuma anotação</h3>
                         </div>
-                        <div class="note-preview">${preview}</div>
-                        <div class="note-date">${date}</div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                    return;
+                }
+
+                // Construção do HTML
+                notesList.innerHTML = filtered.map(a => {
+                    // Proteção individual por item (se uma nota falhar, as outras carregam)
+                    try {
+                        const title = a.title || 'Sem título';
+                        const tags = Array.isArray(a.tags) ? a.tags : [];
+                        const primaryTag = tags[0] || 'Geral';
+                        const date = formatDate(a.createdTime);
+                        const preview = extractPreview(a); // Passa a anotação completa
+
+                        return `
+                            <div class="note-item" onclick="openAnnotation('${a.id}')">
+                                <div class="note-header">
+                                    <span class="note-title">${title}</span>
+                                    <span class="note-tag">${primaryTag}</span>
+                                </div>
+                                <div class="note-preview">${preview}</div>
+                                <div class="note-date">${date}</div>
+                            </div>
+                        `;
+                    } catch (itemErr) {
+                        console.error("Erro ao renderizar item:", itemErr, a);
+                        return `<div class="note-item" style="color:red">Erro ao exibir nota</div>`;
+                    }
+                }).join('');
+
+            } catch (renderErr) {
+                console.error("Erro fatal na renderização:", renderErr);
+                notesList.innerHTML = `<div style="color:red">Erro fatal de JS: ${renderErr.message}</div>`;
+            }
         }
 
         // ============= ORDENAÇÃO, BUSCA E FILTROS =============
@@ -610,12 +653,151 @@
 
         // ============= NAVEGAÇÃO =============
         function openModal() {
+            // Sempre abre em modo de visualização
+            isEditMode = false;
+            setViewMode();
             modalView.classList.remove('hidden');
         }
 
         function closeModal(event) {
             if (event && event.target === modalView) {
                 modalView.classList.add('hidden');
+                isEditMode = false;
+            }
+        }
+
+        function setViewMode() {
+            // Elementos do modo visualização
+            const titleView = document.getElementById('modal-title-view');
+            const titleEdit = document.getElementById('modal-title-edit');
+            const bodyView = document.getElementById('modal-body-view');
+            const bodyEdit = document.getElementById('modal-body-edit');
+            const tagSelector = document.getElementById('modal-tag-selector');
+            const leftBtn = document.getElementById('modal-left-btn');
+            const rightBtn = document.getElementById('modal-right-btn');
+
+            // Mostrar elementos de visualização
+            titleView.classList.remove('hidden');
+            bodyView.classList.remove('hidden');
+
+            // Esconder elementos de edição
+            titleEdit.classList.add('hidden');
+            bodyEdit.classList.add('hidden');
+            tagSelector.classList.add('hidden');
+
+            // Configurar botões
+            leftBtn.innerHTML = '<i class="ph ph-pencil-simple" style="font-size: 28px;"></i>';
+            leftBtn.onclick = toggleEditMode;
+
+            rightBtn.innerHTML = '<i class="ph ph-trash" style="font-size: 28px;"></i>';
+            rightBtn.onclick = deleteAnnotation;
+        }
+
+        function setEditMode() {
+            // Elementos do modo edição
+            const titleView = document.getElementById('modal-title-view');
+            const titleEdit = document.getElementById('modal-title-edit');
+            const bodyView = document.getElementById('modal-body-view');
+            const bodyEdit = document.getElementById('modal-body-edit');
+            const tagSelector = document.getElementById('modal-tag-selector');
+            const leftBtn = document.getElementById('modal-left-btn');
+            const rightBtn = document.getElementById('modal-right-btn');
+
+            // Copiar conteúdo para os campos de edição
+            titleEdit.value = currentAnnotation.title || 'Sem título';
+            bodyEdit.value = currentAnnotation.content || '';
+
+            // Configurar tag selector
+            const currentTag = (currentAnnotation.tags && currentAnnotation.tags[0]) || '';
+            tagSelector.value = currentTag;
+
+            // Esconder elementos de visualização
+            titleView.classList.add('hidden');
+            bodyView.classList.add('hidden');
+
+            // Mostrar elementos de edição
+            titleEdit.classList.remove('hidden');
+            titleEdit.readOnly = true;
+            titleEdit.style.cursor = 'pointer';
+            bodyEdit.classList.remove('hidden');
+            tagSelector.classList.remove('hidden');
+
+            // Configurar botões
+            leftBtn.innerHTML = '<i class="ph ph-arrow-left" style="font-size: 28px;"></i>';
+            leftBtn.onclick = toggleEditMode;
+
+            rightBtn.innerHTML = '<i class="ph ph-floppy-disk" style="font-size: 28px;"></i>';
+            rightBtn.onclick = saveModalEdit;
+        }
+
+        function toggleEditMode() {
+            if (isEditMode) {
+                // Volta para modo visualização sem salvar
+                isEditMode = false;
+                setViewMode();
+            } else {
+                // Entra em modo de edição
+                isEditMode = true;
+                setEditMode();
+            }
+        }
+
+        function enableModalTitleEdit() {
+            if (!isEditMode) return;
+            const titleEdit = document.getElementById('modal-title-edit');
+            titleEdit.readOnly = false;
+            titleEdit.style.cursor = 'text';
+            titleEdit.focus();
+            titleEdit.select();
+        }
+
+        async function saveModalEdit() {
+            if (!currentAnnotation) return;
+
+            try {
+                const titleEdit = document.getElementById('modal-title-edit');
+                const bodyEdit = document.getElementById('modal-body-edit');
+                const tagSelector = document.getElementById('modal-tag-selector');
+
+                const title = titleEdit.value.trim() || 'Sem título';
+                const content = bodyEdit.value;
+                const selectedTag = tagSelector.value;
+                const tags = selectedTag ? [selectedTag] : [];
+
+                const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        tags: tags
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao salvar anotação');
+                }
+
+                // Atualizar currentAnnotation com os novos dados
+                currentAnnotation.title = title;
+                currentAnnotation.content = content;
+                currentAnnotation.tags = tags;
+
+                // Atualizar visualização
+                const titleView = document.getElementById('modal-title-view');
+                const bodyView = document.getElementById('modal-body-view');
+                titleView.textContent = title;
+                bodyView.innerHTML = content.replace(/\n/g, '<br>');
+
+                // Voltar para modo visualização
+                isEditMode = false;
+                setViewMode();
+
+                // Recarregar anotações
+                await loadAnnotations();
+            } catch (err) {
+                console.error('Erro ao salvar:', err);
+                alert('Erro ao salvar anotação: ' + err.message);
             }
         }
 
@@ -627,8 +809,20 @@
             const editorTextarea = screenEditor.querySelector('.editor-content');
 
             editorTitleInput.value = currentAnnotation.title || 'Sem título';
-            editorTitleInput.disabled = true; // Começa desabilitado
+            editorTitleInput.readOnly = true; // Começa readonly
+            editorTitleInput.style.cursor = 'pointer';
             editorTextarea.value = currentAnnotation.content || '';
+
+            // Configurar tag selector
+            const tagSelector = document.getElementById('editor-tag-selector');
+            const currentTag = (currentAnnotation.tags && currentAnnotation.tags[0]) || '';
+            tagSelector.value = currentTag;
+
+            // Esconder timer widget
+            const timerWidget = document.getElementById('timer-widget');
+            if (timerWidget) {
+                timerWidget.style.display = 'none';
+            }
 
             // Navegar para o editor
             modalView.classList.add('hidden');
@@ -636,17 +830,21 @@
             screenEditor.classList.remove('hidden');
         }
 
-        function toggleTitleEdit() {
+        function enableTitleEdit() {
             const editorTitleInput = document.getElementById('editor-title-input');
-            editorTitleInput.disabled = !editorTitleInput.disabled;
-
-            if (!editorTitleInput.disabled) {
-                editorTitleInput.focus();
-                editorTitleInput.select();
-            }
+            editorTitleInput.readOnly = false;
+            editorTitleInput.style.cursor = 'text';
+            editorTitleInput.focus();
+            editorTitleInput.select();
         }
 
         function closeEditor() {
+            // Mostrar timer widget novamente
+            const timerWidget = document.getElementById('timer-widget');
+            if (timerWidget) {
+                timerWidget.style.display = '';
+            }
+
             // Simplesmente volta sem salvar
             screenEditor.classList.add('hidden');
             screenList.classList.remove('hidden');
@@ -659,8 +857,11 @@
             try {
                 const editorTitleInput = document.getElementById('editor-title-input');
                 const editorTextarea = screenEditor.querySelector('.editor-content');
+                const tagSelector = document.getElementById('editor-tag-selector');
                 const title = editorTitleInput.value.trim() || 'Sem título';
                 const content = editorTextarea.value;
+                const selectedTag = tagSelector.value;
+                const tags = selectedTag ? [selectedTag] : [];
 
                 const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
                     method: 'PUT',
@@ -668,7 +869,7 @@
                     body: JSON.stringify({
                         title: title,
                         content: content,
-                        tags: currentAnnotation.tags || []
+                        tags: tags
                     })
                 });
 
@@ -679,6 +880,12 @@
                 // Atualizar currentAnnotation com os novos dados
                 currentAnnotation.title = title;
                 currentAnnotation.content = content;
+
+                // Mostrar timer widget novamente
+                const timerWidget = document.getElementById('timer-widget');
+                if (timerWidget) {
+                    timerWidget.style.display = '';
+                }
 
                 screenEditor.classList.add('hidden');
                 screenList.classList.remove('hidden');
@@ -716,13 +923,16 @@
 
         async function createNewNote() {
             try {
+                // Herdar tag do filtro atual, se houver
+                const inheritedTags = currentFilter ? [currentFilter] : [];
+
                 const response = await fetch('/api/notion/annotations', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title: 'Nova Anotação',
                         content: '',
-                        tags: []
+                        tags: inheritedTags
                     })
                 });
 
@@ -733,21 +943,23 @@
                 const newAnnotation = await response.json();
                 currentAnnotation = newAnnotation;
 
-                // Abrir diretamente no editor
-                const editorTitleInput = document.getElementById('editor-title-input');
-                const editorTextarea = screenEditor.querySelector('.editor-content');
+                // Atualizar elementos do modal com a nova nota
+                const titleView = document.getElementById('modal-title-view');
+                const bodyView = document.getElementById('modal-body-view');
+                titleView.textContent = 'Nova Anotação';
+                bodyView.innerHTML = '';
 
-                editorTitleInput.value = 'Nova Anotação';
-                editorTitleInput.disabled = false; // Permitir edição imediata
-                editorTextarea.value = '';
-
-                // Navegar para o editor
-                screenList.classList.add('hidden');
-                screenEditor.classList.remove('hidden');
+                // Abrir modal em modo de edição
+                isEditMode = true;
+                setEditMode();
+                modalView.classList.remove('hidden');
 
                 // Focar no título para facilitar edição
-                editorTitleInput.focus();
-                editorTitleInput.select();
+                const titleEdit = document.getElementById('modal-title-edit');
+                titleEdit.readOnly = false;
+                titleEdit.style.cursor = 'text';
+                titleEdit.focus();
+                titleEdit.select();
             } catch (err) {
                 console.error('Erro ao criar nota:', err);
                 alert('Erro ao criar anotação: ' + err.message);
@@ -755,7 +967,7 @@
         }
 
 
-        // ============= CONFIGURAR FILTROS =============
+        // ============= CONFIGURAR FILTROS E TAGS =============
         function setupChips() {
             const chipsContainer = document.querySelector('.chips-scroller');
             chipsContainer.innerHTML = '';
@@ -775,6 +987,32 @@
                 chip.onclick = () => filterByTag(category, chip);
                 chipsContainer.appendChild(chip);
             });
+        }
+
+        function setupTagSelector() {
+            // Tag selector do editor antigo (pode ser removido depois)
+            const editorTagSelector = document.getElementById('editor-tag-selector');
+            if (editorTagSelector) {
+                editorTagSelector.innerHTML = '<option value="">Sem tag</option>';
+                CATEGORIES.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    editorTagSelector.appendChild(option);
+                });
+            }
+
+            // Tag selector do modal
+            const modalTagSelector = document.getElementById('modal-tag-selector');
+            if (modalTagSelector) {
+                modalTagSelector.innerHTML = '<option value="">Sem tag</option>';
+                CATEGORIES.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    modalTagSelector.appendChild(option);
+                });
+            }
         }
 
         // ============= INICIALIZAÇÃO =============
@@ -806,8 +1044,9 @@
                 }
             });
 
-            // Configurar chips
+            // Configurar chips e tags
             setupChips();
+            setupTagSelector();
 
             // Carregar anotações
             loadAnnotations();
