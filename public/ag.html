@@ -3,478 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AG - Hub Kindle</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="timer.js"></script>
-    <script src="points-popup.js"></script>
+    <title>Ação de Graças - Kindle Hub</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="timer.js" defer></script>
+    
     <style>
-        .ag-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.8;
+        /* --- RESET & VARIÁVEIS --- */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #000000;
+            --font-main: Helvetica, Arial, sans-serif;
+            --radius: 12px;
+            --spacing: 16px;
         }
 
-        .ag-container h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #000;
-            padding-bottom: 10px;
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
         }
 
-        .ag-container h2 {
-            font-size: 22px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #666;
-            padding-bottom: 8px;
-        }
-
-        .ag-container h3 {
-            font-size: 18px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .ag-container p {
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-
-        .ag-container hr {
-            margin: 30px 0;
-            border: none;
-            border-top: 2px solid #000;
-        }
-
-        .ag-container strong {
-            font-weight: bold;
-        }
-
-        .cinza {
-            color: #666;
-        }
-
-        /* Accordion styles */
-        .accordion-section {
-            margin: 15px 0;
-            border: 2px solid #000;
-            background: #fff;
-        }
-
-        .accordion-header {
-            padding: 15px;
-            background: #f5f5f5;
-            border-bottom: 2px solid #000;
-            cursor: pointer;
+        /* --- CABEÇALHO --- */
+        header {
+            padding: var(--spacing);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 20px;
+            border-bottom: 2px solid transparent;
+            flex-shrink: 0;
+        }
+        header h1 { font-size: 28px; font-weight: bold; }
+        .flex { display: flex; align-items: center; }
+
+        /* --- NAVEGAÇÃO (CHIPS) --- */
+        .chips-container {
+            position: relative;
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 0 var(--spacing) 8px var(--spacing);
+            border-bottom: 2px solid #e0e0e0;
+            background: white;
+            flex-shrink: 0;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .chips-container::-webkit-scrollbar { display: none; }
+
+        .chip {
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 10px 20px;
             font-weight: bold;
-        }
-
-        .accordion-header:hover {
-            background: #e8e8e8;
-        }
-
-        .accordion-icon {
-            font-size: 24px;
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-
-        .accordion-header.ativo .accordion-icon {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            padding: 0 15px;
-        }
-
-        .accordion-content.aberto {
-            max-height: 5000px;
-            padding: 15px;
-            transition: max-height 0.5s ease-in;
-        }
-
-        /* Botão Trium Puerorum */
-        .btn-trium {
-            display: inline-block;
-            padding: 12px 20px;
-            margin: 20px 0;
-            background: #fff;
-            border: 3px solid #000;
-            font-weight: bold;
-            font-size: 18px;
-            text-decoration: none;
-            color: #000;
+            font-size: 16px;
+            white-space: nowrap;
+            background: white;
+            color: var(--text-color);
             cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
         }
 
-        .btn-trium:hover {
-            background: #f0f0f0;
+        .chip.active {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        /* --- ÁREA DE CONTEÚDO --- */
+        .content-area::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            
+            /* A altura mínima garante que cubra a tela visível, 
+               mas se o texto for longo, ela acompanha o scroll */
+            min-height: 100%; 
+            height: 100%;
+
+            /* CONFIGURAÇÃO DA IMAGEM */
+            background-image: url('Imagens/pio.png'); 
+            
+            /* 'contain' garante que a imagem inteira apareça sem cortar.
+               Se preferir que cubra tudo (pode cortar as bordas), use 'cover' */
+            background-size: 400px auto; 
+            
+            background-position: center; /* Fica no topo, centralizada */
+            background-repeat: no-repeat;
+            
+            /* TRANSPARÊNCIA */
+            opacity: 0.1; /* Ajuste a gosto para o Kindle */
+            z-index: -1; /* Joga para trás do texto */
+            filter: grayscale(100%);
+            pointer-events: none;
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px var(--spacing);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            
+            /* ADICIONEI ESTAS DUAS LINHAS: */
+            position: relative; /* Cria o limite para a imagem */
+            z-index: 1; /* Garante que o texto fique na camada da frente */
+        }
+
+        .category-title {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            padding-bottom: 10px;
+            border-bottom: 4px solid #000;
+        }
+
+        /* Lista Limpa (Sem linhas, um abaixo do outro) */
+        .list-item {
+            font-size: 20px;
+            padding: 6px 0; /* Espaçamento leve vertical */
+            margin-bottom: 8px; /* Separação visual */
+            line-height: 1.4;
+            border: none; /* SEM BORDA */
+        }
+        
+        /* Estilos utilitários dentro dos itens */
+        .subtitle {
+            font-weight: bold;
+            font-size: 22px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            display: block;
+            color: #000;
+        }
+
+        .cinza { color: #666; }
+
+        /* Estilo especial para citações/diário */
+        .quote-style {
+            font-style: italic;
+            background: #f4f4f4;
+            padding: 15px;
+            border-left: 4px solid #000;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 18px;
         }
 
         /* Botão Voltar ao Topo */
         #btnVoltarTopo {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: #434343;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease, background 0.2s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; bottom: 30px; right: 30px;
+            width: 50px; height: 50px;
+            background: #000; color: #fff;
+            border: 3px solid #000; border-radius: 50%;
+            font-size: 24px; cursor: pointer;
+            opacity: 0; visibility: hidden;
+            transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
+        #btnVoltarTopo.visivel { opacity: 1; visibility: visible; }
 
-        #btnVoltarTopo.visivel {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        #btnVoltarTopo:hover {
-            background: #333;
-        }
-
-        #btnVoltarTopo:active {
-            transform: scale(0.95);
-        }
     </style>
 </head>
 <body>
-    <div class="page-container">
-        <div class="header">
-            <h1>Ação de Graças</h1>
-            <a href="plano-inclinado.html" class="back-link">Voltar</a>
-            <a href="https://opusdei.org/pt-br/prayers/section/?section1=197&section2=37#dm-prayer-1429" class="back-link">Trium Puerorum</a>
+
+    <header>
+        <div class="flex" style="gap:16px">
+            <a href="dashboard.html" style="display:flex;align-items:center;">
+                <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
+            </a>          
+            <a href="plano-inclinado.html" style="display:flex;align-items:center;">
+                <img src="/icones/de-volta.png" alt="Voltar" style="width:40px;height:40px;">
+            </a>
+        </div>
+        <h1>Ação de Graças</h1>
+        <div style="width: 70px"></div>
+    </header>
+
+    <div class="chips-container" id="chipsNav">
         </div>
 
-        <div class="ag-container">
-
-            <!-- Seção 1: Intercessores -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Pela interseção de:</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content aberto">
-
-            <p>Nossa Senhora de Fátima</p>
-            <p>São Pio de Pietrelcina</p>
-            <p>São João Paulo II</p>
-            <p>São Josemaria</p>
-            <p>Beato Álvaro</p>
-            <p>Santo Agostinho</p>
-            <p>Santo Tomas de Aquino</p>
-            <p>São Sebastião</p>
-            <p>São Miguel</p>
-            <p>São João da Cruz</p>
-            <p>Santa Teresinha do Menino Jesus</p>
-            <p>Santa Teresa de Calcutá</p>
-            <p>Venerável Bispo Fulton Sheen</p>
-            <p>E do meu Anjo da Guarda</p>
-                </div>
-            </div>
-
-            <!-- Seção 2: Minha família -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Minha família</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-
-            <p>Minha mãe - Luciana</p>
-            <p>Minha irmã - Carol</p>
-            <p>Meus avós - Dercy e Humberto, Luis e Ana, Nadir e Dinarte</p>
-            <p>Meu pai - Antonio</p>
-            <p>Meus tios - Humberto, João, Paulo e Humberto Jr.</p>
-            <p>Minhas tias - Tia Criança, Evandra, Fátima, Gisele e Lesliane</p>
-            <p>Meus primos - Matheus, Leonardo, Antonella, João Paulo, Vinícius, Gabriel</p>
-            <p>Demais membros da minha família.</p>
-                </div>
-            </div>
-
-            <!-- Seção 3: Família do Opus Dei -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Por minha família o Opus Dei</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-
-            <p>Pelo Prelado Fernando</p>
-            <p>Pelo Dom Mariano Fazio</p>
-            <p>Pelo Vigário Fábio</p>
-            <p>Pelo Dom Carlos</p>
-            <p>Por toda Comissão Regional</p>
-
-            <p><strong>Meus diretores:</strong></p>
-            <p>Padre Sérgio</p>
-            <p>Veneziano Araújo</p>
-            <p>Raphael Barelli</p>
-
-            <p><strong>Meus demais irmãos:</strong></p>
-            <p>João Victor</p>
-            <p>Rodrigo</p>
-            <p>Pablo</p>
-            <p>Gerald</p>
-            <p>Eduardo</p>
-            <p>Iago</p>
-            <p>Pe. Fernando</p>
-            <p>Rafael Saucedo</p>
-            <p>Christian</p>
-            <p>Gabriel Thé</p>
-            <p>Lazaro</p>
-            <p>Gustavo M.</p>
-            <p>Arthur</p>
-            <p>Pe. Raphael Rezende</p>
-            <p>Pe. Daniel</p>
-            <p>Pe. Alexandre</p>
-            <p>Pe. Mariano</p>
-            <p>João Carlos Nara</p>
-            <p>Nikolas</p>
-            <p>Daniel Cury</p>
-            <p>Elber</p>
-            <p>Galão</p>
-            <p>Mauricio Batista</p>
-            <p>João Bosco e família</p>
-            <p>Gabriel Marcondes</p>
-            <p>Pedro Augusto</p>
-            <p>Rafael Manente</p>
-            <p>Gabriel Amarquezano</p>
-            <p>Pela alma do grande Pe. Francisco Faus</p>
-            <p>Pela administração</p>
-                </div>
-            </div>
-
-            <!-- Seção 4: Rapazes e Vocações -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Rapazes de São Rafael e Vocações</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-            <p><strong>Rapazes de São Rafael:</strong></p>
-            <p>Angelo +</p>
-            <p>Raphael Iglésias</p>
-            <p>Enzo Bressani +</p>
-            <p>Carlos +</p>
-            <p>Peterson +</p>
-            <p>Bruno +</p>
-            <p>Gabriel Manente ++</p>
-            <p>Lucas Brasil +</p>
-            <p>Pedro Italiano ++</p>
-            <p>Davi Cury ++</p>
-            <p>Marcos</p>
-            <p>Victor +</p>
-            <p>Rafael</p>
-            <p>Henrique</p>
-            <p>Yoshida</p>
-            <p>Por mais vocações</p>
-
-            <p><strong>Meus afilhados:</strong></p>
-            <p>Enzo Valério + +</p>
-            <p>Marcos e Raynnara Gurgel</p>
-
-            <p><strong>Pela vocações de:</strong></p>
-            <p>Giovanni Tsukahara</p>
-            <p>Pedro Navion</p>
-            <p>Hael</p>
-            <p>Miguel</p>
-            <p>Pedro Lucas</p>
-            <p>Victor Caballero</p>
-            <p>Gabriel Jesus</p>
-            <p>Lucas Puig</p>
-            <p>Lucas Loli</p>
-            <p>Luquinhas</p>
-            <p>Strobel</p>
-            <p>Martin</p>
-            <p>Ferrazo</p>
-            <p>Renan e Julia</p>
-                </div>
-            </div>
-
-            <!-- Seção 5: Meus amigos -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Meus amigos</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-            <p><strong>Meus amigos:</strong></p>
-
-            <div class="cinza">
-                <p>Victor</p>
-                <p>Daniel Zangrandi</p>
-                <p>Paulo e Pedro</p>
-                <p>Vitor</p>
-                <p>Paloma Ary E família Ary</p>
-                <p>Pedro Redher</p>
-                <p>Chiara Ary</p>
-                <p>Pedro Perdomo e Julia</p>
-                <p>Julia Korkis</p>
-                <p>Luiza Lory</p>
-                <p>Rose Ebling</p>
-                <p>Gustavo Franco</p>
-                <p>Rafael Felipe</p>
-                <p>Matheus Carvalho</p>
-                <p>José Neto</p>
-                <p>Victor Quadros</p>
-                <p>Mateus Meneguin</p>
-                <p>Kaique Vega</p>
-                <p>Antônio Abreu</p>
-                <p>Davi</p>
-                <p>Gustavo Mendes</p>
-                <p>Igor</p>
-                <p>Esther</p>
-                <p>Lorena e Paulo</p>
-                <p>Maria Fernanda</p>
-                <p>Mariana Engel</p>
-                <p>Mariana Gurgel</p>
-                <p>Maria Porto</p>
-                <p>Valentina e Vitória.</p>
-                <p>Thiago</p>
-                <p>Laura Casarin</p>
-                <p>Bianca Blanco</p>
-                <p>Tio Roberto e Família</p>
-            </div>
-
-            <p>A todos os meus demais amigos.</p>
-                </div>
-            </div>
-
-            <!-- Seção 6: Pela Igreja -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Pela igreja e sua necessidade</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-            <p>Pelo Santo Padre Papa Leão XIV</p>
-            <p>Pelo Dom Odilo</p>
-            <p>Pelo Dom Orlando</p>
-            <p>Pelo Pe. Rafael</p>
-            <p>Pelo Pe. Aluísio</p>
-            <p>Pelo Pe. Tomás</p>
-            <p>Pelo Pe. Luciano</p>
-            <p>Pelo Cardeal Robert Sarah</p>
-                </div>
-            </div>
-
-            <!-- Seção 7: Agradecimentos -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Agradecimentos</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-            <p>Pela minha vocação</p>
-            <p>Pela minha família</p>
-            <p>Por mais este dia de luta e conversão</p>
-                </div>
-            </div>
-
-            <!-- Seção 8: Petições -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Petições</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-            <p>Canonização de Dom Álvaro</p>
-            <p>Peço por mais vocações para sua Obra</p>
-            <p>Pelos estatudos</p>
-            <p>Fidelidade dos meus irmãos e minha.</p>
-            <p>Conversão do meu pai</p>
-            <p>Que eu ame mais minha irmã</p>
-            <p>Graça de não mais pecar</p>
-            <p>Se quiseres podes me limpar!</p>
-            <p>Fim das Guerras</p>
-            <p>Peço o que te peça o Padre</p>
-                </div>
-            </div>
-
-            <!-- Seção 9: Lembrar todos os dias -->
-            <div class="accordion-section">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>Lembrar todos os dias</span>
-                    <span class="accordion-icon">▼</span>
-                </div>
-                <div class="accordion-content">
-            <p>Espirito Santo, quando não entender algo me ajude encontrar o caminho.</p>
-            <p>Nossa Senhora, me ajuda a entender o que vou estudar hoje!</p>
-            <p>Meu Anjo da guarda, não me deixe cair em distrações.</p>
-            <p>Jesus, me ajuda a não perder de vista que tudo é pelas almas, esse é fim último: a Vossa glória!</p>
-            <p>Faz-me humildade, Pai. Não me deixes esquecer que carrego o meu tesouro em vaso de barro. Que eu confie mais em ti e menos em mim.</p>
-            <p>Faz-me humildade, faz-me puro, faz-me Santo!</p>
-                </div>
-            </div>
+    <div class="content-area" id="mainContent">
         </div>
-    </div>
 
-    <!-- Botão Voltar ao Topo -->
-    <button id="btnVoltarTopo" title="Voltar ao topo">↑</button>
+    <button id="btnVoltarTopo" onclick="scrollToTop()">↑</button>
 
     <script>
-        // Controle do accordion
-        function toggleAccordion(header) {
-            const content = header.nextElementSibling;
-            const isOpen = content.classList.contains('aberto');
+        // ============= DADOS =============
+        // Estrutura ajustada para listas verticais
+        const dataAG = {
+            intercessores: {
+                label: "Intercessores",
+                items: [
+                    "Nossa Senhora de Fátima", "São Pio de Pietrelcina", "São João Paulo II",
+                    "São Josemaria", "Beato Álvaro", "Santo Agostinho", "Santo Tomas de Aquino",
+                    "São Sebastião", "São Miguel", "São João da Cruz", "Santa Teresinha do Menino Jesus",
+                    "Santa Teresa de Calcutá", "Venerável Bispo Fulton Sheen", "E do meu Anjo da Guarda"
+                ]
+            },
+            familia: {
+                label: "Família",
+                items: [
+                    "Minha mãe - Luciana", "Minha irmã - Carol",
+                    "Meus avós - Dercy e Humberto, Luis e Ana, Nadir e Dinarte",
+                    "Meu pai - Antonio", "Meus tios - Humberto, João, Paulo e Humberto Jr.",
+                    "Minhas tias - Tia Criança, Evandra, Fátima, Gisele e Lesliane",
+                    "Meus primos - Matheus, Leonardo, Antonella, João Paulo, Vinícius, Gabriel",
+                    "Demais membros da minha família."
+                ]
+            },
+            opus: {
+                label: "Obra",
+                items: [
+                    "Pelo Prelado Fernando", "Pelo Dom Mariano Fazio", "Pelo Vigário Fábio", 
+                    "Pelo Dom Carlos", "Por toda Comissão Regional",
+                    
+                    "<span class='subtitle'>Meus diretores:</span>",
+                    "Padre Sérgio", "Veneziano Araújo", "Raphael Barelli",
+                    
+                    "<span class='subtitle'>Meus demais irmãos:</span>",
+                    "João Victor", "Rodrigo", "Pablo", "Gerald", "Eduardo", "Iago",
+                    "Pe. Fernando", "Rafael Saucedo", "Christian", "Gabriel Thé",
+                    "Lazaro", "Gustavo M.", "Arthur", "Pe. Raphael Rezende",
+                    "Pe. Daniel", "Pe. Alexandre", "Pe. Mariano",
+                    "João Carlos Nara", "Nikolas", "Daniel Cury", "Elber", "Galão",
+                    "Mauricio Batista", "João Bosco e família", "Gabriel Marcondes",
+                    "Pedro Augusto", "Rafael Manente", "Gabriel Amarquezano",
+                    "Pela alma do grande Pe. Francisco Faus",
+                    "Pela administração",
 
-            // Apenas alternar o estado do accordion clicado (não fecha os outros)
-            if (isOpen) {
-                content.classList.remove('aberto');
-                header.classList.remove('ativo');
-            } else {
-                content.classList.add('aberto');
-                header.classList.add('ativo');
+                    "<span class='subtitle'>Rapazes de São Rafael:</span>",
+                    "Angelo +", "Raphael Iglésias", "Enzo Bressani +", "Carlos +",
+                    "Peterson +", "Bruno +", "Gabriel Manente ++", "Lucas Brasil +",
+                    "Pedro Italiano ++", "Davi Cury ++", "Marcos", "Victor +",
+                    "Rafael", "Henrique", "Yoshida", "Por mais vocações",
+                    
+                    "<span class='subtitle'>Meus afilhados:</span>",
+                    "Enzo Valério + +", "Marcos e Raynnara Gurgel",
+                    
+                    "<span class='subtitle'>Pela vocações de:</span>",
+                    "Giovanni Tsukahara", "Pedro Navion", "Hael", "Miguel",
+                    "Pedro Lucas", "Victor Caballero", "Gabriel Jesus", "Lucas Puig",
+                    "Lucas Loli", "Luquinhas", "Strobel", "Martin", "Ferrazo",
+                    "Renan e Julia"
+                ]
+            },
+            amigos: {
+                label: "Amigos",
+                items: [
+                    "<span class='subtitle'>Meus amigos:</span>",
+                    "<span class='cinza'>Victor</span>",
+                    "<span class='cinza'>Daniel Zangrandi</span>",
+                    "<span class='cinza'>Paulo e Pedro</span>",
+                    "<span class='cinza'>Vitor</span>",
+                    "<span class='cinza'>Paloma Ary e Família</span>",
+                    "<span class='cinza'>Pedro Redher</span>",
+                    "<span class='cinza'>Chiara Ary</span>",
+                    "<span class='cinza'>Pedro Perdomo e Julia</span>",
+                    "<span class='cinza'>Julia Korkis</span>",
+                    "<span class='cinza'>Luiza Lory</span>",
+                    "<span class='cinza'>Rose Ebling</span>",
+                    "<span class='cinza'>Gustavo Franco</span>",
+                    "<span class='cinza'>Rafael Felipe</span>",
+                    "<span class='cinza'>Matheus Carvalho</span>",
+                    "<span class='cinza'>José Neto</span>",
+                    "<span class='cinza'>Victor Quadros</span>",
+                    "<span class='cinza'>Mateus Meneguin</span>",
+                    "<span class='cinza'>Kaique Vega</span>",
+                    "<span class='cinza'>Antônio Abreu</span>",
+                    "<span class='cinza'>Davi</span>",
+                    "<span class='cinza'>Gustavo Mendes</span>",
+                    "<span class='cinza'>Igor</span>",
+                    "<span class='cinza'>Esther</span>",
+                    "<span class='cinza'>Lorena e Paulo</span>",
+                    "<span class='cinza'>Maria Fernanda</span>",
+                    "<span class='cinza'>Mariana Engel</span>",
+                    "<span class='cinza'>Mariana Gurgel</span>",
+                    "<span class='cinza'>Maria Porto</span>",
+                    "<span class='cinza'>Valentina e Vitória</span>",
+                    "<span class='cinza'>Thiago</span>",
+                    "<span class='cinza'>Laura Casarin</span>",
+                    "<span class='cinza'>Bianca Blanco</span>",
+                    "<span class='cinza'>Tio Roberto e Família</span>",
+                    "A todos os meus demais amigos."
+                ]
+            },
+            igreja: {
+                label: "Igreja",
+                items: [
+                    "Pelo Santo Padre Papa Francisco", 
+                    "Pelo Dom Odilo", "Pelo Dom Orlando",
+                    "Pelo Pe. Rafael", "Pelo Pe. Aluísio", "Pelo Pe. Tomás", "Pelo Pe. Luciano",
+                    "Pelo Cardeal Robert Sarah"
+                ]
+            },
+            agradecer: {
+                label: "Agradecimentos",
+                items: [
+                    "Pela minha vocação",
+                    "Pela minha família",
+                    "Por mais este dia de luta e conversão"
+                ]
+            },
+            peticoes: {
+                label: "Petições",
+                items: [
+                    "Canonização de Dom Álvaro",
+                    "Mais vocações para a Obra",
+                    "Pelos estatutos",
+                    "Fidelidade dos meus irmãos e minha",
+                    "Conversão do meu pai",
+                    "Que eu ame mais minha irmã",
+                    "Graça de não mais pecar",
+                    "Se quiseres podes me limpar!",
+                    "Fim das Guerras",
+                    "Peço o que te peça o Padre"
+                ]
+            },
+            diario: {
+                label: "Lembrar Sempre",
+                isQuotes: true,
+                items: [
+                    "Espirito Santo, quando não entender algo me ajude encontrar o caminho.",
+                    "Nossa Senhora, me ajuda a entender o que vou estudar hoje!",
+                    "Meu Anjo da guarda, não me deixe cair em distrações.",
+                    "Jesus, me ajuda a não perder de vista que tudo é pelas almas, esse é fim último: a Vossa glória!",
+                    "Faz-me humilde, Pai. Não me deixes esquecer que carrego o meu tesouro em vaso de barro. Que eu confie mais em ti e menos em mim.",
+                    "Faz-me humilde, faz-me puro, faz-me Santo!"
+                ]
+            }
+        };
+
+        // ============= LÓGICA =============
+        const chipsContainer = document.getElementById('chipsNav');
+        const mainContent = document.getElementById('mainContent');
+        const btnVoltarTopo = document.getElementById('btnVoltarTopo');
+        const contentArea = document.querySelector('.content-area'); 
+
+        function init() {
+            renderChips();
+            loadCategory('intercessores');
+        }
+
+        function renderChips() {
+            chipsContainer.innerHTML = '';
+            for (const key in dataAG) {
+                const cat = dataAG[key];
+                const btn = document.createElement('button');
+                btn.className = 'chip';
+                btn.textContent = cat.label;
+                btn.onclick = () => loadCategory(key, btn);
+                if(key === 'intercessores') btn.classList.add('active');
+                chipsContainer.appendChild(btn);
             }
         }
 
-        // Abrir a primeira seção por padrão ao carregar
-        window.addEventListener('DOMContentLoaded', function() {
-            const firstHeader = document.querySelector('.accordion-header');
-            if (firstHeader) {
-                firstHeader.classList.add('ativo');
+        function loadCategory(key, clickedBtn) {
+            // Atualizar UI dos chips
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if(clickedBtn) clickedBtn.classList.add('active');
+            else {
+                const btns = document.querySelectorAll('.chip');
+                for(let b of btns) {
+                    if(b.textContent === dataAG[key].label) b.classList.add('active');
+                }
             }
-        });
 
-        // Controle do botão "Voltar ao Topo"
-        const btnVoltarTopo = document.getElementById('btnVoltarTopo');
+            // Renderizar Conteúdo
+            const data = dataAG[key];
+            
+            // Título sem ícone
+            let html = `<div class="category-title">${data.label}</div>`;
 
-        // Mostrar/ocultar botão baseado na posição do scroll
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
+            // Lista Vertical
+            html += `<div class="list-container">`;
+            data.items.forEach(item => {
+                if (data.isQuotes) {
+                    html += `<div class="quote-style">${item}</div>`;
+                } else {
+                    html += `<div class="list-item">${item}</div>`;
+                }
+            });
+            html += `</div>`;
+
+            mainContent.innerHTML = html;
+            
+            // Scroll para o topo do conteúdo
+            contentArea.scrollTop = 0;
+        }
+
+        // ============= UTILITÁRIOS =============
+        
+        contentArea.addEventListener('scroll', function() {
+            if (contentArea.scrollTop > 300) {
                 btnVoltarTopo.classList.add('visivel');
             } else {
                 btnVoltarTopo.classList.remove('visivel');
             }
         });
 
-        // Rolar suavemente ao topo ao clicar
-        btnVoltarTopo.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
+        function scrollToTop() {
+            contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        init();
+
     </script>
 </body>
 </html>

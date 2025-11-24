@@ -292,13 +292,21 @@
             flex: 1;           /* Ocupa todo o espaço restante */
             font-family: var(--font-main);
             color: #000;
-            
+
             /* Reset de input/textarea */
             border: none;
             outline: none;
             resize: none;
             background: transparent;
             width: 100%;
+        }
+
+        /* Espaçamento entre parágrafos no modal de visualização */
+        .modal-body p {
+            margin-bottom: 12px;
+        }
+        .modal-body p:last-child {
+            margin-bottom: 0;
         }
 
         /* --- INPUTS ESPECÍFICOS --- */
@@ -641,7 +649,13 @@
                 const modalBody = modalView.querySelector('.modal-body');
 
                 modalTitle.textContent = annotation.title || 'Sem título';
-                modalBody.innerHTML = `<p>${annotation.content || 'Sem conteúdo'}</p>`;
+
+                // Preservar formatação original convertendo \n em <br> e parágrafos vazios
+                const formattedContent = (annotation.content || 'Sem conteúdo')
+                    .split('\n')
+                    .map(line => line.trim() === '' ? '<br>' : `<p>${line}</p>`)
+                    .join('');
+                modalBody.innerHTML = formattedContent;
 
                 // Abrir modal
                 modalView.classList.remove('hidden');
@@ -787,7 +801,13 @@
                 const titleView = document.getElementById('modal-title-view');
                 const bodyView = document.getElementById('modal-body-view');
                 titleView.textContent = title;
-                bodyView.innerHTML = content.replace(/\n/g, '<br>');
+
+                // Preservar formatação original
+                const formattedContent = content
+                    .split('\n')
+                    .map(line => line.trim() === '' ? '<br>' : `<p>${line}</p>`)
+                    .join('');
+                bodyView.innerHTML = formattedContent;
 
                 // Voltar para modo visualização
                 isEditMode = false;

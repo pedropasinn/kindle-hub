@@ -5,9 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contemplação - Hub Kindle</title>
     <link rel="stylesheet" href="style.css">
-    <script src="timer.js"></script>
+    <!-- Phosphor Icons: Biblioteca de ícones leve e nítida -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="timer.js" defer></script>
     <script src="points-popup.js"></script>
     <style>
+        /* --- RESET & VARIÁVEIS --- */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #000000;
+            --font-main: Helvetica, Arial, sans-serif;
+            --radius: 12px;
+            --spacing: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CABEÇALHO GERAL --- */
+        header {
+            padding: var(--spacing);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid transparent;
+        }
+        header h1 { font-size: 30px; font-weight: bold; }
+
+        /* --- ESTILOS ESPECÍFICOS DA CONTEMPLAÇÃO --- */
         .contemplacao-container {
             display: flex;
             flex-direction: column;
@@ -26,12 +61,14 @@
         }
 
         .misterio-btn {
-            padding: 12px 20px;
+            padding: 12px 24px;
             background: #fff;
             border: 2px solid #000;
+            border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
+            font-family: inherit;
             transition: all 0.2s;
         }
 
@@ -54,7 +91,9 @@
         .imagem-atual {
             max-width: 100%;
             max-height: 500px;
-            border: 3px solid #000;
+            border: 2px solid #000;
+            border-radius: var(--radius);
+            box-shadow: 4px 4px 0px #000;
             margin-bottom: 20px;
             background: #f5f5f5;
             display: flex;
@@ -91,11 +130,13 @@
         .nav-btn {
             padding: 15px 40px;
             background: #fff;
-            border: 3px solid #000;
+            border: 2px solid #000;
+            border-radius: 50px;
             font-weight: bold;
             font-size: 24px;
             cursor: pointer;
             min-width: 80px;
+            font-family: inherit;
         }
 
         .nav-btn:hover {
@@ -137,11 +178,15 @@
 </head>
 <body>
     <div class="page-container">
-        <div class="header">
+        <header>
+            <div style="display:flex;align-items:center;gap:16px">
+                <a href="plano-inclinado.html" style="display:flex;align-items:center;">
+                    <img src="/icones/de-volta.png" alt="Anotações" style="width:40px;height:40px;">
+                </a>
+            </div>
             <h1>Contemplação</h1>
-            <a href="plano-inclinado.html" class="back-link">Voltar</a>
-            <a href="https://opusdei.org/pt-br/prayers/section/?section1=195&section2=35#dm-prayer-1409" class="back-link">Ladainha</a>
-        </div>
+            <div style="width: 70px"></div> <!-- Espaçador visual -->
+        </header>
 
         <div class="contemplacao-container">
             <div class="misterios-selector">

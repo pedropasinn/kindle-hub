@@ -1,262 +1,272 @@
 // Sistema de Pop-ups Horários de Pontos (Caminho, Sulco, Forja)
-// Exibe um ponto aleatório a cada hora entre 7h e 22h
+// Otimizado para Kindle (E-ink / High Contrast)
 
 (function() {
     'use strict';
 
-    const START_HOUR = 7;  // 7h
-    const END_HOUR = 22;   // 22h
+    const START_HOUR = 7;  
+    const END_HOUR = 23;   // Estendi até 23h
     const STORAGE_KEY = 'pointsPopupState';
 
     let currentPoint = null;
     let popupElement = null;
 
-    // Criar o CSS do pop-up
+    // --- ESTILOS OTIMIZADOS PARA KINDLE ---
     function injectStyles() {
         const style = document.createElement('style');
         style.textContent = `
+            /* Fundo branco quase opaco para tapar o texto de trás */
             #points-popup-overlay {
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.8);
-                z-index: 9999;
-                display: flex;
+                width: 100vw;
+                height: 100vh;
+                background-color: #ffffff; 
+                z-index: 99999; /* Z-index altíssimo */
+                display: none;
+                flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                padding: 20px;
+                padding: 10px;
             }
 
+            /* Caixa do conteúdo simulando uma página de livro */
             #points-popup-content {
                 background: white;
-                border: 3px solid #000;
-                max-width: 700px;
                 width: 100%;
-                max-height: 80vh;
-                overflow-y: auto;
-                padding: 20px;
+                max-width: 600px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                /* Borda grossa preta fica melhor no Kindle que sombra */
+                border: 4px solid black; 
+                padding: 25px;
+                box-sizing: border-box;
             }
 
             #points-popup-header {
-                font-size: 22px;
-                font-weight: bold;
-                margin-bottom: 15px;
-                border-bottom: 2px solid #000;
-                padding-bottom: 10px;
+                font-family: "Helvetica", sans-serif;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                border-bottom: 2px solid black;
+                padding-bottom: 8px;
+                margin-bottom: 16px;
+                width: 100%;
             }
 
             #points-popup-book {
-                font-size: 16px;
-                color: #666;
-                margin-bottom: 10px;
+                font-family: "Bookerly", "Georgia", serif;
+                font-style: italic;
+                font-size: 18px;
+                color: #000;
+                margin-bottom: 12px;
             }
 
             #points-popup-text {
-                font-size: 18px;
-                line-height: 1.6;
-                margin-bottom: 20px;
+                font-family: "Bookerly", "Georgia", serif;
+                font-size: 24px; /* Fonte bem grande para leitura fácil */
+                line-height: 1.4;
+                margin-bottom: 30px;
+                color: #000;
             }
 
             #points-popup-buttons {
                 display: flex;
-                gap: 10px;
-                justify-content: center;
+                flex-direction: column; /* Botões um em cima do outro facilitam o toque */
+                gap: 15px;
+                width: 100%;
             }
 
             .points-popup-btn {
-                padding: 12px 24px;
-                font-size: 16px;
+                padding: 15px 0;
+                font-size: 18px;
                 font-weight: bold;
-                border: 2px solid #000;
-                background: #fff;
+                border: 3px solid black;
+                background: white;
+                color: black;
                 cursor: pointer;
+                width: 100%;
+                text-transform: uppercase;
+                transition: background 0.2s;
             }
 
-            .points-popup-btn:hover {
-                background: #f0f0f0;
+            /* O botão principal fica preto com texto branco (Invertido) */
+            .btn-primary {
+                background: black;
+                color: white;
             }
         `;
         document.head.appendChild(style);
     }
 
-    // Criar o elemento HTML do pop-up
     function createPopupElement() {
+        // Remove anterior se existir para evitar duplicatas
+        const existing = document.getElementById('points-popup-overlay');
+        if (existing) existing.remove();
+
         const overlay = document.createElement('div');
         overlay.id = 'points-popup-overlay';
         overlay.innerHTML = `
             <div id="points-popup-content">
-                <div id="points-popup-header">Ponto de Meditação</div>
+                <div id="points-popup-header">Hora da Meditação</div>
                 <div id="points-popup-book"></div>
                 <div id="points-popup-text"></div>
+                
                 <div id="points-popup-buttons">
-                    <button class="points-popup-btn" onclick="window.PointsPopup.close()">Fechar</button>
-                    <button class="points-popup-btn" onclick="window.PointsPopup.markAsDone()">Já Rezei</button>
+                    <button class="points-popup-btn btn-primary" onclick="window.PointsPopup.markAsDone()">
+                        Concluído
+                    </button>
+                    <button class="points-popup-btn" onclick="window.PointsPopup.close()">
+                        Ler depois
+                    </button>
                 </div>
             </div>
         `;
         return overlay;
     }
 
-    // Buscar ponto aleatório da API
+    // --- LÓGICA ---
+
     async function fetchRandomPoint() {
+        console.log("Tentando buscar ponto...");
         try {
+            // Adicione o host completo se necessário, ex: http://192.168.x.x:3000/api...
             const response = await fetch('/api/escriva/random-point');
-            if (!response.ok) {
-                throw new Error('Erro na API');
-            }
-            const data = await response.json();
-            return data;
+            if (!response.ok) throw new Error('Status ' + response.status);
+            return await response.json();
         } catch (error) {
-            console.error('Erro ao buscar ponto:', error);
-            return null;
+            console.error('Erro API:', error);
+            // Fallback caso a API falhe (para teste)
+            return {
+                book_type: 'caminho',
+                number: '???',
+                text: 'Não foi possível conectar ao servidor. Verifique a conexão Wi-Fi do Kindle.'
+            };
         }
     }
 
-    // Obter o livro em português
     function getBookName(bookType) {
-        const books = {
-            'camino': 'Caminho',
-            'surco': 'Sulco',
-            'forja': 'Forja'
-        };
+        const books = { 'camino': 'Caminho', 'surco': 'Sulco', 'forja': 'Forja' };
         return books[bookType] || bookType;
     }
 
-    // Limpar texto (remover tags HTML)
     function cleanText(text) {
         if (!text) return '';
-        // Remover tags HTML
         return text.replace(/<[^>]*>/g, '').trim();
     }
 
-    // Exibir o pop-up
     function showPopup(point) {
         if (!point) return;
-
         currentPoint = point;
 
-        // Criar pop-up se não existir
         if (!popupElement) {
             popupElement = createPopupElement();
             document.body.appendChild(popupElement);
+        } else {
+            // Garante que está no body caso tenha sido removido
+            if(!document.getElementById('points-popup-overlay')) {
+                document.body.appendChild(popupElement);
+            }
         }
 
-        // Preencher conteúdo
         const bookName = getBookName(point.book_type);
-        document.getElementById('points-popup-book').textContent =
-            `${bookName} ${point.number}`;
+        document.getElementById('points-popup-book').textContent = `${bookName}, nº ${point.number}`;
         document.getElementById('points-popup-text').textContent = cleanText(point.text);
 
-        // Mostrar
-        popupElement.style.display = 'flex';
+        // Usar display flex para garantir centralização
+        popupElement.style.display = 'flex'; 
 
-        // Salvar no estado
+        // Salvar que foi exibido
         saveState({
             lastShown: new Date().toISOString(),
             currentHour: new Date().getHours(),
-            pointId: point.id
+            pointId: point.id,
+            done: false // Ainda não foi rezado
         });
     }
 
-    // Fechar o pop-up
     function closePopup() {
-        if (popupElement) {
-            popupElement.style.display = 'none';
-        }
+        if (popupElement) popupElement.style.display = 'none';
     }
 
-    // Marcar como rezado
     function markAsDone() {
-        console.log('✅ Ponto marcado como rezado:', currentPoint?.number);
         closePopup();
-
-        // Atualizar estado para não mostrar novamente nesta hora
         const state = loadState();
-        state.done = true;
+        state.done = true; // Marca como feito para não aparecer mais nesta hora
         saveState(state);
     }
 
-    // Salvar estado no localStorage
     function saveState(state) {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (error) {
-            console.error('Erro ao salvar estado:', error);
-        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    // Carregar estado do localStorage
     function loadState() {
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
-            return data ? JSON.parse(data) : {};
-        } catch (error) {
-            console.error('Erro ao carregar estado:', error);
-            return {};
-        }
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch (e) { return {}; }
     }
 
-    // Verificar se deve mostrar o pop-up
     function shouldShowPopup() {
         const now = new Date();
         const currentHour = now.getHours();
 
-        // Verificar horário ativo (7h às 22h)
-        if (currentHour < START_HOUR || currentHour >= END_HOUR) {
-            return false;
-        }
+        // 1. Horário permitido?
+        if (currentHour < START_HOUR || currentHour >= END_HOUR) return false;
 
         const state = loadState();
 
-        // Verificar se já mostrou nesta hora
-        if (state.currentHour === currentHour && state.done) {
-            return false;
-        }
-
-        // Se mudou de hora, pode mostrar
+        // 2. É uma nova hora?
         if (state.currentHour !== currentHour) {
+            // Resetar o estado "done" se mudou a hora
+            state.done = false; 
+            saveState(state); 
             return true;
         }
 
-        // Se nunca mostrou, mostrar
-        if (!state.lastShown) {
-            return true;
-        }
+        // 3. Já foi feito nesta hora?
+        if (state.done) return false;
 
-        return false;
+        // 4. Se não foi feito e estamos na mesma hora, mostra (ou insiste)
+        // Opcional: Para não ficar chato, verificar se já mostrou nos últimos 10 min
+        return true; 
     }
 
-    // Verificar e mostrar pop-up se necessário
     async function checkAndShow() {
         if (shouldShowPopup()) {
+            // Verifica se o popup JÁ está visível para não buscar outro
+            const el = document.getElementById('points-popup-overlay');
+            if (el && el.style.display === 'flex') return;
+
             const point = await fetchRandomPoint();
-            if (point) {
-                showPopup(point);
-            }
+            if (point) showPopup(point);
         }
     }
 
-    // Inicializar
     function init() {
         injectStyles();
-
-        // Verificar imediatamente
-        checkAndShow();
-
-        // Verificar a cada minuto
-        setInterval(checkAndShow, 60000); // 1 minuto
+        
+        // Verifica a cada 60 segundos
+        setInterval(checkAndShow, 60000);
+        
+        // Verifica ao carregar a página
+        setTimeout(checkAndShow, 2000); 
     }
 
-    // Expor API global
+    // API Global
     window.PointsPopup = {
         close: closePopup,
         markAsDone: markAsDone,
-        show: checkAndShow
+        show: checkAndShow,
+        // Função de teste para forçar aparecer AGORA
+        test: async () => {
+            const point = await fetchRandomPoint();
+            showPopup(point);
+        }
     };
 
-    // Inicializar quando o DOM estiver pronto
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
