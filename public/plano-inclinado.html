@@ -261,14 +261,14 @@
                         notionHabitsMap[habit.nome] = habit;
                     });
 
-                    console.log('✅ Notion integrado com sucesso');
+                    console.log(' Notion integrado com sucesso');
                     return true;
                 } else {
-                    console.warn('⚠️ Notion não configurado, usando localStorage');
+                    console.warn(' Notion não configurado, usando localStorage');
                     return false;
                 }
             } catch (error) {
-                console.warn('⚠️ Erro ao conectar com Notion:', error);
+                console.warn(' Erro ao conectar com Notion:', error);
                 return false;
             }
         }
@@ -307,13 +307,13 @@
             const habitsToSync = Array.from(syncQueue.entries());
             syncQueue.clear();
 
-            console.log(`🔄 Sincronizando ${habitsToSync.length} hábito(s) com Notion...`);
+            console.log(` Sincronizando ${habitsToSync.length} hábito(s) com Notion...`);
 
             for (const [habitName, checked] of habitsToSync) {
                 const success = await syncHabitToNotion(habitName, checked);
                 if (!success) {
                     // Recolocar na fila para retry
-                    console.warn(`⚠️ Falha ao sincronizar '${habitName}', tentando novamente...`);
+                    console.warn(` Falha ao sincronizar '${habitName}', tentando novamente...`);
                     await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1s
                     await syncHabitToNotion(habitName, checked); // Tentar novamente
                 }
@@ -331,7 +331,7 @@
             for (let attempt = 0; attempt <= retries; attempt++) {
                 try {
                     const pageId = notionHabitsMap[habitName].id;
-                    console.log(`📝 Tentativa ${attempt + 1}/${retries + 1}: Sincronizando '${habitName}' = ${checked}`);
+                    console.log(` Tentativa ${attempt + 1}/${retries + 1}: Sincronizando '${habitName}' = ${checked}`);
 
                     const response = await fetch(`/api/notion/habits/${pageId}`, {
                         method: 'PATCH',
@@ -344,14 +344,14 @@
 
                     if (response.ok) {
                         notionHabitsMap[habitName].concluido = checked;
-                        console.log(`✅ '${habitName}' sincronizado com sucesso`);
+                        console.log(` '${habitName}' sincronizado com sucesso`);
                         return true;
                     } else {
                         const error = await response.text();
-                        console.error(`❌ Erro HTTP ${response.status}:`, error);
+                        console.error(` Erro HTTP ${response.status}:`, error);
                     }
                 } catch (error) {
-                    console.error(`❌ Erro na tentativa ${attempt + 1}:`, error);
+                    console.error(` Erro na tentativa ${attempt + 1}:`, error);
                 }
 
                 // Aguardar antes de tentar novamente
@@ -360,7 +360,7 @@
                 }
             }
 
-            console.error(`❌ Falha definitiva ao sincronizar '${habitName}' após ${retries + 1} tentativas`);
+            console.error(` Falha definitiva ao sincronizar '${habitName}' após ${retries + 1} tentativas`);
             return false;
         }
 
@@ -425,7 +425,7 @@
                 });
 
                 if (response.ok) {
-                    console.log('✅ Hábitos salvos no banco de dados');
+                    console.log(' Hábitos salvos no banco de dados');
                     return true;
                 }
             } catch (error) {
@@ -475,13 +475,13 @@
                         disciplina: data.disciplina,
                         sabado: data.sabado
                     };
-                    console.log('✅ Normas semanais do Notion carregadas');
+                    console.log(' Normas semanais do Notion carregadas');
                     return true;
                 } else {
                     throw new Error('Erro ao carregar');
                 }
             } catch (error) {
-                console.warn('⚠️ Normas semanais do Notion não disponíveis:', error);
+                console.warn(' Normas semanais do Notion não disponíveis:', error);
                 return false;
             }
         }
@@ -534,7 +534,7 @@
                 });
 
                 if (response.ok) {
-                    console.log('✅ Norma semanal atualizada no Notion');
+                    console.log(' Norma semanal atualizada no Notion');
                 } else {
                     throw new Error('Erro ao atualizar');
                 }
@@ -554,7 +554,7 @@
 
             // Se nunca foi resetado ou se mudou de dia
             if (!lastReset || lastReset !== today) {
-                console.log('🔄 Novo dia detectado! Resetando hábitos diários...');
+                console.log(' Novo dia detectado! Resetando hábitos diários...');
 
                 // Reset automático (sem confirmação)
                 const { weeklyState } = loadState();
@@ -571,7 +571,7 @@
 
         // Inicializar
         async function init() {
-            console.log('🚀 Inicializando Plano Inclinado...');
+            console.log(' Inicializando Plano Inclinado...');
 
             await loadFromNotion();
             await loadWeeklyNotionHabits();
@@ -584,12 +584,12 @@
             renderWeeklyNotionHabits();
 
             if (wasReset) {
-                console.log('✅ Hábitos diários resetados para o novo dia!');
+                console.log(' Hábitos diários resetados para o novo dia!');
             }
 
             // Sincronização periódica do Notion a cada 2 minutos
             setInterval(async () => {
-                console.log('🔄 Sincronização periódica do Notion...');
+                console.log(' Sincronização periódica do Notion...');
                 const previousMap = JSON.parse(JSON.stringify(notionHabitsMap));
                 await loadFromNotion();
 
@@ -598,12 +598,12 @@
                 for (const habitName in notionHabitsMap) {
                     if (previousMap[habitName] && previousMap[habitName].concluido !== notionHabitsMap[habitName].concluido) {
                         hasChanges = true;
-                        console.log(`🔄 Mudança detectada em '${habitName}': ${previousMap[habitName].concluido} → ${notionHabitsMap[habitName].concluido}`);
+                        console.log(` Mudança detectada em '${habitName}': ${previousMap[habitName].concluido} → ${notionHabitsMap[habitName].concluido}`);
                     }
                 }
 
                 if (hasChanges) {
-                    console.log('♻️ Atualizando interface...');
+                    console.log(' Atualizando interface...');
                     renderDaily();
                 }
             }, 120000); // 2 minutos
@@ -613,7 +613,7 @@
                 const resetou = checkAutoReset();
                 if (resetou) {
                     renderDaily();
-                    console.log('✅ Auto-reset executado!');
+                    console.log(' Auto-reset executado!');
                 }
             }, 60000); // 1 minuto
 

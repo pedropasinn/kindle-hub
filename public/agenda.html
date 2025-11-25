@@ -239,13 +239,17 @@
 
             // Dias do mês atual
             const today = adjustTime(new Date());
+
             for (let day = 1; day <= lastDate; day++) {
                 const date = new Date(year, month, day);
                 const isToday = date.toDateString() === today.toDateString();
                 const isSelected = date.toDateString() === selectedDate.toDateString();
+
+                // CORREÇÃO: Ajusta a data do evento ANTES de comparar com o dia do calendário
                 const hasEvents = allEvents.some(e => {
-                    const eventDate = new Date(e.start.dateTime || e.start.date);
-                    return eventDate.toDateString() === date.toDateString();
+                    const rawDate = new Date(e.start.dateTime || e.start.date);
+                    const adjustedEventDate = adjustTime(rawDate); // Aplica -3h antes de comparar
+                    return adjustedEventDate.toDateString() === date.toDateString();
                 });
 
                 let className = 'calendar-day';
@@ -333,9 +337,13 @@
             document.getElementById('selectedDateTitle').textContent =
                 `Eventos de ${dayName}, ${dateStr}`;
 
+            // CORREÇÃO: Ajusta a data do evento ANTES de filtrar
             const dayEvents = allEvents.filter(event => {
-                const eventDate = new Date(event.start.dateTime || event.start.date);
-                return eventDate.toDateString() === date.toDateString();
+                const rawDate = new Date(event.start.dateTime || event.start.date);
+                const adjustedEventDate = adjustTime(rawDate); // Transforma em horário BR antes de filtrar
+
+                // Compara a data JÁ ajustada com a data selecionada no calendário
+                return adjustedEventDate.toDateString() === date.toDateString();
             });
 
             const container = document.getElementById('eventsContainer');
@@ -348,10 +356,9 @@
             container.innerHTML = dayEvents.map(event => {
                 let timeStr = '';
                 if (event.start.dateTime) {
-                    const start = new Date(event.start.dateTime);
-                    start.setHours(start.getHours() - 3); // Subtrair 3 horas
-                    const end = event.end.dateTime ? new Date(event.end.dateTime) : null;
-                    if (end) end.setHours(end.getHours() - 3); // Subtrair 3 horas
+                    // Aqui mantemos o ajuste visual para exibir a hora correta
+                    const start = adjustTime(new Date(event.start.dateTime));
+                    const end = event.end.dateTime ? adjustTime(new Date(event.end.dateTime)) : null;
 
                     timeStr = start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                     if (end) {
