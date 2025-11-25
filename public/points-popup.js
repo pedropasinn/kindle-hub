@@ -136,7 +136,7 @@
     async function fetchRandomPoint() {
         try {
             // URL da API
-            const response = await fetch('https://escriva.org/api/v1/points/random/'); 
+            const response = await fetch('https://escriva.org/api/v1/points/random/?book_type=camino&book_type=forja&book_type=surco&site_id=6'); 
             if (!response.ok) throw new Error('Status ' + response.status);
             return await response.json();
         } catch (error) {
