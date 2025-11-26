@@ -211,9 +211,9 @@
         <div class="calendar-header">
             <h2 id="monthYear"></h2>
             <div class="calendar-nav">
-                <button onclick="changeMonth(-1)">← Anterior</button>
+                <button onclick="changeMonth(-1)">←</button>
                 <button onclick="goToToday()">Hoje</button>
-                <button onclick="changeMonth(1)">Próximo →</button>
+                <button onclick="changeMonth(1)">→</button>
             </div>
         </div>
 
@@ -408,14 +408,36 @@
                 return adjustedEventDate.toDateString() === date.toDateString();
             });
 
+            // Filtrar eventos passados SOMENTE se for o dia de hoje
+            const now = adjustTime(new Date());
+            const isToday = date.toDateString() === now.toDateString();
+
+            const filteredEvents = dayEvents.filter(event => {
+                // Se não for hoje, mostrar todos os eventos
+                if (!isToday) {
+                    return true;
+                }
+
+                // Se não tem horário específico (evento de dia inteiro), sempre mostrar
+                if (!event.start.dateTime) {
+                    return true;
+                }
+
+                // Para eventos de hoje com horário, verificar se já terminou
+                const eventEnd = event.end.dateTime ? adjustTime(new Date(event.end.dateTime)) : adjustTime(new Date(event.start.dateTime));
+
+                // Só mostrar se o evento ainda não terminou
+                return eventEnd > now;
+            });
+
             const container = document.getElementById('eventsContainer');
 
-            if (dayEvents.length === 0) {
-                container.innerHTML = '<p class="empty-state">Nenhum evento para este dia</p>';
+            if (filteredEvents.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhum evento futuro para este dia</p>';
                 return;
             }
 
-            container.innerHTML = dayEvents.map(event => {
+            container.innerHTML = filteredEvents.map(event => {
                 let timeStr = '';
                 if (event.start.dateTime) {
                     // Aqui mantemos o ajuste visual para exibir a hora correta

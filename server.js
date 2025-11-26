@@ -135,7 +135,10 @@ app.get('/api/calendar/events', async (req, res) => {
     const calendar = google.calendar({ version: 'v3', auth });
     const { days = 7 } = req.query;
 
+    // Buscar eventos de 7 dias atrás até X dias à frente
     const timeMin = new Date();
+    timeMin.setDate(timeMin.getDate() - 7); // 7 dias atrás
+
     const timeMax = new Date();
     timeMax.setDate(timeMax.getDate() + parseInt(days));
 
