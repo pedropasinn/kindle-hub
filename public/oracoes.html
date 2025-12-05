@@ -11,11 +11,13 @@
             --bg-color: #ffffff;
             --text-color: #000000;
             --rubric-color: #cc0000;
+            --theme-red: #8B0000;
             --font-main: Helvetica, Arial, sans-serif;
             --spacing: 16px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: var(--font-main);
@@ -27,69 +29,103 @@
             flex-direction: column;
         }
 
-        /* --- CABEÇALHO --- */
+        /* --- CABEÇALHO UNIFICADO --- */
         header {
             padding: 10px var(--spacing);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            align-items: center; /* Alinha verticalmente */
+            justify-content: space-between; /* Distribui os itens */
             border-bottom: 1px solid #ccc;
-            flex-shrink: 0;
             background: #fff;
+            flex-shrink: 0;
             z-index: 10;
+            position: relative; /* Necessário para centralizar o título absoluto */
+            height: 60px; /* Altura fixa para garantir alinhamento */
         }
-        header h1 { font-size: 20px; font-weight: bold; margin: 0; }
-        .flex { display: flex; align-items: center; gap: 10px; }
 
-        /* --- SELETOR DE MODO (PT | LA | AMBOS) --- */
-        .mode-selector {
+        .header-left {
             display: flex;
-            justify-content: center;
-            padding: 8px;
-            background: #f4f4f4;
-            border-bottom: 1px solid #ccc;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        .mode-btn {
-            background: #fff; border: 1px solid #000; padding: 6px 12px;
-            font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px;
-        }
-        .mode-btn.active { background: #000; color: #fff; }
-
-        /* --- NAVEGAÇÃO (DOIS NÍVEIS) --- */
-        .nav-area {
-            flex-shrink: 0;
-            background: #fff;
-            border-bottom: 2px solid #000;
+            align-items: center;
+            gap: 15px;
+            z-index: 2; /* Garante que fique acima do título se a tela for muito pequena */
         }
 
-        /* Nível 1: Categorias (Vermelho Escuro da Imagem) */
-        .category-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: 8px;
-            padding: 10px var(--spacing);
-            border-bottom: 1px solid #eee;
-            scrollbar-width: none;
-        }
-        .cat-chip {
-            border: 1px solid #8B0000; /* Vermelho escuro */
-            color: #8B0000;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 13px;
+        /* Título Centralizado Absoluto */
+        header h1 { 
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 22px; 
+            font-weight: bold; 
+            margin: 0;
             white-space: nowrap;
-            background: white;
-            cursor: pointer;
-            font-weight: bold;
+            z-index: 1;
         }
-        .cat-chip.active {
-            background: #8B0000;
+
+        /* Botões de Idioma (Direita) */
+        .lang-group { 
+            display: flex; 
+            gap: 5px; 
+            z-index: 2;
+        }
+
+        .mini-btn {
+            background: #fff;
+            border: 1px solid #000;
+            padding: 4px 8px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+        }
+        .mini-btn.active {
+            background: #000;
             color: #fff;
         }
 
-        /* Nível 2: Orações Específicas */
+        /* --- ÁREA DE NAVEGAÇÃO --- */
+        .nav-area {
+            flex-shrink: 0;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Nível 1: Categorias (Vermelhas) */
+        .category-scroll {
+            display: flex;
+            overflow-x: auto; /* Habilita a rolagem lateral */
+            gap: 8px;
+            padding: 12px var(--spacing);
+            background: #fff;
+            scrollbar-width: none; /* Esconde a barra de rolagem no Firefox */
+            /* Removemos o flex-wrap e o justify-center para permitir o scroll */
+        }
+        
+        /* Esconde a barra de rolagem no Chrome/Safari/Webkit */
+        .category-scroll::-webkit-scrollbar { display: none; }
+
+        .cat-chip {
+            border: 1px solid var(--theme-red);
+            color: var(--theme-red);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap; /* Garante que o texto não quebre */
+            flex-shrink: 0; /* Garante que o botão não encolha */
+        }
+        .cat-chip.active {
+            background: var(--theme-red);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Nível 2: Orações (Cinzas) */
         .prayers-scroll {
             display: flex;
             overflow-x: auto;
@@ -97,9 +133,12 @@
             padding: 8px var(--spacing);
             background: #f9f9f9;
             scrollbar-width: none;
+            border-top: 1px solid #eee;
         }
+        .prayers-scroll::-webkit-scrollbar { display: none; }
+
         .prayer-chip {
-            border: 1px solid #666;
+            border: 1px solid #999;
             border-radius: 50px;
             padding: 6px 14px;
             font-size: 13px;
@@ -108,16 +147,9 @@
             color: #333;
             cursor: pointer;
         }
-        .prayer-chip.active {
-            background: #000;
-            color: #fff;
-            border-color: #000;
-        }
+        .prayer-chip:active { background: #ddd; }
 
-        /* Esconder scrollbars */
-        .category-scroll::-webkit-scrollbar, .prayers-scroll::-webkit-scrollbar { display: none; }
-
-        /* --- ÁREA DE CONTEÚDO --- */
+        /* --- CONTEÚDO --- */
         .content-area {
             flex: 1;
             overflow-y: auto;
@@ -125,30 +157,71 @@
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
+            scroll-behavior: smooth;
         }
 
-        /* Estilos do Texto */
-        .prayer-title {
-            font-size: 20px; font-weight: bold; text-align: center;
-            margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccc;
+       /* --- ESTILOS DO CORPO DA ORAÇÃO --- */
+        .prayer-block { 
+            margin-bottom: 25px; 
+            border-bottom: 1px dashed #ccc; }
+        
+        .prayer-title { 
+            font-size: 22px; 
+            font-weight: bold; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 3px solid #000; 
         }
-        .prayer-body { display: flex; gap: 20px; }
-        .col { flex: 1; font-size: 18px; line-height: 1.5; }
+
+        .prayer-body { 
+            display: flex; 
+            gap: 20px; 
+        }
+
+        .col { 
+            flex: 1; 
+            font-size: 18px; 
+            line-height: 1.5; 
+            text-align: justify; 
+        }
+        
+        /* Tipografia interna */
         .col p { margin-bottom: 12px; }
         .rub { color: var(--rubric-color); font-size: 0.85em; font-style: italic; }
+        .cn { text-align: center; display: block; margin: 10px 0; font-style: italic; }
+
+        /* --- LÓGICA DE VISUALIZAÇÃO (Títulos e Colunas) --- */
         
-        /* Modos de Visualização */
+        /* 1. Controle dos Títulos (PT, LA ou Dual) */
+        .title-pt, .title-la, .title-dual { display: none; }
+
+        .view-pt .title-pt { display: block; }
+        .view-la .title-la { display: block; }
+        .view-dual .title-dual { display: block; }
+
+        /* 2. Controle das Colunas de Texto */
         .view-pt .col-la { display: none; }
         .view-la .col-pt { display: none; }
-        .view-dual .col { border-right: 1px solid #eee; padding-right: 10px; font-size: 15px; }
-        .view-dual .col:last-child { border-right: none; padding-right: 0; }
 
-        /* Botão Voltar ao Topo */
+        /* Estilo específico do modo Dual (Ambos) */
+        .view-dual .col { 
+            border-right: 1px solid #eee; 
+            padding-right: 15px; 
+            font-size: 15px; /* Fonte menor para caber lado a lado */
+        }
+        
+        /* 3. TRUQUE: Se só sobrar uma coluna (porque a outra não existe ou foi oculta),
+           ela perde a borda e cresce para ocupar tudo */
+        .view-dual .col:last-child { border-right: none; padding-right: 0; }
+        .view-dual .col:only-child { border: none; padding: 0; font-size: 18px; }
+
+        /* Botão Topo */
         #btnVoltarTopo {
-            position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px;
+            position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px;
             background: #000; color: #fff; border: none; border-radius: 50%;
             font-size: 20px; cursor: pointer; opacity: 0; visibility: hidden; transition: 0.3s;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; z-index: 99;
         }
         #btnVoltarTopo.visivel { opacity: 1; visibility: visible; }
     </style>
@@ -156,22 +229,23 @@
 <body>
 
     <header>
-        <div class="flex">
-            <a href="dashboard.html">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <div class="header-left">
+            <a href="dashboard.html" style="display:flex;">
+                <img src="/icones/casa.png" alt="Home" style="width:32px;height:32px;">
             </a>
-            <h1>Orações</h1>
+            <a href="javascript:history.back()" style="display:flex;">
+                <img src="/icones/de-volta.png" alt="Voltar" style="width:32px;height:32px;">
+            </a>
         </div>
-        <a href="javascript:history.back()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </a>
-    </header>
 
-    <div class="mode-selector">
-        <button class="mode-btn active" onclick="setMode('pt', this)">Português</button>
-        <button class="mode-btn" onclick="setMode('la', this)">Latim</button>
-        <button class="mode-btn" onclick="setMode('dual', this)">Ambos</button>
-    </div>
+        <h1>Orações</h1>
+
+        <div class="lang-group">
+            <button class="mini-btn active" onclick="setMode('pt', this)">PT</button>
+            <button class="mini-btn" onclick="setMode('la', this)">LA</button>
+            <button class="mini-btn" onclick="setMode('dual', this)">Ambos</button>
+        </div>
+    </header>
 
     <div class="nav-area">
         <div class="category-scroll" id="catNav"></div>
@@ -182,7 +256,7 @@
     <button id="btnVoltarTopo" onclick="scrollToTop()">↑</button>
 
     <script>
-        // ============= BANCO DE DADOS ORGANIZADO POR CATEGORIAS =============
+        // ============= BANCO DE DADOS (Copie e Cole todo o seu conteúdo aqui) =============
         const prayersDB = {
             "Orações comuns": {
                 sinal_cruz: {
@@ -2148,10 +2222,7 @@
             }
         };
 
-        // NOTA: Você precisará colar os conteúdos HTML reais que geramos nos passos anteriores
-        // dentro dos campos 'html_pt' e 'html_la' onde tem '...' acima.
-
-        // ============= LÓGICA DE NAVEGAÇÃO =============
+        // ============= LÓGICA DO APP =============
         const catNav = document.getElementById('catNav');
         const prayerNav = document.getElementById('prayerNav');
         const contentDiv = document.getElementById('mainContent');
@@ -2159,11 +2230,11 @@
 
         function init() {
             renderCategories();
-            // Carrega a primeira categoria e primeira oração por padrão
-            loadCategory("Orações comuns");
+            // Carrega a primeira categoria se existir
+            const firstCategory = Object.keys(prayersDB)[0];
+            if(firstCategory) loadCategory(firstCategory);
         }
 
-        // 1. Renderiza Categorias (Nível 1)
         function renderCategories() {
             catNav.innerHTML = '';
             for (const catName in prayersDB) {
@@ -2175,74 +2246,78 @@
             }
         }
 
-        // 2. Carrega Categoria e Renderiza Orações (Nível 2)
+        // 2. Carrega Todo o Conteúdo da Categoria e Cria os Botões de Navegação
         function loadCategory(catName, clickedBtn) {
             // Atualiza UI Categoria
             document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+            
             if (clickedBtn) {
                 clickedBtn.classList.add('active');
             } else {
-                // Se chamado via init(), ativa o primeiro
-                const firstBtn = catNav.querySelector('.cat-chip');
-                if(firstBtn) firstBtn.classList.add('active');
-            }
-
-            // Pega as orações dessa categoria
-            const prayers = prayersDB[catName];
-            prayerNav.innerHTML = '';
-            
-            let isFirst = true;
-            for (const key in prayers) {
-                const pData = prayers[key];
-                const btn = document.createElement('button');
-                btn.className = 'prayer-chip';
-                btn.textContent = pData.label;
-                btn.onclick = () => loadPrayer(catName, key, btn);
-                prayerNav.appendChild(btn);
-
-                // Carrega a primeira oração automaticamente
-                if (isFirst) {
-                    loadPrayer(catName, key, btn);
-                    isFirst = false;
+                const btns = catNav.querySelectorAll('.cat-chip');
+                for(let b of btns) {
+                    if(b.textContent === catName) b.classList.add('active');
                 }
             }
+
+            const prayers = prayersDB[catName];
+            prayerNav.innerHTML = '';
+            contentDiv.innerHTML = '';
+
+            for (const key in prayers) {
+                const pData = prayers[key];
+                const uniqueId = 'prayer-' + key;
+
+                // --- 1. Lógica do Título "Ambos" (Prioriza Latim) ---
+                // Se tiver título em latim, usa ele. Se não, usa o português.
+                const dualTitle = pData.title_la && pData.title_la.trim() !== "" ? pData.title_la : pData.title_pt;
+
+                // --- 2. Lógica do Conteúdo (Verifica se existe texto) ---
+                const hasPT = pData.html_pt && pData.html_pt.trim() !== "";
+                const hasLA = pData.html_la && pData.html_la.trim() !== "";
+
+                // Criar Botão de Navegação
+                const navBtn = document.createElement('button');
+                navBtn.className = 'prayer-chip';
+                navBtn.textContent = pData.label;
+                navBtn.onclick = () => {
+                    document.getElementById(uniqueId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+                prayerNav.appendChild(navBtn);
+
+                // Criar Bloco da Oração
+                const blockDiv = document.createElement('div');
+                blockDiv.className = 'prayer-block';
+                blockDiv.id = uniqueId;
+
+                // Montar HTML Condicional
+                // Nota: Criamos 3 spans de título. O CSS decide qual mostrar baseado no modo (view-pt, view-la, view-dual).
+                // Nota 2: Só criamos a div .col se 'hasPT' ou 'hasLA' for verdadeiro.
+                blockDiv.innerHTML = `
+                    <div class="prayer-title">
+                        <span class="title-pt">${pData.title_pt}</span>
+                        <span class="title-la">${pData.title_la || pData.title_pt}</span>
+                        <span class="title-dual">${dualTitle}</span>
+                    </div>
+                    <div class="prayer-body">
+                        ${hasPT ? `<div class="col col-pt">${pData.html_pt}</div>` : ''}
+                        ${hasLA ? `<div class="col col-la">${pData.html_la}</div>` : ''}
+                    </div>
+                `;
+                contentDiv.appendChild(blockDiv);
+            }
+            contentDiv.scrollTop = 0; 
+            window.scrollTo(0,0);
         }
 
-        // 3. Renderiza o Conteúdo da Oração
-        function loadPrayer(catName, key, clickedBtn) {
-            // Atualiza UI Oração
-            document.querySelectorAll('.prayer-chip').forEach(b => b.classList.remove('active'));
-            if(clickedBtn) clickedBtn.classList.add('active');
-
-            const data = prayersDB[catName][key];
-
-            const html = `
-                <div class="prayer-title">
-                    <span class="col-pt">${data.title_pt}</span>
-                    <span class="col-la">${data.title_la}</span>
-                </div>
-                <div class="prayer-body">
-                    <div class="col col-pt">
-                        ${data.html_pt || "<p><em>(Texto em português não disponível)</em></p>"}
-                    </div>
-                    <div class="col col-la">
-                        ${data.html_la || "<p><em>(Texto em latim não disponível)</em></p>"}
-                    </div>
-                </div>
-            `;
-            contentDiv.innerHTML = html;
-            // Reseta o scroll
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        }
-
-        // 4. Seletor de Modo (PT/LA/Dual)
         function setMode(mode, btnElement) {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
-            contentDiv.className = 'content-area view-' + mode;
+            
+            contentDiv.className = 'content-area'; 
+            contentDiv.classList.add('view-' + mode);
         }
 
-        // 5. Scroll Top
         window.addEventListener('scroll', function() {
             if (window.scrollY > 300) {
                 btnVoltarTopo.classList.add('visivel');
@@ -2255,7 +2330,10 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        init();
+        // Se o objeto estiver vazio (antes de você colar), evita erro
+        if(Object.keys(prayersDB).length > 0) {
+            init();
+        }
     </script>
 </body>
 </html>
