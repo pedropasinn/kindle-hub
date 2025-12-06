@@ -35,7 +35,7 @@
         header {
             padding: var(--spacing);
             border-bottom: 1px solid #ccc;
-            flex-shrink: 0; /* Garante que o header não encolha */
+            flex-shrink: 0; 
         }
 
         .header-top {
@@ -57,6 +57,43 @@
             align-items: center;
             justify-content: center;
             color: var(--text-color);
+        }
+
+                /* Container dos ícones */
+        .header-icons {
+            display: flex;
+            align-items: center;
+            /* gap: 16px; -> REMOVIDO */
+        }
+
+        /* Estilo para os links (a) dentro do container */
+        .header-icons a {
+            display: flex;       /* Remove espaços extras embaixo da imagem */
+            margin-right: 16px;  /* A SOLUÇÃO: Empurra o próximo ícone para a direita */
+            text-decoration: none;
+        }
+
+        /* Remove a margem do último ícone para não atrapalhar o alinhamento */
+        .header-icons a:last-child {
+            margin-right: 0;
+        }
+
+        /* Tamanho das imagens (estava inline no HTML, agora está aqui) */
+        .header-icons img {
+            width: 40px;
+            height: 40px;
+            display: block;
+        }
+
+        /* O espaçador da direita para equilibrar o layout */
+        .header-spacer {
+            width: 70px; /* Mesma largura visual que os ícones ocupam */
+        }
+
+        /* --- A CORREÇÃO ESTÁ AQUI --- */
+        /* Isso diz: "Se um botão de ícone estiver logo depois de outro, dê uma margem na esquerda" */
+        .icon-btn + .icon-btn {
+            margin-left: 20px; /* Ajuste este valor para aumentar/diminuir a distância */
         }
 
         /* Container de rolagem principal (caso precise rolar o conteúdo abaixo do header) */
@@ -191,16 +228,18 @@
 <body>
     <header>
         <div class="header-top">
-            <div style="display:flex;align-items:center;gap:16px">
-                <a href="dashboard.html" style="display:flex;align-items:center;">
-                    <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
-                </a>
-                <a href="anotacoes.html" style="display:flex;align-items:center;">
-                    <img src="/icones/notas.png" alt="Anotações" style="width:40px;height:40px;">
-                </a>
-            </div>
-            <h1>Plano Inclinado</h1>
-            <div style="width: 70px"></div> <!-- Espaçador visual -->
+                <div class="header-icons">
+                    <a href="dashboard.html">
+                        <img src="/icones/casa.png" alt="Home">
+                    </a>
+                    <a href="anotacoes.html">
+                        <img src="/icones/notas.png" alt="Anotações">
+                    </a>
+                </div>
+                
+                <h1>Plano Inclinado</h1>
+                
+                <div class="header-spacer"></div> 
         </div>
 
         <!-- Navegação em Chips -->
