@@ -6,7 +6,8 @@
     <title>Bíblia - Kindle Hub</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="timer.js" defer></script>
-    <script src="biblias/bibliaAveMaria.js"></script> <style>
+    <script src="biblias/bibliaAveMaria.js"></script> 
+    <style>
         /* --- RESET & VARIÁVEIS (Igual Anotações) --- */
         :root {
             --bg-color: #ffffff;
@@ -28,7 +29,7 @@
             flex-direction: column;
         }
 
-        /* --- CABEÇALHO GERAL (Estilo Anotações) --- */
+        /* --- CABEÇALHO GERAL --- */
         header {
             padding: var(--spacing);
             display: flex;
@@ -36,16 +37,31 @@
             align-items: center;
         }
         header h1 { font-size: 30px; font-weight: bold; }
-        
+
         .flex { display: flex; align-items: center; }
+
+        /* SOLUÇÃO: Se existirem ícones no header, usar a técnica do irmão adjacente 
+        (caso você adicione botões aqui no futuro)
+        */
+        .flex > * + * {
+            margin-left: 10px;
+        }
 
         /* --- BARRA DE NAVEGAÇÃO E FILTROS --- */
         .controls-container {
             padding: 0 var(--spacing);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            /* gap: 16px; -> REMOVIDO */
             margin-bottom: 20px;
+        }
+
+        /* Adiciona margem inferior a todos os filhos diretos para simular o gap vertical */
+        .controls-container > * {
+            margin-bottom: 16px;
+        }
+        .controls-container > *:last-child {
+            margin-bottom: 0;
         }
 
         /* Barra de Pesquisa */
@@ -55,7 +71,7 @@
             padding: 8px 16px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            /* gap: 8px; -> REMOVIDO */
             height: 46px;
             background: white;
         }
@@ -66,6 +82,8 @@
             font-size: 18px;
             background: transparent;
             font-family: inherit;
+            /* Margem para separar do botão de busca */
+            margin-right: 8px; 
         }
         .search-btn {
             background: none;
@@ -73,14 +91,27 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            flex-shrink: 0; /* Garante que o ícone não amasse */
         }
 
         /* Linha de Seleção (Testamento e Livros) */
         .selection-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            /* gap: 10px; -> REMOVIDO */
             align-items: center;
+        }
+
+        /* Botões de Testamento & Selects */
+        /* Aplica margem em todos os itens da linha de seleção */
+        .selection-row > * {
+            margin-right: 10px;
+            margin-bottom: 10px; /* Para quando quebrar linha */
+        }
+
+        /* Remove a margem direita do último item (se não quebrar linha) */
+        .selection-row > *:last-child {
+            margin-right: 0;
         }
 
         /* Botões de Testamento (Estilo Chips) */
@@ -106,7 +137,7 @@
         /* Selects Estilizados */
         .custom-select {
             border: 2px solid var(--border-color);
-            border-radius: 50px; /* Arredondado igual anotações */
+            border-radius: 50px;
             padding: 8px 14px;
             font-size: 17px;
             background: white;
@@ -116,7 +147,7 @@
             height: 42px;
             font-weight: bold;
         }
-        
+
         #bookSelect { flex: 2; min-width: 150px; }
         #chapterSelect { flex: 0.5; min-width: 70px; }
 
@@ -174,18 +205,24 @@
 
         /* --- ÁREA DE RESULTADOS DE BUSCA --- */
         #searchResults {
-            display: none; /* Oculto por padrão */
+            display: none; 
             flex-direction: column;
-            gap: 12px;
+            /* gap: 12px; -> REMOVIDO */
             padding-bottom: 40px;
         }
+
+        /* Margem entre os resultados */
         .search-result-item {
             border: 2px solid #000;
             border-radius: 12px;
             padding: 16px;
             cursor: pointer;
             background: white;
+            
+            /* Substituto do gap */
+            margin-bottom: 12px;
         }
+
         .search-result-ref {
             font-weight: bold;
             font-size: 14px;
@@ -215,7 +252,7 @@
 
         /* --- UTILITÁRIOS --- */
         .hidden { display: none !important; }
-        
+
         /* Botão Voltar ao Topo */
         #btnVoltarTopo {
             position: fixed; bottom: 30px; right: 30px;
@@ -232,7 +269,12 @@
 
         @media (max-width: 500px) {
             .testament-chip { font-size: 13px; padding: 8px 10px; }
-            .selection-row { gap: 8px; }
+            
+            /* Ajuste fino para telas pequenas (reduz a margem entre chips) */
+            .selection-row > * {
+                margin-right: 8px;
+                margin-bottom: 8px;
+            }
         }
     </style>
 </head>
