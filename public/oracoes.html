@@ -13,7 +13,8 @@
             --rubric-color: #cc0000;
             --theme-red: #8B0000;
             --font-main: Helvetica, Arial, sans-serif;
-            --spacing: 16px;
+            /* DICA: Se o espaçamento falhar no Kindle, troque var(--spacing) por 16px direto nas regras */
+            --spacing: 16px; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -33,21 +34,29 @@
         header {
             padding: 10px var(--spacing);
             display: flex;
-            align-items: center; /* Alinha verticalmente */
-            justify-content: space-between; /* Distribui os itens */
+            align-items: center;
+            justify-content: space-between;
             border-bottom: 1px solid #ccc;
             background: #fff;
             flex-shrink: 0;
             z-index: 10;
-            position: relative; /* Necessário para centralizar o título absoluto */
-            height: 60px; /* Altura fixa para garantir alinhamento */
+            position: relative;
+            height: 60px;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
-            z-index: 2; /* Garante que fique acima do título se a tela for muito pequena */
+            /* gap: 15px; -> REMOVIDO */
+            z-index: 2;
+        }
+
+        /* Substituto do gap para o cabeçalho esquerdo */
+        .header-left > * {
+            margin-right: 15px;
+        }
+        .header-left > *:last-child {
+            margin-right: 0;
         }
 
         /* Título Centralizado Absoluto */
@@ -55,7 +64,7 @@
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 22px; 
+            font-size: 32px; 
             font-weight: bold; 
             margin: 0;
             white-space: nowrap;
@@ -65,8 +74,16 @@
         /* Botões de Idioma (Direita) */
         .lang-group { 
             display: flex; 
-            gap: 5px; 
+            /* gap: 5px; -> REMOVIDO */
             z-index: 2;
+        }
+
+        /* Substituto do gap para os botões de idioma */
+        .lang-group .mini-btn {
+            margin-right: 5px;
+        }
+        .lang-group .mini-btn:last-child {
+            margin-right: 0;
         }
 
         .mini-btn {
@@ -76,7 +93,7 @@
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 15px;
             font-family: inherit;
         }
         .mini-btn.active {
@@ -93,21 +110,25 @@
             flex-direction: column;
         }
 
-        /* Nível 1: Categorias (Vermelhas) */
+        /* =========================================
+        Nível 1: Categorias (Vermelhas)
+        ========================================= */
         .category-scroll {
             display: flex;
-            overflow-x: auto; /* Habilita a rolagem lateral */
-            gap: 8px;
-            padding: 12px var(--spacing);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            /* gap removido */
+            padding: 12px var(--spacing); 
             background: #fff;
-            scrollbar-width: none; /* Esconde a barra de rolagem no Firefox */
-            /* Removemos o flex-wrap e o justify-center para permitir o scroll */
+            scrollbar-width: none;
         }
-        
-        /* Esconde a barra de rolagem no Chrome/Safari/Webkit */
+
         .category-scroll::-webkit-scrollbar { display: none; }
 
         .cat-chip {
+            /* Substituto do gap */
+            margin-right: 8px;
+            
             border: 1px solid var(--theme-red);
             color: var(--theme-red);
             border-radius: 12px;
@@ -116,28 +137,41 @@
             background: white;
             cursor: pointer;
             font-family: inherit;
-            white-space: nowrap; /* Garante que o texto não quebre */
-            flex-shrink: 0; /* Garante que o botão não encolha */
+            white-space: nowrap;
+            flex-shrink: 0;
         }
+
+        /* Tira margem do último */
+        .category-scroll .cat-chip:last-child {
+            margin-right: 0;
+        }
+
         .cat-chip.active {
             background: var(--theme-red);
             color: #fff;
             font-weight: bold;
         }
 
-        /* Nível 2: Orações (Cinzas) */
+        /* =========================================
+        Nível 2: Orações (Cinzas)
+        ========================================= */
         .prayers-scroll {
             display: flex;
             overflow-x: auto;
-            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+            /* gap removido */
             padding: 8px var(--spacing);
             background: #f9f9f9;
             scrollbar-width: none;
             border-top: 1px solid #eee;
         }
+
         .prayers-scroll::-webkit-scrollbar { display: none; }
 
         .prayer-chip {
+            /* Substituto do gap */
+            margin-right: 8px;
+            
             border: 1px solid #999;
             border-radius: 50px;
             padding: 6px 14px;
@@ -147,6 +181,12 @@
             color: #333;
             cursor: pointer;
         }
+
+        /* Tira margem do último */
+        .prayers-scroll .prayer-chip:last-child {
+            margin-right: 0;
+        }
+
         .prayer-chip:active { background: #ddd; }
 
         /* --- CONTEÚDO --- */
@@ -160,11 +200,12 @@
             scroll-behavior: smooth;
         }
 
-       /* --- ESTILOS DO CORPO DA ORAÇÃO --- */
+        /* --- ESTILOS DO CORPO DA ORAÇÃO --- */
         .prayer-block { 
             margin-bottom: 25px; 
-            border-bottom: 1px dashed #ccc; }
-        
+            border-bottom: 1px dashed #ccc; 
+        }
+
         .prayer-title { 
             font-size: 22px; 
             font-weight: bold; 
@@ -176,7 +217,18 @@
 
         .prayer-body { 
             display: flex; 
-            gap: 20px; 
+            /* gap: 20px; -> REMOVIDO */
+        }
+
+        /* Substituto do gap para as colunas de texto */
+        .prayer-body .col {
+            margin-right: 20px;
+        }
+        /* Importante: Se uma coluna estiver oculta (display: none), 
+        a coluna visível restante se torna a last-child automaticamente 
+        e perde a margem. Isso mantém o layout funcionando. */
+        .prayer-body .col:last-child {
+            margin-right: 0;
         }
 
         .col { 
@@ -185,15 +237,15 @@
             line-height: 1.5; 
             text-align: justify; 
         }
-        
+
         /* Tipografia interna */
         .col p { margin-bottom: 12px; }
         .rub { color: var(--rubric-color); font-size: 0.85em; font-style: italic; }
         .cn { text-align: center; display: block; margin: 10px 0; font-style: italic; }
 
         /* --- LÓGICA DE VISUALIZAÇÃO (Títulos e Colunas) --- */
-        
-        /* 1. Controle dos Títulos (PT, LA ou Dual) */
+
+        /* 1. Controle dos Títulos */
         .title-pt, .title-la, .title-dual { display: none; }
 
         .view-pt .title-pt { display: block; }
@@ -208,11 +260,10 @@
         .view-dual .col { 
             border-right: 1px solid #eee; 
             padding-right: 15px; 
-            font-size: 15px; /* Fonte menor para caber lado a lado */
+            font-size: 15px; 
         }
-        
-        /* 3. TRUQUE: Se só sobrar uma coluna (porque a outra não existe ou foi oculta),
-           ela perde a borda e cresce para ocupar tudo */
+
+        /* 3. TRUQUE DE BORDA/PADDING */
         .view-dual .col:last-child { border-right: none; padding-right: 0; }
         .view-dual .col:only-child { border: none; padding: 0; font-size: 18px; }
 
