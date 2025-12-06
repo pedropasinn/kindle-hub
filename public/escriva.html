@@ -47,9 +47,15 @@
         /* Seleção de livro */
         .book-selector {
             display: flex;
-            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+        }
+        .book-btn {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .book-btn:last-child {
+            margin-right: 0;
         }
 
         .book-btn {
@@ -90,9 +96,15 @@
         /* Navegação de capítulos e pontos */
         .navigation {
             display: flex;
-            gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+        }
+        .select-group {
+            margin-right: 15px;
+            margin-bottom: 15px;
+        }
+        .select-group:last-child {
+            margin-right: 0;
         }
 
         .select-group {
@@ -121,9 +133,11 @@
         /* Navegação anterior/próximo */
         .nav-controls {
             display: flex;
-            gap: 10px;
             justify-content: center;
             margin-bottom: 20px;
+        }
+        .nav-btn + .nav-btn {
+            margin-left: 10px;
         }
 
         .nav-btn {
@@ -251,8 +265,8 @@
 <body>
     <header style="padding: var(--spacing); border-bottom: 1px solid #ccc;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="display:flex;align-items:center;gap:16px">
-                <a href="dashboard.html" style="display:flex;align-items:center;">
+            <div style="display:flex;align-items:center;">
+                <a href="dashboard.html" style="display:flex;align-items:center;margin-right:16px;">
                     <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
                 </a>
                 <a href="plano-inclinado.html" style="display:flex;align-items:center;">

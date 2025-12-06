@@ -50,7 +50,12 @@
 
         .calendar-nav {
             display: flex;
-            gap: 10px;
+        }
+        .calendar-nav button {
+            margin-right: 10px;
+        }
+        .calendar-nav button:last-child {
+            margin-right: 0;
         }
 
         .calendar-nav button {
@@ -71,10 +76,17 @@
         }
 
         .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
+            display: flex;
+            flex-wrap: wrap;
             margin-bottom: 10px;
+        }
+        .calendar-grid > * {
+            width: 14.28%; /* 100% / 7 colunas */
+            margin-right: 2px;
+            margin-bottom: 2px;
+        }
+        .calendar-grid > *:nth-child(7n) {
+            margin-right: 0;
         }
 
         .calendar-day-header {
@@ -124,10 +136,16 @@
 
         .week-nav {
             display: flex;
-            gap: 8px;
             margin-top: 15px;
             justify-content: center;
             flex-wrap: wrap;
+        }
+        .week-day-btn {
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .week-day-btn:last-child {
+            margin-right: 0;
         }
 
         .week-day-btn {
@@ -197,7 +215,7 @@
 <body>
     <header style="padding: var(--spacing); border-bottom: 1px solid #ccc;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="display:flex;align-items:center;gap:16px">
+            <div style="display:flex;align-items:center;">
                 <a href="dashboard.html" style="display:flex;align-items:center;">
                     <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
                 </a>

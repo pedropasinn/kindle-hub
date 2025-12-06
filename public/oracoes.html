@@ -1154,7 +1154,7 @@
                     – Ave Maria, Esposa de Deus Espírito Santo, cheia de graça, …</p>
 
                     <hr style="border-top: 1px dashed #ccc; margin: 20px 0;">
-                    <p class="cn" style="font-weight: bold;">Ladainha a Nossa Senhora</p>
+                    <p id="ladainha-nossa-senhora" class="cn" style="font-weight: bold;">Ladainha a Nossa Senhora</p>
                     
                     <p><span class="rub">V.</span> Senhor, tende piedade de nós. </p>
                     <p><span class="rub">R.</span> Senhor, tende piedade de nós.</p>
@@ -3008,6 +3008,18 @@ preces_opus_dei: {
         if(Object.keys(prayersDB).length > 0) {
             init();
         }
+
+        // Scroll automático para âncora ao carregar a página
+        window.addEventListener('load', function() {
+            if (window.location.hash) {
+                setTimeout(function() {
+                    const target = document.querySelector(window.location.hash);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 300);
+            }
+        });
     </script>
 </body>
 </html>

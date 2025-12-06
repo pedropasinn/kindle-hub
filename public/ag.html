@@ -47,15 +47,20 @@
             position: relative;
             display: flex;
             overflow-x: auto;
-            gap: 10px;
             padding: 0 var(--spacing) 8px var(--spacing);
             border-bottom: 2px solid #e0e0e0;
             background: white;
             flex-shrink: 0;
-            scrollbar-width: none; 
+            scrollbar-width: none;
             -ms-overflow-style: none;
         }
         .chips-container::-webkit-scrollbar { display: none; }
+        .chip {
+            margin-right: 10px;
+        }
+        .chip:last-child {
+            margin-right: 0;
+        }
 
         .chip {
             border: 2px solid var(--border-color);
@@ -157,10 +162,10 @@
 <body>
 
     <header>
-        <div class="flex" style="gap:16px">
-            <a href="dashboard.html" style="display:flex;align-items:center;">
+        <div class="flex">
+            <a href="dashboard.html" style="display:flex;align-items:center;margin-right:16px;">
                 <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
-            </a>          
+            </a>
             <a href="plano-inclinado.html" style="display:flex;align-items:center;">
                 <img src="/icones/de-volta.png" alt="Voltar" style="width:40px;height:40px;">
             </a>

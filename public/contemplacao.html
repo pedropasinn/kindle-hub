@@ -55,11 +55,17 @@
         /* --- BOTÕES DE MISTÉRIOS (MENORES) --- */
         .misterios-selector {
             display: flex;
-            gap: 8px; /* Espaço menor entre botões */
             margin-bottom: 15px;
             flex-wrap: wrap;
             justify-content: center;
             width: 100%;
+        }
+        .misterio-btn {
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .misterio-btn:last-child {
+            margin-right: 0;
         }
 
         .misterio-btn {
@@ -165,21 +171,94 @@
             font-size: 18px; /* Bom para leitura no Kindle */
             line-height: 1.5;
         }
+
+        /* Ladainha */
+        .ladainha-view {
+            display: none;
+        }
+        .ladainha-view.ativo {
+            display: block;
+        }
+        .ladainha-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .ladainha-header h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .ladainha-controles {
+            display: flex;
+            align-items: center;
+        }
+        .ladainha-controles button {
+            margin-left: 8px;
+        }
+        .btn-fechar, .btn-idioma {
+            padding: 8px 16px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-idioma {
+            background: #fff;
+            color: #000;
+        }
+        .btn-idioma.ativo {
+            background: #000;
+            color: #fff;
+        }
+        .ladainha-texto {
+            font-size: 18px;
+            line-height: 1.6;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .ladainha-texto p {
+            margin-bottom: 8px;
+        }
+        .ladainha-texto .rub {
+            font-weight: bold;
+            color: #c00;
+        }
+
+        /* Botão Voltar ao Topo */
+        #btnVoltarTopo {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 50px; height: 50px;
+            background: #000; color: #fff;
+            border: 3px solid #000; border-radius: 50%;
+            font-size: 24px; cursor: pointer;
+            opacity: 0; visibility: hidden;
+            transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #btnVoltarTopo.visivel { opacity: 1; visibility: visible; }
     </style>
 </head>
 <body>
     <div class="page-container">
         <header>
-            <div style="display:flex;align-items:center;gap:16px">
-                <a href="plano-inclinado.html" style="display:flex;align-items:center;">
+            <div style="display:flex;align-items:center;">
+                <a href="plano-inclinado.html" style="display:flex;align-items:center;margin-right:16px;">
                     <img src="/icones/de-volta.png" alt="Voltar" style="width:36px;height:36px;">
+                </a>
+                <a href="javascript:void(0)" onclick="toggleLadainha()" style="display:flex;align-items:center;">
+                    <img src="/icones/virgem-maria.png" alt="Ladainha" style="width:36px;height:36px;">
                 </a>
             </div>
             <h1>Contemplação</h1>
             <div style="width: 52px"></div>
         </header>
 
-        <div class="contemplacao-container">
+        <div class="contemplacao-container" id="contemplacaoView">
             <div class="misterios-selector">
                 <button class="misterio-btn ativo" onclick="selecionarMisterio('gozosos')">Gozosos</button>
                 <button class="misterio-btn" onclick="selecionarMisterio('dolorosos')">Dolorosos</button>
@@ -200,7 +279,20 @@
                 <div id="textoMisterio"></div>
             </div>
         </div>
+
+        <div class="contemplacao-container ladainha-view" id="ladainhaView">
+            <div class="ladainha-header">
+                <h2 id="ladainhaTitulo">Ladainha a Nossa Senhora</h2>
+                <div class="ladainha-controles">
+                    <button class="btn-idioma ativo" id="btnPt" onclick="mudarIdioma('pt')">PT</button>
+                    <button class="btn-idioma" id="btnLa" onclick="mudarIdioma('la')">LA</button>
+                </div>
+            </div>
+            <div class="ladainha-texto" id="ladainhaTexto"></div>
+        </div>
     </div>
+
+    <button id="btnVoltarTopo" onclick="scrollToTop()">↑</button>
 
     <script>
         let misterioAtual = 'gozosos';
@@ -374,6 +466,254 @@
             if (e.key === 'ArrowLeft') anterior();
             else if (e.key === 'ArrowRight') proximo();
         });
+
+        // Dados da Ladainha
+        let idiomaLadainha = 'pt';
+
+        const ladainhaData = {
+            pt: {
+                titulo: 'Ladainha a Nossa Senhora',
+                texto: `
+                    <p><span class="rub">V.</span> Senhor, tende piedade de nós.</p>
+                    <p><span class="rub">R.</span> Senhor, tende piedade de nós.</p>
+                    <p><span class="rub">V.</span> Jesus Cristo, tende piedade de nós.</p>
+                    <p><span class="rub">R.</span> Jesus Cristo, tende piedade de nós.</p>
+                    <p><span class="rub">V.</span> Senhor, tende piedade de nós.</p>
+                    <p><span class="rub">R.</span> Senhor, tende piedade de nós.</p>
+                    <p><span class="rub">V.</span> Jesus Cristo, ouvi-nos.</p>
+                    <p><span class="rub">R.</span> Jesus Cristo, ouvi-nos.</p>
+                    <p><span class="rub">V.</span> Jesus Cristo, atendei-nos.</p>
+                    <p><span class="rub">R.</span> Jesus Cristo, atendei-nos.</p>
+                    <br>
+                    <p><span class="rub">V.</span> Deus Pai dos céus.</p>
+                    <p><span class="rub">R.</span> Tende piedade de nós.</p>
+                    <p><span class="rub">V.</span> Deus Filho Redentor do mundo,</p>
+                    <p><span class="rub">R.</span> Tende piedade de nós.</p>
+                    <p><span class="rub">V.</span> Deus Espírito Santo,</p>
+                    <p><span class="rub">R.</span> Tende piedade de nós.</p>
+                    <p><span class="rub">V.</span> Santíssima Trindade, que sois um só Deus,</p>
+                    <p><span class="rub">R.</span> Tende piedade de nós.</p>
+                    <br>
+                    <p><span class="rub">V.</span> Santa Maria, <span class="rub">R.</span> Rogai por nós.</p>
+                    <p>Santa Mãe de Deus,</p>
+                    <p>Santa Virgem das Virgens,</p>
+                    <p>Mãe de Jesus Cristo,</p>
+                    <p>Mãe da Igreja,</p>
+                    <p>Mãe da Misericórdia,</p>
+                    <p>Mãe da divina graça,</p>
+                    <p>Mãe da Esperança,</p>
+                    <p>Mãe puríssima,</p>
+                    <p>Mãe castíssima,</p>
+                    <p>Mãe imaculada,</p>
+                    <p>Mãe intacta,</p>
+                    <p>Mãe amável,</p>
+                    <p>Mãe admirável,</p>
+                    <p>Mãe do bom conselho,</p>
+                    <p>Mãe do Criador,</p>
+                    <p>Mãe do Salvador,</p>
+                    <p>Virgem prudentíssima,</p>
+                    <p>Virgem venerável,</p>
+                    <p>Virgem digna de louvor,</p>
+                    <p>Virgem poderosa,</p>
+                    <p>Virgem clemente,</p>
+                    <p>Virgem fiel,</p>
+                    <p>Espelho de justiça,</p>
+                    <p>Sede de sabedoria,</p>
+                    <p>Causa da nossa alegria,</p>
+                    <p>Vaso espiritual,</p>
+                    <p>Vaso honorável,</p>
+                    <p>Vaso insigne de devoção,</p>
+                    <p>Rosa mística,</p>
+                    <p>Torre de Davi,</p>
+                    <p>Torre de marfim,</p>
+                    <p>Casa de ouro,</p>
+                    <p>Arca da aliança,</p>
+                    <p>Porta do Céu,</p>
+                    <p>Estrela da manhã,</p>
+                    <p>Saúde dos enfermos,</p>
+                    <p>Refúgio dos pecadores,</p>
+                    <p>Socorro dos migrantes,</p>
+                    <p>Consoladora dos aflitos,</p>
+                    <p>Auxílio dos cristãos,</p>
+                    <p>Rainha dos Anjos,</p>
+                    <p>Rainha dos Patriarcas,</p>
+                    <p>Rainha dos Profetas,</p>
+                    <p>Rainha dos Apóstolos,</p>
+                    <p>Rainha dos Mártires,</p>
+                    <p>Rainha dos Confessores,</p>
+                    <p>Rainha das Virgens,</p>
+                    <p>Rainha de todos os Santos,</p>
+                    <p>Rainha concebida sem pecado original,</p>
+                    <p>Rainha assunta aos céus,</p>
+                    <p>Rainha do Santíssimo Rosário,</p>
+                    <p>Rainha da Família,</p>
+                    <p>Rainha da Paz,</p>
+                    <br>
+                    <p><span class="rub">V.</span> Cordeiro de Deus, que tirais o pecado do mundo,</p>
+                    <p><span class="rub">R.</span> Perdoai-nos, Senhor.</p>
+                    <p><span class="rub">V.</span> Cordeiro de Deus, que tirais o pecado do mundo,</p>
+                    <p><span class="rub">R.</span> Ouvi-nos, Senhor.</p>
+                    <p><span class="rub">V.</span> Cordeiro de Deus, que tirais o pecado do mundo,</p>
+                    <p><span class="rub">R.</span> Tende piedade de nós.</p>
+                    <br>
+                    <p>À vossa proteção nós recorremos, Santa Mãe de Deus; não desprezeis as súplicas que em nossas necessidades vos dirigimos, mas livrai-nos sempre de todos os perigos, ó Virgem gloriosa e bendita.</p>
+                    <p><span class="rub">V.</span> Rogai por nós Santa Mãe de Deus.</p>
+                    <p><span class="rub">R.</span> Para que sejamos dignos das promessas de Cristo.</p>
+                    <br>
+                    <p style="text-align:center;font-weight:bold;">Oremos</p>
+                    <p>Infundi, Senhor, nós vos pedimos, em nossas almas a vossa graça, para que nós, que conhecemos pela Anunciação do Anjo a Encarnação de Jesus Cristo, vosso Filho, cheguemos por sua Paixão e sua Cruz à glória da ressurreição. Pelo mesmo Jesus Cristo, Senhor Nosso. Amém.</p>
+                `
+            },
+            la: {
+                titulo: 'Litaniarum Lauretanarum',
+                texto: `
+                    <p><span class="rub">V.</span> Kýrie, eléison.</p>
+                    <p><span class="rub">R.</span> Kýrie, eléison.</p>
+                    <p><span class="rub">V.</span> Christe, eléison.</p>
+                    <p><span class="rub">R.</span> Christe, eléison.</p>
+                    <p><span class="rub">V.</span> Kýrie, eléison.</p>
+                    <p><span class="rub">R.</span> Kýrie, eléison.</p>
+                    <p><span class="rub">V.</span> Christe, audi nos.</p>
+                    <p><span class="rub">R.</span> Christe, audi nos.</p>
+                    <p><span class="rub">V.</span> Christe, exáudi nos.</p>
+                    <p><span class="rub">R.</span> Christe, exáudi nos.</p>
+                    <br>
+                    <p><span class="rub">V.</span> Pater de cælis, Deus,</p>
+                    <p><span class="rub">R.</span> miserére nobis.</p>
+                    <p><span class="rub">V.</span> Fili, Redémptor mundi, Deus,</p>
+                    <p><span class="rub">R.</span> miserére nobis.</p>
+                    <p><span class="rub">V.</span> Spíritus Sancte, Deus,</p>
+                    <p><span class="rub">R.</span> miserére nobis.</p>
+                    <p><span class="rub">V.</span> Sancta Trínitas, unus Deus,</p>
+                    <p><span class="rub">R.</span> miserére nobis.</p>
+                    <br>
+                    <p><span class="rub">V.</span> Sancta Maria, <span class="rub">R.</span> ora pro nobis.</p>
+                    <p>Sancta Dei Génetrix,</p>
+                    <p>Sancta Virgo vírginum,</p>
+                    <p>Mater Christi,</p>
+                    <p>Mater Ecclésiæ,</p>
+                    <p>Mater Misericordiæ,</p>
+                    <p>Mater divínæ gratiæ,</p>
+                    <p>Mater Spei,</p>
+                    <p>Mater puríssima,</p>
+                    <p>Mater castíssima,</p>
+                    <p>Mater invioláta,</p>
+                    <p>Mater intemeráta,</p>
+                    <p>Mater immaculáta,</p>
+                    <p>Mater amábilis,</p>
+                    <p>Mater admirábilis,</p>
+                    <p>Mater boni Consílii,</p>
+                    <p>Mater Creatóris,</p>
+                    <p>Mater Salvatóris,</p>
+                    <p>Virgo prudentíssima,</p>
+                    <p>Virgo veneránda,</p>
+                    <p>Virgo prædicánda,</p>
+                    <p>Virgo potens,</p>
+                    <p>Virgo clemens,</p>
+                    <p>Virgo fidélis,</p>
+                    <p>Spéculum iustítiæ,</p>
+                    <p>Sedes Sapiéntiæ,</p>
+                    <p>Causa nostræ lætítiæ,</p>
+                    <p>Vas spirituále,</p>
+                    <p>Vas honorábile,</p>
+                    <p>Vas insigne devotiónis,</p>
+                    <p>Rosa mýstica,</p>
+                    <p>Turris Davídica,</p>
+                    <p>Turris ebúrnea,</p>
+                    <p>Domus áurea,</p>
+                    <p>Fœderis arca,</p>
+                    <p>Iánua cæli,</p>
+                    <p>Stella matutina,</p>
+                    <p>Salus infirmórum,</p>
+                    <p>Refugium peccatórum,</p>
+                    <p>Solacium migrantium,</p>
+                    <p>Consolátrix afflictórum,</p>
+                    <p>Auxílium christianórum,</p>
+                    <p>Regina Angelórum,</p>
+                    <p>Regina Patriarchárum,</p>
+                    <p>Regina Prophetárum,</p>
+                    <p>Regina Apostolórum,</p>
+                    <p>Regina Mártyrum,</p>
+                    <p>Regina Confessórum,</p>
+                    <p>Regina Vírginum,</p>
+                    <p>Regina Sanctórum ómnium,</p>
+                    <p>Regina sine labe originali concépta,</p>
+                    <p>Regina in cælum assumpta,</p>
+                    <p>Regina sacratíssimi Rosárii,</p>
+                    <p>Regina famíliæ,</p>
+                    <p>Regina pacis,</p>
+                    <br>
+                    <p><span class="rub">V.</span> Agnus Dei, qui tollis peccáta mundi,</p>
+                    <p><span class="rub">R.</span> parce nobis, Dómine.</p>
+                    <p><span class="rub">V.</span> Agnus Dei, qui tollis peccáta mundi,</p>
+                    <p><span class="rub">R.</span> exáudi nos, Dómine.</p>
+                    <p><span class="rub">V.</span> Agnus Dei, qui tollis peccáta mundi,</p>
+                    <p><span class="rub">R.</span> miserére nobis.</p>
+                    <br>
+                    <p>Sub tuum præsídium confúgimus, Sancta Dei Génetrix, nostras deprecatiónes ne despícias in necessitátibus; sed a perículis cunctis líbera nos semper, Virgo gloriósa et benedícta.</p>
+                    <p><span class="rub">V.</span> Ora pro nobis, Sancta Dei Génetrix.</p>
+                    <p><span class="rub">R.</span> Ut digni efficiámur promissiónibus Christi.</p>
+                    <br>
+                    <p style="text-align:center;font-weight:bold;">Orémus</p>
+                    <p>Grátiam tuam, quǽsumus, Dómine, méntibus nostris infúnde: ut qui, Ángelo nuntiánte, Christi Fílii tui Incarnatiónem cognóvimus; per Passiónem eius et Crucem, ad resurrectiónis glóriam perducámur. Per Christum Dóminum nostrum. Amen.</p>
+                    <br>
+                    <p>– Pro necessitatibus Ecclésiæ et Status: <em>Pater noster. Ave Maria. Gloria Patri.</em></p>
+                    <p>– Pro persona et intentionibus Excellentissimi ac Reverendissimi Domini Episcopi huius diœcesis: <em>Pater noster. Ave Maria. Gloria Patri.</em></p>
+                    <p>– Pro animabus benedictis in Purgatorio: <em>Pater noster. Ave Maria. Requiescant in pace. Amen.</em></p>
+                `
+            }
+        };
+
+        // Funções da Ladainha
+        function toggleLadainha() {
+            const ladainhaView = document.getElementById('ladainhaView');
+            const contemplacaoView = document.getElementById('contemplacaoView');
+
+            if (ladainhaView.classList.contains('ativo')) {
+                // Fechar ladainha
+                ladainhaView.classList.remove('ativo');
+                contemplacaoView.style.display = 'block';
+            } else {
+                // Abrir ladainha
+                contemplacaoView.classList.remove('ativo');
+                contemplacaoView.style.display = 'none';
+                ladainhaView.classList.add('ativo');
+                atualizarLadainha();
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function mudarIdioma(idioma) {
+            idiomaLadainha = idioma;
+            document.getElementById('btnPt').classList.remove('ativo');
+            document.getElementById('btnLa').classList.remove('ativo');
+            document.getElementById('btn' + idioma.toUpperCase().slice(0,1) + idioma.slice(1)).classList.add('ativo');
+            atualizarLadainha();
+        }
+
+        function atualizarLadainha() {
+            const dados = ladainhaData[idiomaLadainha];
+            document.getElementById('ladainhaTitulo').textContent = dados.titulo;
+            document.getElementById('ladainhaTexto').innerHTML = dados.texto;
+        }
+
+        // Botão Voltar ao Topo
+        const btnVoltarTopo = document.getElementById('btnVoltarTopo');
+
+        window.addEventListener('scroll', function() {
+            const ladainhaView = document.getElementById('ladainhaView');
+            const isLadainhaAtiva = ladainhaView.classList.contains('ativo');
+
+            if (isLadainhaAtiva && window.scrollY > 300) {
+                btnVoltarTopo.classList.add('visivel');
+            } else {
+                btnVoltarTopo.classList.remove('visivel');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         // Inicialização
         carregarPreferencias();
