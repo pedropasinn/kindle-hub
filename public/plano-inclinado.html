@@ -26,7 +26,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             height: 100vh;
-            overflow: auto;
+            overflow: hidden; /* Alterado para hidden para evitar duplo scroll se usar content-area */
             display: flex;
             flex-direction: column;
         }
@@ -35,6 +35,7 @@
         header {
             padding: var(--spacing);
             border-bottom: 1px solid #ccc;
+            flex-shrink: 0; /* Garante que o header não encolha */
         }
 
         .header-top {
@@ -58,6 +59,13 @@
             color: var(--text-color);
         }
 
+        /* Container de rolagem principal (caso precise rolar o conteúdo abaixo do header) */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .habits-section {
             margin: 8px var(--spacing);
             padding: 20px;
@@ -74,22 +82,29 @@
             padding-bottom: 8px;
         }
 
+        /* =========================================
+        SUBSTITUIÇÃO DO GRID (CRÍTICO PARA KINDLE)
+        ========================================= */
         .habits-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 20px;
+            display: flex;       /* Kindle entende Flex melhor que Grid */
+            flex-wrap: wrap;     /* Permite que os itens quebrem para a linha de baixo */
+            justify-content: space-between; /* Empurra as colunas para as pontas */
+            /* gap: 0 20px; -> REMOVIDO */
         }
 
         .habit-item {
+            /* Largura calculada para simular 2 colunas com espaço no meio */
+            width: 48%; 
+            
             display: flex;
             align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid #ddd;
         }
 
-        .habit-item:last-child {
-            border-bottom: none;
-        }
+        /* Opcional: Ajuste para remover borda dos dois últimos itens visualmente, 
+        mas no flex-wrap é difícil prever. Melhor manter a borda ou usar CSS avançado.
+        Vou simplificar removendo apenas se for uma lista simples. */
 
         .habit-checkbox {
             width: 20px;
@@ -125,17 +140,27 @@
             color: #fff;
         }
 
-        /* Chips de navegação horizontal */
+        /* =========================================
+        CHIPS DE NAVEGAÇÃO
+        ========================================= */
         .nav-chips {
             display: flex;
             overflow-x: auto;
-            gap: 10px;
+            -webkit-overflow-scrolling: touch; /* Rolagem suave */
             padding-top: 4px;
-            scrollbar-width: none; /* Firefox */
+            /* gap: 10px; -> REMOVIDO */
+            
+            /* Padding extra no final para facilitar o toque no último item */
+            padding-right: var(--spacing); 
+            
+            scrollbar-width: none;
         }
-        .nav-chips::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .nav-chips::-webkit-scrollbar { display: none; }
 
         .nav-chip {
+            /* SOLUÇÃO PARA O GAP */
+            margin-right: 10px;
+            
             border: 2px solid var(--border-color);
             border-radius: 20px;
             padding: 8px 18px;
@@ -149,7 +174,14 @@
             color: var(--text-color);
             display: inline-block;
             transition: all 0.2s;
+            flex-shrink: 0; /* Garante que não amasse */
         }
+
+        /* Remove margem do último */
+        .nav-chip:last-child {
+            margin-right: 0;
+        }
+
         .nav-chip:hover {
             background: var(--text-color);
             color: var(--bg-color);
