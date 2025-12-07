@@ -67,9 +67,11 @@
         .search-and-filter {
             display: flex;
             align-items: center;
-            gap: 8px; /* Espaço entre a busca e os botões */
             padding: 0 var(--spacing);
             margin-bottom: 16px;
+        }
+        .search-and-filter > *:not(:last-child) {
+            margin-right: 8px;
         }
 
         .search-bar {
@@ -79,8 +81,10 @@
             padding: 8px 16px; /* Ajuste leve para alinhar visualmente com os botões */
             display: flex;
             align-items: center;
-            gap: 8px;
             height: 42px; /* Altura fixa para garantir alinhamento */
+        }
+        .search-bar > *:not(:last-child) {
+            margin-right: 8px;
         }
         .search-bar input {
             border: none;
@@ -93,18 +97,12 @@
 
         .action-buttons {
             display: flex;
-            gap: 8px;
             align-items: center;
             flex-shrink: 0; /* Impede que os botões encolham */
         }
 
-        .action-buttons > * {
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        .action-buttons > *:not(:first-child) {
-            margin-left: 12px;
+        .action-buttons > *:not(:last-child) {
+            margin-right: 8px;
         }
         
         .dropdown-btn {
@@ -114,13 +112,15 @@
             background: white;
             font-size: 16px;
             display: flex;
-            gap: 6px;
             align-items: center;
             font-family: inherit;
             cursor: pointer;
             height: 42px; /* Mesma altura da busca */
             white-space: nowrap;
             position: relative; /* Para posicionar o dropdown */
+        }
+        .dropdown-btn > *:not(:last-child) {
+            margin-right: 6px;
         }
 
         .dropdown-menu {
@@ -166,12 +166,14 @@
         .chips-scroller {
             display: flex;
             overflow-x: auto;
-            gap: 10px;
             padding: 0 var(--spacing) 16px var(--spacing);
             scrollbar-width: none; /* Firefox */
             border-bottom: 1px solid #ccc;
         }
         .chips-scroller::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .chips-scroller > *:not(:last-child) {
+            margin-right: 10px;
+        }
         
         .chip {
             border: 2px solid var(--border-color);
@@ -337,8 +339,8 @@
     <!-- === TELA 1: LISTA === -->
     <div id="screen-list">
         <header>
-            <div class="flex" style="gap:16px">
-                <a href="dashboard.html" style="display:flex;align-items:center;">
+            <div class="flex">
+                <a href="dashboard.html" style="display:flex;align-items:center;margin-right:16px;">
                     <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
                 </a>
                 <a href="plano-inclinado.html" style="display:flex;align-items:center;">
@@ -426,7 +428,7 @@
             <button class="icon-btn" onclick="closeEditor()">
                 <i class="ph ph-arrow-left" style="font-weight: bold; font-size: 32px;"></i>
             </button>
-            <div class="flex" style="align-items: center; gap: 8px; flex: 1;">
+            <div class="flex" style="align-items: center; flex: 1;">
                 <input type="text" id="editor-title-input" style="font-size: 22px; font-weight:bold; border: none; outline: none; background: transparent; flex: 1; min-width: 0; cursor: pointer;" value="Pequeno tirano" readonly onclick="enableTitleEdit()">
             </div>
             <select id="editor-tag-selector" style="border: 2px solid #000; border-radius: 8px; padding: 8px 12px; font-size: 16px; background: white; font-family: inherit; cursor: pointer; margin-right: 8px;">
