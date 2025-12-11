@@ -12,6 +12,14 @@
       "dest": "/server.js"
     },
     {
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|eot))",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(dashboard|oracoes|agenda|biblia|contemplacao|exame|ag|escriva|anotacoes|plano-inclinado)",
+      "dest": "/server.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/server.js"
     }

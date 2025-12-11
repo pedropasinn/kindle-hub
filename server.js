@@ -919,9 +919,49 @@ app.get('/api/escriva/random-point', async (req, res) => {
   }
 });
 
-// Rota principal
+// Rotas para páginas HTML
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+app.get('/oracoes', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'oracoes.html'));
+});
+
+app.get('/agenda', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'agenda.html'));
+});
+
+app.get('/biblia', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'biblia.html'));
+});
+
+app.get('/contemplacao', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'contemplacao.html'));
+});
+
+app.get('/exame', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'exame.html'));
+});
+
+app.get('/ag', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ag.html'));
+});
+
+app.get('/escriva', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'escriva.html'));
+});
+
+app.get('/anotacoes', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'anotacoes.html'));
+});
+
+app.get('/plano-inclinado', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'plano-inclinado.html'));
 });
 
 // Inicializar todas as integrações
