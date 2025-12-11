@@ -4,6 +4,10 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -12,19 +16,12 @@
       "dest": "/server.js"
     },
     {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|eot))",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/(dashboard|oracoes|agenda|biblia|contemplacao|exame|ag|escriva|anotacoes|plano-inclinado)",
-      "dest": "/server.js"
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|eot|html))",
+      "dest": "/public/$1"
     },
     {
       "src": "/(.*)",
       "dest": "/server.js"
     }
-  ],
-  "includeFiles": [
-    "public/**"
   ]
 }
