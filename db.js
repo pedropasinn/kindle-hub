@@ -1,8 +1,8 @@
 // Módulo de banco de dados - compatível com desenvolvimento local e Vercel
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 
-// Simulador de KV para desenvolvimento local (quando não tiver variáveis do Vercel)
-class LocalKVSimulator {
+// Simulador de Redis para desenvolvimento local (quando não tiver variáveis do Upstash)
+class LocalRedisSimulator {
   constructor() {
     this.data = new Map();
   }
@@ -21,7 +21,7 @@ class LocalKVSimulator {
   }
 
   async keys(pattern) {
-    const regex = new RegExp('^' + pattern.replace('*', '.*') + '$');
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
     return Array.from(this.data.keys()).filter(key => regex.test(key));
   }
 
@@ -46,10 +46,20 @@ class LocalKVSimulator {
   }
 }
 
-// Usar KV real no Vercel ou simulador local
-const isVercel = process.env.KV_REST_API_URL;
-const db = isVercel ? kv : new LocalKVSimulator();
+// Criar conexão com Upstash Redis ou usar simulador local
+let db;
 
-console.log(isVercel ? '✅ Usando Vercel KV (produção)' : '📝 Usando KV local (desenvolvimento)');
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  // Produção: usar Upstash Redis
+  db = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+  console.log('✅ Usando Upstash Redis (produção)');
+} else {
+  // Desenvolvimento: usar simulador local
+  db = new LocalRedisSimulator();
+  console.log('📝 Usando Redis local (desenvolvimento)');
+}
 
 module.exports = db;

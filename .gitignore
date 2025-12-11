@@ -18,3 +18,4 @@ bibliaAveMaria.json
 # Backup files
 server-sqlite-backup.js
 .vercel
+.env*.local
