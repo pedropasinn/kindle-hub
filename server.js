@@ -924,11 +924,17 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Inicializar todas as integrações e depois iniciar servidor
+// Inicializar todas as integrações
 async function initializeServices() {
   await loadGoogleAuth();
   loadNotionClient();
+}
 
+// Inicializar serviços imediatamente (funciona no Vercel e localmente)
+initializeServices().catch(console.error);
+
+// Se não estiver no Vercel (ambiente de desenvolvimento local)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Servidor rodando em:`);
     console.log(`   - Local: http://localhost:${PORT}`);
@@ -936,7 +942,5 @@ async function initializeServices() {
   });
 }
 
-initializeServices();
-
-// Exportar para Vercel
+// Exportar para Vercel (serverless)
 module.exports = app;
