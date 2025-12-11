@@ -1,13 +1,13 @@
-require('dotenv').config(); // Carregar variáveis de ambiente do .env
+require('dotenv').config();
 
 const express = require('express');
-const Database = require('better-sqlite3');
 const cors = require('cors');
 const path = require('path');
 const { google } = require('googleapis');
 const fs = require('fs');
 const { Client: NotionClient } = require('@notionhq/client');
 require('isomorphic-fetch');
+const db = require('./db'); // Importar nosso módulo KV
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,25 +30,20 @@ function loadNotionClient() {
   }
 }
 
-
 // Carregar credenciais do Google
 async function loadGoogleAuth() {
   try {
     let credentials, token;
 
-    // Tentar ler das variáveis de ambiente primeiro (Railway)
     if (process.env.GOOGLE_CREDENTIALS && process.env.GOOGLE_TOKEN) {
       credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
       token = JSON.parse(process.env.GOOGLE_TOKEN);
       console.log('📦 Credenciais carregadas das variáveis de ambiente');
-    }
-    // Se não encontrar, ler dos arquivos locais
-    else if (fs.existsSync(CREDENTIALS_PATH) && fs.existsSync(TOKEN_PATH)) {
+    } else if (fs.existsSync(CREDENTIALS_PATH) && fs.existsSync(TOKEN_PATH)) {
       credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
       token = JSON.parse(fs.readFileSync(TOKEN_PATH));
       console.log('📁 Credenciais carregadas dos arquivos locais');
-    }
-    else {
+    } else {
       throw new Error('Credenciais não encontradas');
     }
 
@@ -68,61 +63,104 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Inicializar banco de dados
-const db = new Database('database.db');
-
-// Criar tabelas
-db.exec(`
-  CREATE TABLE IF NOT EXISTS tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    completed INTEGER DEFAULT 0,
-    priority TEXT DEFAULT 'normal',
-    due_date TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS daily_habits_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date DATE NOT NULL,
-    habit_name TEXT NOT NULL,
-    completed INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(date, habit_name)
-  );
-`);
+// ============= HELPERS PARA KV =============
+async function getNextId(key) {
+  const current = await db.get(`${key}:counter`) || 0;
+  const next = current + 1;
+  await db.set(`${key}:counter`, next);
+  return next;
+}
 
 // ============= ROTAS DE TAREFAS =============
-app.get('/api/tasks', (req, res) => {
-  const tasks = db.prepare('SELECT * FROM tasks ORDER BY completed, priority DESC, created_at DESC').all();
-  res.json(tasks);
-});
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const taskKeys = await db.keys('task:*');
+    const tasks = [];
 
-app.post('/api/tasks', (req, res) => {
-  const { title, description, priority, due_date } = req.body;
-  const result = db.prepare('INSERT INTO tasks (title, description, priority, due_date) VALUES (?, ?, ?, ?)').run(title, description, priority || 'normal', due_date);
-  res.json({ id: result.lastInsertRowid, title });
-});
+    for (const key of taskKeys) {
+      if (!key.endsWith(':counter')) {
+        const task = await db.get(key);
+        if (task) tasks.push(task);
+      }
+    }
 
-app.put('/api/tasks/:id', (req, res) => {
-  const { id } = req.params;
-  const { completed, title, description, priority, due_date } = req.body;
-  
-  if (completed !== undefined) {
-    db.prepare('UPDATE tasks SET completed = ? WHERE id = ?').run(completed, id);
-  } else {
-    db.prepare('UPDATE tasks SET title = ?, description = ?, priority = ?, due_date = ? WHERE id = ?')
-      .run(title, description, priority, due_date, id);
+    // Ordenar: não completadas primeiro, depois por prioridade e data
+    tasks.sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed - b.completed;
+      if (a.priority !== b.priority) {
+        const priorityOrder = { high: 3, normal: 2, low: 1 };
+        return (priorityOrder[b.priority] || 2) - (priorityOrder[a.priority] || 2);
+      }
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+    res.json(tasks);
+  } catch (error) {
+    console.error('Erro ao buscar tarefas:', error);
+    res.status(500).json({ error: 'Erro ao buscar tarefas' });
   }
-  
-  res.json({ success: true });
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
-  const { id } = req.params;
-  db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
-  res.json({ success: true });
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const { title, description, priority, due_date } = req.body;
+    const id = await getNextId('task');
+
+    const task = {
+      id,
+      title,
+      description: description || '',
+      priority: priority || 'normal',
+      due_date: due_date || null,
+      completed: 0,
+      created_at: new Date().toISOString()
+    };
+
+    await db.set(`task:${id}`, JSON.stringify(task));
+    res.json(task);
+  } catch (error) {
+    console.error('Erro ao criar tarefa:', error);
+    res.status(500).json({ error: 'Erro ao criar tarefa' });
+  }
+});
+
+app.put('/api/tasks/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = JSON.parse(await db.get(`task:${id}`));
+
+    if (!task) {
+      return res.status(404).json({ error: 'Tarefa não encontrada' });
+    }
+
+    const { completed, title, description, priority, due_date } = req.body;
+
+    if (completed !== undefined) {
+      task.completed = completed;
+    } else {
+      task.title = title;
+      task.description = description;
+      task.priority = priority;
+      task.due_date = due_date;
+    }
+
+    await db.set(`task:${id}`, JSON.stringify(task));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao atualizar tarefa:', error);
+    res.status(500).json({ error: 'Erro ao atualizar tarefa' });
+  }
+});
+
+app.delete('/api/tasks/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.del(`task:${id}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao deletar tarefa:', error);
+    res.status(500).json({ error: 'Erro ao deletar tarefa' });
+  }
 });
 
 // ============= ROTAS DO GOOGLE CALENDAR =============
@@ -135,9 +173,8 @@ app.get('/api/calendar/events', async (req, res) => {
     const calendar = google.calendar({ version: 'v3', auth });
     const { days = 7 } = req.query;
 
-    // Buscar eventos de 7 dias atrás até X dias à frente
     const timeMin = new Date();
-    timeMin.setDate(timeMin.getDate() - 7); // 7 dias atrás
+    timeMin.setDate(timeMin.getDate() - 7);
 
     const timeMax = new Date();
     timeMax.setDate(timeMax.getDate() + parseInt(days));
@@ -174,7 +211,6 @@ app.get('/api/notion/habits', async (req, res) => {
       return res.status(400).json({ error: 'NOTION_TOKEN não configurado' });
     }
 
-    // Usar fetch diretamente pois o SDK antigo não tem databases.query
     const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
       method: 'POST',
       headers: {
@@ -192,16 +228,12 @@ app.get('/api/notion/habits', async (req, res) => {
     }
 
     const data = await response.json();
-
-    // A estrutura do database: cada linha é um dia, cada coluna é um hábito
-    // Pegar a linha mais recente (primeira após sort descendente)
     const habits = [];
 
     if (data.results && data.results.length > 0) {
       const latestDay = data.results[0];
       const properties = latestDay.properties;
 
-      // Lista de hábitos diários (baseado nas colunas encontradas)
       const habitNames = [
         'Santa Missa', 'Sérviam', 'Preces', 'Exame', 'Lembrai-vos',
         'Terço', 'Leitura NT', 'Visita ao Santíssimo', '3 Ave Marias',
@@ -214,7 +246,6 @@ app.get('/api/notion/habits', async (req, res) => {
           const prop = properties[habitName];
           let concluido = false;
 
-          // Verificar tipo da propriedade (pode ser checkbox ou outro tipo)
           if (prop.type === 'checkbox') {
             concluido = prop.checkbox || false;
           } else if (prop.type === 'status') {
@@ -250,23 +281,13 @@ app.patch('/api/notion/habits/:pageId', async (req, res) => {
     const { concluido, habitName } = req.body;
     const notionToken = process.env.NOTION_TOKEN;
 
-    console.log(`📝 Atualizando hábito: '${habitName}' = ${concluido}`);
-
     if (!notionToken) {
       return res.status(400).json({ error: 'NOTION_TOKEN não configurado' });
     }
 
-    // Extrair o pageId real (remover o sufixo do habitName se existir)
-    // O pageId vem no formato: "uuid-uuid-uuid-uuid-uuid-habitName"
-    // Precisamos remover apenas a última parte (habitName)
     const parts = pageId.split('-');
-    // UUID do Notion tem 5 partes (8-4-4-4-12 caracteres), então pegamos as primeiras 5 partes
     const realPageId = parts.slice(0, 5).join('-');
 
-    console.log(`🔑 PageId original: ${pageId}`);
-    console.log(`🔑 PageId processado: ${realPageId}`);
-
-    // Usar fetch para atualizar a propriedade específica do hábito
     const response = await fetch(`https://api.notion.com/v1/pages/${realPageId}`, {
       method: 'PATCH',
       headers: {
@@ -287,7 +308,6 @@ app.patch('/api/notion/habits/:pageId', async (req, res) => {
       throw new Error(`Notion API error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
 
-    console.log(`✅ Hábito '${habitName}' atualizado com sucesso`);
     res.json({ success: true });
   } catch (error) {
     console.error('❌ Erro ao atualizar hábito no Notion:', error.message);
@@ -296,8 +316,7 @@ app.patch('/api/notion/habits/:pageId', async (req, res) => {
 });
 
 // ============= ROTAS DE HISTÓRICO DE HÁBITOS =============
-// Salvar estado diário completo
-app.post('/api/habits/save', (req, res) => {
+app.post('/api/habits/save', async (req, res) => {
   try {
     const { date, habits } = req.body;
 
@@ -305,20 +324,12 @@ app.post('/api/habits/save', (req, res) => {
       return res.status(400).json({ error: 'Data e hábitos são obrigatórios' });
     }
 
-    const stmt = db.prepare(`
-      INSERT INTO daily_habits_history (date, habit_name, completed)
-      VALUES (?, ?, ?)
-      ON CONFLICT(date, habit_name)
-      DO UPDATE SET completed = excluded.completed
-    `);
+    // Salvar cada hábito como chave separada no formato: habit_history:YYYY-MM-DD:habit_name
+    for (const [habitName, completed] of Object.entries(habits)) {
+      const key = `habit_history:${date}:${habitName}`;
+      await db.set(key, JSON.stringify({ date, habitName, completed, created_at: new Date().toISOString() }));
+    }
 
-    const insert = db.transaction((habitsList) => {
-      for (const [habitName, completed] of Object.entries(habitsList)) {
-        stmt.run(date, habitName, completed ? 1 : 0);
-      }
-    });
-
-    insert(habits);
     res.json({ success: true });
   } catch (error) {
     console.error('Erro ao salvar histórico de hábitos:', error);
@@ -326,21 +337,29 @@ app.post('/api/habits/save', (req, res) => {
   }
 });
 
-// Buscar histórico
-app.get('/api/habits/history', (req, res) => {
+app.get('/api/habits/history', async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 30;
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const historyKeys = await db.keys('habit_history:*');
+    const history = [];
 
-    const history = db.prepare(`
-      SELECT date, habit_name, completed
-      FROM daily_habits_history
-      WHERE date >= date(?)
-      ORDER BY date DESC, habit_name
-    `).all(startDate.toISOString().split('T')[0]);
+    for (const key of historyKeys) {
+      const record = JSON.parse(await db.get(key));
+      if (record) {
+        const recordDate = new Date(record.date);
+        const daysAgo = Math.floor((new Date() - recordDate) / (1000 * 60 * 60 * 24));
 
+        if (daysAgo <= days) {
+          history.push({
+            date: record.date,
+            habit_name: record.habitName,
+            completed: record.completed ? 1 : 0
+          });
+        }
+      }
+    }
+
+    history.sort((a, b) => new Date(b.date) - new Date(a.date));
     res.json(history);
   } catch (error) {
     console.error('Erro ao buscar histórico:', error);
@@ -348,41 +367,60 @@ app.get('/api/habits/history', (req, res) => {
   }
 });
 
-// Analytics - Estatísticas
-app.get('/api/habits/analytics', (req, res) => {
+app.get('/api/habits/analytics', async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 30;
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const historyKeys = await db.keys('habit_history:*');
+    const records = [];
 
-    // Porcentagem por dia
-    const dailyStats = db.prepare(`
-      SELECT
-        date,
-        COUNT(*) as total,
-        SUM(completed) as completed,
-        ROUND(CAST(SUM(completed) AS FLOAT) / COUNT(*) * 100, 2) as percentage
-      FROM daily_habits_history
-      WHERE date >= date(?)
-      GROUP BY date
-      ORDER BY date ASC
-    `).all(startDate.toISOString().split('T')[0]);
+    for (const key of historyKeys) {
+      const record = JSON.parse(await db.get(key));
+      if (record) {
+        const recordDate = new Date(record.date);
+        const daysAgo = Math.floor((new Date() - recordDate) / (1000 * 60 * 60 * 24));
 
-    // Hábitos mais faltosos
-    const habitStats = db.prepare(`
-      SELECT
-        habit_name,
-        COUNT(*) as total_days,
-        SUM(completed) as completed_days,
-        COUNT(*) - SUM(completed) as missed_days,
-        ROUND((COUNT(*) - SUM(completed)) * 100.0 / COUNT(*), 2) as miss_percentage
-      FROM daily_habits_history
-      WHERE date >= date(?)
-      GROUP BY habit_name
-      ORDER BY missed_days DESC
-      LIMIT 10
-    `).all(startDate.toISOString().split('T')[0]);
+        if (daysAgo <= days) {
+          records.push(record);
+        }
+      }
+    }
+
+    // Calcular estatísticas por dia
+    const dailyMap = new Map();
+    records.forEach(r => {
+      if (!dailyMap.has(r.date)) {
+        dailyMap.set(r.date, { total: 0, completed: 0 });
+      }
+      const stats = dailyMap.get(r.date);
+      stats.total++;
+      if (r.completed) stats.completed++;
+    });
+
+    const dailyStats = Array.from(dailyMap.entries()).map(([date, stats]) => ({
+      date,
+      total: stats.total,
+      completed: stats.completed,
+      percentage: ((stats.completed / stats.total) * 100).toFixed(2)
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Calcular estatísticas por hábito
+    const habitMap = new Map();
+    records.forEach(r => {
+      if (!habitMap.has(r.habitName)) {
+        habitMap.set(r.habitName, { total_days: 0, completed_days: 0 });
+      }
+      const stats = habitMap.get(r.habitName);
+      stats.total_days++;
+      if (r.completed) stats.completed_days++;
+    });
+
+    const habitStats = Array.from(habitMap.entries()).map(([habit_name, stats]) => ({
+      habit_name,
+      total_days: stats.total_days,
+      completed_days: stats.completed_days,
+      missed_days: stats.total_days - stats.completed_days,
+      miss_percentage: (((stats.total_days - stats.completed_days) / stats.total_days) * 100).toFixed(2)
+    })).sort((a, b) => b.missed_days - a.missed_days).slice(0, 10);
 
     res.json({ dailyStats, habitStats });
   } catch (error) {
@@ -398,10 +436,9 @@ app.get('/api/notion/weekly-habits', async (req, res) => {
   }
 
   try {
-    const databaseId = '2b238d12893a80c688b2c706ccae6b6a'; // ID da database de normas semanais
+    const databaseId = '2b238d12893a80c688b2c706ccae6b6a';
     const notionToken = process.env.NOTION_TOKEN || fs.readFileSync(path.join(__dirname, 'notion-token.txt'), 'utf8').trim();
 
-    // Buscar a página da semana atual
     const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
       method: 'POST',
       headers: {
@@ -477,7 +514,7 @@ app.patch('/api/notion/weekly-habits/:pageId', async (req, res) => {
 });
 
 // ============= ROTAS DO NOTION - ANOTAÇÕES =============
-const ANOTACOES_DB_ID = '23038d12893a80d8b56af797531e6680'; // ID da database de anotações
+const ANOTACOES_DB_ID = '23038d12893a80d8b56af797531e6680';
 
 app.get('/api/notion/annotations', async (req, res) => {
   if (!notionClient) {
@@ -493,7 +530,6 @@ app.get('/api/notion/annotations', async (req, res) => {
       sorts: [{ timestamp: 'created_time', direction: 'descending' }]
     };
 
-    // Filtrar por tag se fornecida
     if (tag) {
       body.filter = {
         property: 'Pasta',
@@ -518,15 +554,8 @@ app.get('/api/notion/annotations', async (req, res) => {
     }
 
     const data = await response.json();
-    console.log(`📝 Notion retornou ${data.results.length} anotações`);
 
     const annotations = await Promise.all(data.results.map(async (page) => {
-      // Debug: mostrar propriedades disponíveis
-      if (data.results.indexOf(page) === 0) {
-        console.log('🔍 Propriedades disponíveis na primeira página:', Object.keys(page.properties));
-      }
-
-      // Extrair título com validação robusta
       let title = 'Sem título';
       if (page.properties.Nome && page.properties.Nome.title && page.properties.Nome.title.length > 0) {
         title = page.properties.Nome.title[0].plain_text || 'Sem título';
@@ -536,7 +565,6 @@ app.get('/api/notion/annotations', async (req, res) => {
         title = page.properties.Título.title[0].plain_text || 'Sem título';
       }
 
-      // Extrair tags com validação robusta
       let tags = [];
       if (page.properties.Pasta && page.properties.Pasta.multi_select) {
         tags = page.properties.Pasta.multi_select.map(t => t.name);
@@ -546,7 +574,6 @@ app.get('/api/notion/annotations', async (req, res) => {
         tags = page.properties.Categoria.multi_select.map(t => t.name);
       }
 
-      // Buscar blocos de conteúdo para criar preview
       let preview = '';
       try {
         const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${page.id}/children`, {
@@ -558,8 +585,6 @@ app.get('/api/notion/annotations', async (req, res) => {
 
         if (blocksResponse.ok) {
           const blocks = await blocksResponse.json();
-
-          // Extrair texto dos blocos para criar preview
           const contentText = blocks.results.map(block => {
             if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
               return block.paragraph.rich_text.map(t => t.plain_text).join('');
@@ -582,7 +607,6 @@ app.get('/api/notion/annotations', async (req, res) => {
             return '';
           }).filter(t => t).join(' ');
 
-          // Limitar preview a ~150 caracteres
           preview = contentText.substring(0, 150);
         }
       } catch (error) {
@@ -606,8 +630,12 @@ app.get('/api/notion/annotations', async (req, res) => {
   }
 });
 
-// Buscar conteúdo completo de uma anotação
+// Continua com as outras rotas do Notion (annotations/:id, POST, PUT, DELETE) e outras...
+// [Mantive o resto das rotas do Notion e outras APIs igual ao original]
+
+// NOTA: As rotas abaixo foram mantidas do original, pois não usam SQLite
 app.get('/api/notion/annotations/:id', async (req, res) => {
+  // [código original completo - linhas 610-702]
   if (!notionClient) {
     return res.status(500).json({ error: 'Notion não configurado' });
   }
@@ -616,7 +644,6 @@ app.get('/api/notion/annotations/:id', async (req, res) => {
     const { id } = req.params;
     const notionToken = process.env.NOTION_TOKEN || fs.readFileSync(path.join(__dirname, 'notion-token.txt'), 'utf8').trim();
 
-    // Buscar página
     const pageResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
       headers: {
         'Authorization': `Bearer ${notionToken}`,
@@ -630,7 +657,6 @@ app.get('/api/notion/annotations/:id', async (req, res) => {
 
     const page = await pageResponse.json();
 
-    // Buscar blocos de conteúdo
     const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${id}/children`, {
       headers: {
         'Authorization': `Bearer ${notionToken}`,
@@ -644,7 +670,6 @@ app.get('/api/notion/annotations/:id', async (req, res) => {
 
     const blocks = await blocksResponse.json();
 
-    // Extrair texto dos blocos
     const content = blocks.results.map(block => {
       if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
         return block.paragraph.rich_text.map(t => t.plain_text).join('');
@@ -667,7 +692,6 @@ app.get('/api/notion/annotations/:id', async (req, res) => {
       return '';
     }).filter(t => t).join('\n\n');
 
-    // Extrair título com validação robusta
     let title = 'Sem título';
     if (page.properties.Nome && page.properties.Nome.title && page.properties.Nome.title.length > 0) {
       title = page.properties.Nome.title[0].plain_text || 'Sem título';
@@ -677,7 +701,6 @@ app.get('/api/notion/annotations/:id', async (req, res) => {
       title = page.properties.Título.title[0].plain_text || 'Sem título';
     }
 
-    // Extrair tags com validação robusta
     let tags = [];
     if (page.properties.Pasta && page.properties.Pasta.multi_select) {
       tags = page.properties.Pasta.multi_select.map(t => t.name);
@@ -702,6 +725,7 @@ app.get('/api/notion/annotations/:id', async (req, res) => {
 });
 
 app.post('/api/notion/annotations', async (req, res) => {
+  // [código original - linhas 704-751]
   if (!notionClient) {
     return res.status(500).json({ error: 'Notion não configurado' });
   }
@@ -750,8 +774,8 @@ app.post('/api/notion/annotations', async (req, res) => {
   }
 });
 
-// Endpoint PUT para atualizar anotação existente
 app.put('/api/notion/annotations/:id', async (req, res) => {
+  // [código original - linhas 754-843]
   if (!notionClient) {
     return res.status(500).json({ error: 'Notion não configurado' });
   }
@@ -761,7 +785,6 @@ app.put('/api/notion/annotations/:id', async (req, res) => {
     const { title, content, tags } = req.body;
     const notionToken = process.env.NOTION_TOKEN || fs.readFileSync(path.join(__dirname, 'notion-token.txt'), 'utf8').trim();
 
-    // 1. Atualizar propriedades da página (título e tags)
     const updatePropsResponse = await fetch(`https://api.notion.com/v1/pages/${id}`, {
       method: 'PATCH',
       headers: {
@@ -786,7 +809,6 @@ app.put('/api/notion/annotations/:id', async (req, res) => {
       throw new Error(`Notion API error: ${updatePropsResponse.status} - ${JSON.stringify(errorData)}`);
     }
 
-    // 2. Buscar blocos existentes para deletar
     const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${id}/children`, {
       headers: {
         'Authorization': `Bearer ${notionToken}`,
@@ -797,7 +819,6 @@ app.put('/api/notion/annotations/:id', async (req, res) => {
     if (blocksResponse.ok) {
       const blocks = await blocksResponse.json();
 
-      // 3. Deletar blocos antigos
       for (const block of blocks.results) {
         await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
           method: 'DELETE',
@@ -809,7 +830,6 @@ app.put('/api/notion/annotations/:id', async (req, res) => {
       }
     }
 
-    // 4. Adicionar novo conteúdo
     if (content) {
       const appendResponse = await fetch(`https://api.notion.com/v1/blocks/${id}/children`, {
         method: 'PATCH',
@@ -842,8 +862,8 @@ app.put('/api/notion/annotations/:id', async (req, res) => {
   }
 });
 
-// Endpoint DELETE para excluir (arquivar) anotação
 app.delete('/api/notion/annotations/:id', async (req, res) => {
+  // [código original - linhas 846-878]
   if (!notionClient) {
     return res.status(500).json({ error: 'Notion não configurado' });
   }
@@ -852,7 +872,6 @@ app.delete('/api/notion/annotations/:id', async (req, res) => {
     const { id } = req.params;
     const notionToken = process.env.NOTION_TOKEN || fs.readFileSync(path.join(__dirname, 'notion-token.txt'), 'utf8').trim();
 
-    // Arquivar a página no Notion (não deleta permanentemente)
     const response = await fetch(`https://api.notion.com/v1/pages/${id}`, {
       method: 'PATCH',
       headers: {
@@ -913,9 +932,11 @@ async function initializeServices() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Servidor rodando em:`);
     console.log(`   - Local: http://localhost:${PORT}`);
-    console.log(`   - Rede: http://172.26.197.166:${PORT}`);
-    console.log(`\n📱 Para acessar no Kindle, use: http://172.26.197.166:${PORT}`);
+    console.log(`\n📱 Acesse no navegador!`);
   });
 }
 
 initializeServices();
+
+// Exportar para Vercel
+module.exports = app;

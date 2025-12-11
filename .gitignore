@@ -14,3 +14,7 @@ RAILWAY_VALUES.txt
 client_secret_*.json
 *.json:Zone.Identifier
 bibliaAveMaria.json
+
+# Backup files
+server-sqlite-backup.js
+.vercel

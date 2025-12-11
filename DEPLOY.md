@@ -1,5 +1,11 @@
 # Guia de Deploy no Vercel - Kindle Hub
 
+⚠️ **ATENÇÃO**: Esta aplicação foi migrada de SQLite para Vercel KV para ser compatível com o Vercel!
+
+---
+
+# Guia de Deploy no Vercel - Kindle Hub
+
 ## Pré-requisitos
 - Conta no Vercel (https://vercel.com)
 - Git instalado
