@@ -16,6 +16,7 @@
             --font-main: Helvetica, Arial, sans-serif;
             --radius: 12px;
             --spacing: 16px;
+            --rubric-color: #c00; /* Cor para as rubricas litúrgicas */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -38,8 +39,10 @@
             align-items: center;
             border-bottom: 2px solid transparent;
             flex-shrink: 0;
+            background: #fff;
+            z-index: 10;
         }
-        header h1 { font-size: 28px; font-weight: bold; }
+        header h1 { font-size: 24px; font-weight: bold; margin: 0; }
         .flex { display: flex; align-items: center; }
 
         /* --- NAVEGAÇÃO (CHIPS) --- */
@@ -55,17 +58,12 @@
             -ms-overflow-style: none;
         }
         .chips-container::-webkit-scrollbar { display: none; }
+        
         .chip {
             margin-right: 10px;
-        }
-        .chip:last-child {
-            margin-right: 0;
-        }
-
-        .chip {
             border: 2px solid var(--border-color);
             border-radius: 50px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             font-weight: bold;
             font-size: 16px;
             white-space: nowrap;
@@ -75,22 +73,10 @@
             font-family: inherit;
             transition: all 0.2s ease;
         }
+        .chip:last-child { margin-right: 0; }
+        .chip.active { background: var(--text-color); color: var(--bg-color); }
 
-        .chip.active {
-            background: var(--text-color);
-            color: var(--bg-color);
-        }
-
-        /* --- ÁREA DE CONTEÚDO --- */
-        .content-area::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            filter: grayscale(100%);
-            pointer-events: none;
-        }
+        /* --- ÁREA DE CONTEÚDO (GERAL) --- */
         .content-area {
             flex: 1;
             overflow-y: auto;
@@ -98,12 +84,28 @@
             max-width: 800px;
             width: 100%;
             margin: 0 auto;
-            
-            /* ADICIONEI ESTAS DUAS LINHAS: */
-            position: relative; /* Cria o limite para a imagem */
-            z-index: 1; /* Garante que o texto fique na camada da frente */
+            position: relative;
+        }
+        
+        /* Gradient para indicar scroll no topo (opcional, mantido do original se desejado) */
+        .content-area::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; pointer-events: none;
         }
 
+        /* --- VIEWS --- */
+        /* View Principal (Ação de Graças) */
+        #mainView { display: flex; flex-direction: column; height: 100%; }
+        
+        /* View Cântico (Oculta por padrão) */
+        #canticoView { 
+            display: none; 
+            height: 100%; 
+            background: #fff;
+            flex-direction: column;
+        }
+        #canticoView.ativo { display: flex; }
+
+        /* --- ESTILOS DO CONTEÚDO DA LISTA --- */
         .category-title {
             font-size: 26px;
             font-weight: bold;
@@ -111,39 +113,54 @@
             padding-bottom: 10px;
             border-bottom: 4px solid #000;
         }
-
-        /* Lista Limpa (Sem linhas, um abaixo do outro) */
         .list-item {
             font-size: 20px;
-            padding: 6px 0; /* Espaçamento leve vertical */
-            margin-bottom: 8px; /* Separação visual */
+            padding: 6px 0;
+            margin-bottom: 8px;
             line-height: 1.4;
-            border: none; /* SEM BORDA */
         }
-        
-        /* Estilos utilitários dentro dos itens */
         .subtitle {
-            font-weight: bold;
-            font-size: 22px;
-            margin-top: 5px;
-            margin-bottom: 5px;
-            display: block;
-            color: #000;
+            font-weight: bold; font-size: 22px; margin-top: 15px; margin-bottom: 5px; display: block; color: #000;
         }
-
         .cinza { color: #666; }
-
-        /* Estilo especial para citações/diário */
         .quote-style {
-            font-style: italic;
-            background: #f4f4f4;
-            padding: 15px;
-            border-left: 4px solid #000;
-            margin-bottom: 15px;
-            border-radius: 0 8px 8px 0;
-            font-size: 18px;
+            font-style: italic; background: #f4f4f4; padding: 15px;
+            border-left: 4px solid #000; margin-bottom: 15px;
+            border-radius: 0 8px 8px 0; font-size: 18px;
         }
 
+        /* --- ESTILOS DO CÂNTICO --- */
+        .cantico-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .btn-idioma {
+            padding: 6px 14px;
+            background: #fff;
+            color: #000;
+            border: 2px solid #000;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        .btn-idioma.ativo { background: #000; color: #fff; }
+        
+        .cantico-content {
+            font-size: 22px;
+            line-height: 1.6;
+            text-align: justify;
+        }
+        .cantico-content p { margin-bottom: 10px; }
+
+        /* Rubricas (Textos em vermelho/instruções) */
+        .rub { color: var(--rubric-color); font-size: 0.97em; }
+        
         /* Botão Voltar ao Topo */
         #btnVoltarTopo {
             position: fixed; bottom: 30px; right: 30px;
@@ -154,6 +171,7 @@
             opacity: 0; visibility: hidden;
             transition: 0.3s;
             display: flex; align-items: center; justify-content: center;
+            z-index: 99;
         }
         #btnVoltarTopo.visivel { opacity: 1; visibility: visible; }
 
@@ -161,7 +179,7 @@
 </head>
 <body>
 
-    <header>
+<header>
         <div class="flex">
             <a href="dashboard.html" style="display:flex;align-items:center;margin-right:16px;">
                 <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
@@ -170,21 +188,44 @@
                 <img src="/icones/de-volta.png" alt="Voltar" style="width:40px;height:40px;">
             </a>
         </div>
-        <h1>Ação de Graças</h1>
-        <div style="width: 70px"></div>
+
+        <h1 id="pageTitle">Ação de Graças</h1>
+
+        <a href="javascript:void(0)" onclick="toggleCantico()" style="display:flex;align-items:center;">
+            <img src="/Imagens/pessoas.png" alt="Cântico" style="width:40px;height:40px;">
+        </a>
     </header>
+        
 
-    <div class="chips-container" id="chipsNav">
-        </div>
+    <div id="mainView" style="flex: 1; overflow: hidden;">
+        <div class="chips-container" id="chipsNav">
+            </div>
 
-    <div class="content-area" id="mainContent">
+        <div class="content-area" id="mainContentScroll">
+            <div id="listaContent">
+                </div>
+            <div style="height: 50px;"></div>
         </div>
+    </div>
+
+    <div id="canticoView" class="content-area">
+        <div class="cantico-header-controls">
+            <h2 style="font-size: 22px; margin: 0;"> </h2>
+            <div>
+                <button class="btn-idioma ativo" id="btnPt" onclick="mudarIdiomaCantico('pt')">PT</button>
+                <button class="btn-idioma" id="btnLa" onclick="mudarIdiomaCantico('la')">LA</button>
+            </div>
+        </div>
+        
+        <div id="canticoTexto" class="cantico-content">
+            </div>
+        <div style="height: 50px;"></div>
+    </div>
 
     <button id="btnVoltarTopo" onclick="scrollToTop()">↑</button>
 
     <script>
-        // ============= DADOS =============
-        // Estrutura ajustada para listas verticais
+
         const dataAG = {
             intercessores: {
                 label: "Intercessores",
@@ -328,17 +369,151 @@
             }
         };
 
-        // ============= LÓGICA =============
+        // ============= DADOS DO CÂNTICO =============
+        const canticoDados = {
+            label: "Cântico 3 Jovens",
+            title_pt: "Cântico dos três jovens",
+            title_la: "Trium puerórum",
+            html_pt: `
+                <p><span class="rub">Ant.</span> Cantemos o hino dos três jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
+                <p class="rub" style="text-align:center;">Cântico dos Três Jovens (Dan. 3, 57-88 e 56)</p>
+                <p><span class="rub">1.</span> Obras do Senhor, bendizei todas o Senhor, louvai-O e exaltai-O para sempre.</p>
+                <p><span class="rub">2.</span> Céus, bendizei o Senhor, Anjos do Senhor, bendizei o Senhor.</p>
+                <p><span class="rub">3.</span> Águas que estais por cima dos céus, bendizei todas o Senhor; todos os poderes bendigam o Senhor.</p>
+                <p><span class="rub">4.</span> Sol e lua, bendizei o Senhor, estrelas do céu, bendizei o Senhor.</p>
+                <p><span class="rub">5.</span> Chuvas e orvalhos, bendizei o Senhor; e vós, todos os ventos, bendizei o Senhor.</p>
+                <p><span class="rub">6.</span> Fogo e calor, bendizei o Senhor; frio e calor, bendizei o Senhor.</p>
+                <p><span class="rub">7.</span> Orvalhos e geadas, bendizei o Senhor; gelo e frio, bendizei o Senhor.</p>
+                <p><span class="rub">8.</span> Gelos e neves, bendizei o Senhor; noites e dias, bendizei o Senhor.</p>
+                <p><span class="rub">9.</span> Luz e trevas, bendizei o Senhor; relâmpagos e nuvens, bendizei o Senhor.</p>
+                <p><span class="rub">10.</span> Que a terra bendiga o Senhor; louve-O e exalte-O para sempre.</p>
+                <p><span class="rub">11.</span> Montes e colinas, bendizei o Senhor; plantas que brotais da terra, bendizei o Senhor.</p>
+                <p><span class="rub">12.</span> Mares e rios, bendizei o Senhor; fontes, bendizei o Senhor.</p>
+                <p><span class="rub">13.</span> Cetáceos e animais que viveis nas águas, bendizei o Senhor; pássaros todos do céu, bendizei o Senhor.</p>
+                <p><span class="rub">14.</span> Animais selvagens e rebanhos, bendizei o Senhor; filhos dos homens, bendizei o Senhor.</p>
+                <p><span class="rub">15.</span> Bendiga Israel o Senhor; louve-O e exalte-O para sempre.</p>
+                <p><span class="rub">16.</span> Sacerdotes do Senhor, bendizei o Senhor; servos do Senhor, bendizei o Senhor.</p>
+                <p><span class="rub">17.</span> Espíritos e almas dos justos, bendizei o Senhor; santos e humildes de coração, bendizei o Senhor.</p>
+                <p><span class="rub">18.</span> Ananias, Azarias e Misael, bendizei o Senhor; louvai-O e exaltai-O para sempre.</p>
+                <p><span class="rub">19.</span> Bendigamos o Pai, o Filho e o Espírito Santo; louvemo-Lo e exaltemo-Lo para sempre.</p>
+                <p><span class="rub">20.</span> Senhor, Vós sois bendito no firmamento dos céus; sois digno de louvor e glória para sempre.</p>
+                <p class="rub">Aqui não se reza o Glória, nem se diz Amém.</p>
+                <br>
+                <p class="rub" style="text-align:center;">Salmo 150</p>
+                <p><span class="rub">1.</span> Louvai o Senhor no seu santuário, louvai-O no seu augusto firmamento.</p>
+                <p><span class="rub">2.</span> Louvai-O por suas obras grandiosas, louvai-O por sua excelsa majestade.</p>
+                <p><span class="rub">3.</span> Louvai-O ao som da trombeta, louvai-O com o saltério e a cítara.</p>
+                <p><span class="rub">4.</span> Louvai-O com tímpanos e danças, louvai-O com a harpa e a flauta.</p>
+                <p><span class="rub">5.</span> Louvai-O com címbalos sonoros, louvai-O com címbalos de júbilo: tudo o que respira louve o Senhor</p>
+                <p>Glória ao Pai e ao Filho e ao Espírito Santo. Como era no princípio, agora e sempre. Amém.</p>
+                <br>
+                <p><span class="rub">Antífona.</span> Cantemos o hino dos três jovens...</p>
+                <p class="rub">Todos se levantam e quem dirige as orações diz:</p>
+                <p><span class="rub">V.</span> Senhor, tende piedade de nós. </p>
+                <p><span class="rub">R.</span> Cristo, tende piedade de nós. Senhor, tende piedade de nós.</p>
+                <p>Pai Nosso <span class="rub">(em silêncio)</span>...</p>
+                <p><span class="rub">V.</span> E não nos deixeis cair em tentação. </p>
+                <p><span class="rub">R.</span> Mas livrai-nos do mal.</p>
+                <p><span class="rub">V.</span> Todas as Vossas obras Vos louvem, Senhor. </p>
+                <p><span class="rub">R.</span> E os Vossos santos Vos bendigam.</p>
+                <p><span class="rub">V.</span> Os santos exultarão na glória. </p>
+                <p><span class="rub">R.</span> E alegrar-se-ão nas suas moradas.</p>
+                <p><span class="rub">V.</span> Não a nós, Senhor, não a nós. </p>
+                <p><span class="rub">R.</span> Mas ao Vosso nome dai glória.</p>
+                <p><span class="rub">V.</span> Ouvi, Senhor, a minha oração. </p>
+                <p><span class="rub">R.</span> E chegue a Vós o meu clamor.</p>
+                <p class="rub">Os sacerdotes acrescentam:</p>
+                <p><span class="rub">V.</span> O Senhor esteja convosco. </p>
+                <p><span class="rub">R.</span> Ele está no meio de nós.</p>
+                <p class="rub" style="text-align:center; text-transform: uppercase;">Oremos</p>
+                <p>Ó Deus, que suavizastes as chamas do fogo aos três jovens, concedei-nos, pela Vossa misericórdia, que não nos deixemos abrasar pelos vícios.</p>
+                <p>Nós vos rogamos, Senhor, que prepareis as nossas ações com a vossa inspiração, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e orações em Vós comecem sempre e convosco acabem.</p>
+                <p>Dai-nos, Senhor, a graça de extinguir o ardor dos vícios, Vós que concedestes a São Lourenço a virtude de vencer o fogo de seu martírio. Por Cristo Senhor Nosso.</p>
+                <p><span class="rub">R.</span> Amém.</p>
+            `,
+            html_la: `
+                <p><span class="rub">Antíphona.</span> Trium puerórum cantémus hymnum, quem cantábant sancti in camíno ignis, benedicéntes Dóminum (<span class="rub">T. P.</span> Allelúia).</p>
+                <p class="rub" style="text-align:center;">Cánticum Trium Puerórum (Dan. 3, 57-88 et 56)</p>
+                <p><span class="rub">1.</span> Benedícite, ómnia ópera Dómini, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
+                <p><span class="rub">2.</span> Benedícite, cæli, Dómino, benedícite, ángeli Dómini, Dómino.</p>
+                <p><span class="rub">3.</span> Benedícite, aquæ omnes, quæ super cælos sunt, Dómino, benedícat omnis virtus, Dómino.</p>
+                <p><span class="rub">4.</span> Benedícite, sol et luna, Dómino, benedícite, stellæ cæli, Dómino.</p>
+                <p><span class="rub">5.</span> Benedícite, omnis imber et ros, Dómino, benedícite, omnes venti, Dómino.</p>
+                <p><span class="rub">6.</span> Benedícite, ignis et æstus, Dómino, benedícite, frigus et æstus, Dómino.</p>
+                <p><span class="rub">7.</span> Benedícite, rores et prúina, Dómino, benedícite, gelu et frigus, Dómino.</p>
+                <p><span class="rub">8.</span> Benedícite, glácies et nives, Dómino, benedícite, noctes et dies, Dómino.</p>
+                <p><span class="rub">9.</span> Benedícite, lux et ténebræ, Dómino, benedícite, fúlgura et nubes, Dómino.</p>
+                <p><span class="rub">10.</span> Benedícat terra Dóminum, laudet et superexáltet eum in sǽcula.</p>
+                <p><span class="rub">11.</span> Benedícite montes et colles, Dómino, benedícite, univérsa germinántia in terra, Dómino.</p>
+                <p><span class="rub">12.</span> Benedícite, mária et flúmina, Dómino, benedícite, fontes, Dómino.</p>
+                <p><span class="rub">13.</span> Benedícite, cete et ómnia, quæ movéntur in aquis, Dómino, benedícite, omnes vólucres cæli, Dómino.</p>
+                <p><span class="rub">14.</span> Benedícite, omnes béstiæ et pécora, Dómino, benedícite, fílii hóminum, Dómino.</p>
+                <p><span class="rub">15.</span> Bénedic, Ísraël, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
+                <p><span class="rub">16.</span> Benedícite, sacerdótes Dómini, Dómino, benedícite, servi Dómini, Dómino.</p>
+                <p><span class="rub">17.</span> Benedícite, spíritus et ánimæ iustórum, Dómino, benedícite, sancti et húmiles corde, Dómino.</p>
+                <p><span class="rub">18.</span> Benedícite, Ananía, Azaría, Mísaël, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
+                <p><span class="rub">19.</span> Benedicámus Patrem et Fílium cum Sancto Spíritu; laudémus et superexaltémus eum in sǽcula.</p>
+                <p><span class="rub">20.</span> Benedíctus es in firmaménto cæli et laudábilis et gloriósus in sǽcula.</p>
+                <p class="rub">Hic non dícitur Glória Patri, neque Amen.</p>
+                <br>
+                <p class="rub" style="text-align:center;">Psalmus 150</p>
+                <p><span class="rub">1.</span> Laudáte Dóminum in sanctuário eius, laudáte eum in firmaménto virtútis eius.</p>
+                <p><span class="rub">2.</span> Laudáte eum in magnálibus eius, laudáte eum secúndum multitúdinem magnitúdinis eius.</p>
+                <p><span class="rub">3.</span> Laudáte eum in sono tubæ, laudáte eum in psaltério et cíthara.</p>
+                <p><span class="rub">4.</span> Laudáte eum in týmpano et choro, laudáte eum in chordis et órgano.</p>
+                <p><span class="rub">5.</span> Laudáte eum in cýmbalis benesonántibus, laudáte eum in cýmbalis iubilatiónis: omne quod spirat, laudet Dóminum.</p>
+                <p>Glória Patri, et Fílio, et Spirítui Sancto. Sicut erat in princípio, et nunc, et semper, et in sǽcula sæculórum. Amen.</p>
+                <br>
+                <p><span class="rub">Antiphona.</span> Trium puerórum cantémus hymnum...</p>
+                <p class="rub">Omnes exsúrgunt, et qui preces moderátur dicit:</p>
+                <p><span class="rub">V.</span> Kyrie, eléison. </p>
+                <p><span class="rub">R.</span> Christe, eléison. Kyrie, eléison.</p>
+                <p>Pater noster...</p>
+                <p><span class="rub">V.</span> Et ne nos indúcas in tentatiónem. </p>
+                <p><span class="rub">R.</span> Sed líbera nos a malo.</p>
+                <p><span class="rub">V.</span> Confiteántur tibi, Dómine, ómnia ópera tua. </p>
+                <p><span class="rub">R.</span> Et Sancti tui benedícant tibi.</p>
+                <p><span class="rub">V.</span> Exsultábunt sancti in glória. </p>
+                <p><span class="rub">R.</span> Lætabúntur in cubílibus suis.</p>
+                <p><span class="rub">V.</span> Non nobis, Dómine, non nobis. </p>
+                <p><span class="rub">R.</span> Sed nómini tuo da glóriam.</p>
+                <p><span class="rub">V.</span> Dómine, exáudi oratiónem meam. </p>
+                <p><span class="rub">R.</span> Et clamor meus ad te véniat.</p>
+                <p class="rub">Sacerdotes addunt:</p>
+                <p><span class="rub">V.</span> Dóminus vobíscum. </p>
+                <p><span class="rub">R.</span> Et cum spíritu tuo.</p>
+                <p class="rub" style="text-align:center; text-transform: uppercase;">Orémus</p>
+                <p>Deus, qui tribus púeris mitigásti flammas ígnium, concéde propítius; ut nos fámulos tuos non exúrat flamma vitiórum.</p>
+                <p>Actiónes nostras, quǽsumus, Dómine, aspirándo prǽveni et adiuvándo proséquere: ut cuncta nostra orátio et operátio a te semper incípiat, et per te cœpta finiátur.</p>
+                <p>Da nobis, quǽsumus, Dómine, vitiórum nostrórum flammas extínguere; qui beato Lauréntio tribuísti tormentórum suórum incéndia superáre. Per Christum Dóminum nostrum.</p>
+                <p><span class="rub">R.</span> Amen.</p>
+            `
+        };
+
+        // ============= LÓGICA GERAL =============
         const chipsContainer = document.getElementById('chipsNav');
-        const mainContent = document.getElementById('mainContent');
+        const listaContent = document.getElementById('listaContent');
+        const mainContentScroll = document.getElementById('mainContentScroll');
         const btnVoltarTopo = document.getElementById('btnVoltarTopo');
-        const contentArea = document.querySelector('.content-area'); 
+        const mainView = document.getElementById('mainView');
+        const canticoView = document.getElementById('canticoView');
+        const pageTitle = document.getElementById('pageTitle');
+        const canticoTexto = document.getElementById('canticoTexto');
+
+        let idiomaAtualCantico = 'pt';
+        let scrollTarget = mainContentScroll; // Define quem está rolando para o botão de topo
 
         function init() {
             renderChips();
             loadCategory('intercessores');
+            // Inicializar Cântico em PT
+            renderCantico();
+            
+            // Listener inicial de scroll
+            attachScrollListener();
         }
 
+        // --- NAVEGAÇÃO DE ABAS (AG) ---
         function renderChips() {
             chipsContainer.innerHTML = '';
             for (const key in dataAG) {
@@ -365,12 +540,8 @@
 
             // Renderizar Conteúdo
             const data = dataAG[key];
-            
-            // Título sem ícone
             let html = `<div class="category-title">${data.label}</div>`;
-
-            // Lista Vertical
-            html += `<div class="list-container">`;
+            
             data.items.forEach(item => {
                 if (data.isQuotes) {
                     html += `<div class="quote-style">${item}</div>`;
@@ -378,26 +549,66 @@
                     html += `<div class="list-item">${item}</div>`;
                 }
             });
-            html += `</div>`;
 
-            mainContent.innerHTML = html;
-            
-            // Scroll para o topo do conteúdo
-            contentArea.scrollTop = 0;
+            listaContent.innerHTML = html;
+            mainContentScroll.scrollTop = 0;
         }
 
-        // ============= UTILITÁRIOS =============
-        
-        contentArea.addEventListener('scroll', function() {
-            if (contentArea.scrollTop > 300) {
-                btnVoltarTopo.classList.add('visivel');
+        // --- LÓGICA DO CÂNTICO ---
+        function toggleCantico() {
+            if (canticoView.style.display === 'flex') {
+                // Fechar Cântico
+                canticoView.style.display = 'none';
+                mainView.style.display = 'flex';
+                pageTitle.textContent = "Ação de Graças";
+                scrollTarget = mainContentScroll;
             } else {
-                btnVoltarTopo.classList.remove('visivel');
+                // Abrir Cântico
+                mainView.style.display = 'none';
+                canticoView.style.display = 'flex';
+                pageTitle.textContent = "Trium puerórum";
+                scrollTarget = canticoView;
+                canticoView.scrollTop = 0;
             }
-        });
+            attachScrollListener();
+        }
+
+        function mudarIdiomaCantico(lang) {
+            idiomaAtualCantico = lang;
+            
+            // Atualizar botões
+            document.getElementById('btnPt').classList.toggle('ativo', lang === 'pt');
+            document.getElementById('btnLa').classList.toggle('ativo', lang === 'la');
+            
+            renderCantico();
+        }
+
+        function renderCantico() {
+            const html = idiomaAtualCantico === 'pt' ? canticoDados.html_pt : canticoDados.html_la;
+            canticoTexto.innerHTML = html;
+        }
+
+        // --- UTILITÁRIOS DE SCROLL ---
+        function attachScrollListener() {
+            // Remover listener antigo se necessário (embora sobrescrever onclick seja mais seguro para simples toggle)
+            mainContentScroll.onscroll = null;
+            canticoView.onscroll = null;
+
+            // Anexar ao alvo atual
+            scrollTarget.onscroll = function() {
+                if (scrollTarget.scrollTop > 300) {
+                    btnVoltarTopo.classList.add('visivel');
+                } else {
+                    btnVoltarTopo.classList.remove('visivel');
+                }
+            };
+            
+            // Trigger manual para garantir estado correto do botão ao trocar view
+            scrollTarget.onscroll(); 
+        }
 
         function scrollToTop() {
-            contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+            scrollTarget.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         init();

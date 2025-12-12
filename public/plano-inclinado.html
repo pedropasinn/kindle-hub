@@ -223,6 +223,104 @@
             background: var(--text-color);
             color: var(--bg-color);
         }
+
+        /* --- ESTILOS DA VIEW DE ORAÇÃO --- */
+        #oracaoView {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #fff;
+            z-index: 1000;
+            overflow-y: auto;
+            flex-direction: column;
+        }
+        #oracaoView.ativo { display: flex; }
+
+        .oracao-header {
+            padding: var(--spacing);
+            border-bottom: 2px solid #000;
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .oracao-header-top {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .btn-voltar-oracao {
+            position: absolute;
+            left: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .btn-voltar-oracao img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .oracao-titulo-container {
+            text-align: center;
+        }
+
+        .btn-idioma-oracao {
+            padding: 6px 14px;
+            background: #fff;
+            color: #000;
+            border: 2px solid #000;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        .btn-idioma-oracao.ativo { background: #000; color: #fff; }
+
+        .oracao-content {
+            flex: 1;
+            padding: 20px var(--spacing);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            font-size: 22px;
+            line-height: 1.6;
+            text-align: justify;
+        }
+        .oracao-content p { margin-bottom: 10px; }
+
+        .rub { color: #c00; font-size: 0.97em; }
+
+        #btnVoltarTopoOracao {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #000;
+            color: #fff;
+            border: 3px solid #000;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99;
+        }
+        #btnVoltarTopoOracao.visivel { opacity: 1; visibility: visible; }
     </style>
 </head>
 <body>
@@ -237,7 +335,7 @@
                     </a>
                 </div>
                 
-                <h1>Plano Inclinado</h1>
+                <h1 onclick="handleTitleClick()" style="cursor: pointer;">Plano Inclinado</h1>
                 
                 <div class="header-spacer"></div> 
         </div>
@@ -262,6 +360,29 @@
             <h2>Normas Semanais</h2>
             <div id="weeklyNotionHabits"></div>
         </div>
+
+    <!-- View de Oração (Oculta por padrão) -->
+    <div id="oracaoView">
+        <div class="oracao-header">
+            <div class="oracao-header-top">
+                <button class="btn-voltar-oracao" onclick="fecharOracao()">
+                    <img src="/icones/de-volta.png" alt="Voltar">
+                </button>
+                <div class="oracao-titulo-container">
+                    <h2 id="oracaoTitulo" style="font-size: 24px; margin: 0;"></h2>
+                    <div id="botoesIdioma" style="margin-top: 8px;">
+                        <button class="btn-idioma-oracao ativo" id="btnPtOracao" onclick="mudarIdiomaOracao('pt')">PT</button>
+                        <button class="btn-idioma-oracao" id="btnLaOracao" onclick="mudarIdiomaOracao('la')">LA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="oracaoTexto" class="oracao-content"></div>
+        <div style="height: 50px;"></div>
+    </div>
+
+    <button id="btnVoltarTopoOracao" onclick="scrollToTopOracao()">↑</button>
 
     <script>
         // Hábitos diários fixos
@@ -686,6 +807,464 @@
             setInterval(() => {
                 saveToDatabase();
             }, 300000); // 5 minutos
+        }
+
+        // ============= DADOS DAS ORAÇÕES =============
+        const oracoesDados = {
+            cantico_tres_jovens: {
+                label: "Cântico 3 Jovens",
+                title_pt: "Cântico dos três jovens",
+                title_la: "Trium puerórum",
+                html_pt: `
+                    <p><span class="rub">Ant.</span> Cantemos o hino dos três jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
+                    <p class="rub" style="text-align:center;">Cântico dos Três Jovens (Dan. 3, 57-88 e 56)</p>
+                    <p><span class="rub">1.</span> Obras do Senhor, bendizei todas o Senhor, louvai-O e exaltai-O para sempre.</p>
+                    <p><span class="rub">2.</span> Céus, bendizei o Senhor, Anjos do Senhor, bendizei o Senhor.</p>
+                    <p><span class="rub">3.</span> Águas que estais por cima dos céus, bendizei todas o Senhor; todos os poderes bendigam o Senhor.</p>
+                    <p><span class="rub">4.</span> Sol e lua, bendizei o Senhor, estrelas do céu, bendizei o Senhor.</p>
+                    <p><span class="rub">5.</span> Chuvas e orvalhos, bendizei o Senhor; e vós, todos os ventos, bendizei o Senhor.</p>
+                    <p><span class="rub">6.</span> Fogo e calor, bendizei o Senhor; frio e calor, bendizei o Senhor.</p>
+                    <p><span class="rub">7.</span> Orvalhos e geadas, bendizei o Senhor; gelo e frio, bendizei o Senhor.</p>
+                    <p><span class="rub">8.</span> Gelos e neves, bendizei o Senhor; noites e dias, bendizei o Senhor.</p>
+                    <p><span class="rub">9.</span> Luz e trevas, bendizei o Senhor; relâmpagos e nuvens, bendizei o Senhor.</p>
+                    <p><span class="rub">10.</span> Que a terra bendiga o Senhor; louve-O e exalte-O para sempre.</p>
+                    <p><span class="rub">11.</span> Montes e colinas, bendizei o Senhor; plantas que brotais da terra, bendizei o Senhor.</p>
+                    <p><span class="rub">12.</span> Mares e rios, bendizei o Senhor; fontes, bendizei o Senhor.</p>
+                    <p><span class="rub">13.</span> Cetáceos e animais que viveis nas águas, bendizei o Senhor; pássaros todos do céu, bendizei o Senhor.</p>
+                    <p><span class="rub">14.</span> Animais selvagens e rebanhos, bendizei o Senhor; filhos dos homens, bendizei o Senhor.</p>
+                    <p><span class="rub">15.</span> Bendiga Israel o Senhor; louve-O e exalte-O para sempre.</p>
+                    <p><span class="rub">16.</span> Sacerdotes do Senhor, bendizei o Senhor; servos do Senhor, bendizei o Senhor.</p>
+                    <p><span class="rub">17.</span> Espíritos e almas dos justos, bendizei o Senhor; santos e humildes de coração, bendizei o Senhor.</p>
+                    <p><span class="rub">18.</span> Ananias, Azarias e Misael, bendizei o Senhor; louvai-O e exaltai-O para sempre.</p>
+                    <p><span class="rub">19.</span> Bendigamos o Pai, o Filho e o Espírito Santo; louvemo-Lo e exaltemo-Lo para sempre.</p>
+                    <p><span class="rub">20.</span> Senhor, Vós sois bendito no firmamento dos céus; sois digno de louvor e glória para sempre.</p>
+                    <p class="rub">Aqui não se reza o Glória, nem se diz Amém.</p>
+                    <br>
+                    <p class="rub" style="text-align:center;">Salmo 150</p>
+                    <p><span class="rub">1.</span> Louvai o Senhor no seu santuário, louvai-O no seu augusto firmamento.</p>
+                    <p><span class="rub">2.</span> Louvai-O por suas obras grandiosas, louvai-O por sua excelsa majestade.</p>
+                    <p><span class="rub">3.</span> Louvai-O ao som da trombeta, louvai-O com o saltério e a cítara.</p>
+                    <p><span class="rub">4.</span> Louvai-O com tímpanos e danças, louvai-O com a harpa e a flauta.</p>
+                    <p><span class="rub">5.</span> Louvai-O com címbalos sonoros, louvai-O com címbalos de júbilo: tudo o que respira louve o Senhor</p>
+                    <p>Glória ao Pai e ao Filho e ao Espírito Santo. Como era no princípio, agora e sempre. Amém.</p>
+                    <br>
+                    <p><span class="rub">Ant.</span> Cantemos o hino dos três jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
+                    <p class="rub">Todos se levantam e quem dirige as orações diz:</p>
+                    <p><span class="rub">V.</span> Senhor, tende piedade de nós. </p>
+                    <p><span class="rub">R.</span> Cristo, tende piedade de nós. Senhor, tende piedade de nós.</p>
+                    <p>Pai Nosso <span class="rub">(em silêncio)</span>...</p>
+                    <p><span class="rub">V.</span> E não nos deixeis cair em tentação. </p>
+                    <p><span class="rub">R.</span> Mas livrai-nos do mal.</p>
+                    <p><span class="rub">V.</span> Todas as Vossas obras Vos louvem, Senhor. </p>
+                    <p><span class="rub">R.</span> E os Vossos santos Vos bendigam.</p>
+                    <p><span class="rub">V.</span> Os santos exultarão na glória. </p>
+                    <p><span class="rub">R.</span> E alegrar-se-ão nas suas moradas.</p>
+                    <p><span class="rub">V.</span> Não a nós, Senhor, não a nós. </p>
+                    <p><span class="rub">R.</span> Mas ao Vosso nome dai glória.</p>
+                    <p><span class="rub">V.</span> Ouvi, Senhor, a minha oração. </p>
+                    <p><span class="rub">R.</span> E chegue a Vós o meu clamor.</p>
+                    <p class="rub">Os sacerdotes acrescentam:</p>
+                    <p><span class="rub">V.</span> O Senhor esteja convosco. </p>
+                    <p><span class="rub">R.</span> Ele está no meio de nós.</p>
+                    <p class="rub" style="text-align:center; text-transform: uppercase;">Oremos</p>
+                    <p>Ó Deus, que suavizastes as chamas do fogo aos três jovens, concedei-nos, pela Vossa misericórdia, que não nos deixemos abrasar pelos vícios.</p>
+                    <p>Nós vos rogamos, Senhor, que prepareis as nossas ações com a vossa inspiração, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e orações em Vós comecem sempre e convosco acabem.</p>
+                    <p>Dai-nos, Senhor, a graça de extinguir o ardor dos vícios, Vós que concedestes a São Lourenço a virtude de vencer o fogo de seu martírio. Por Cristo Senhor Nosso.</p>
+                    <p><span class="rub">R.</span> Amém.</p>
+                `,
+                html_la: `
+                    <p><span class="rub">Antíphona.</span> Trium puerórum cantémus hymnum, quem cantábant sancti in camíno ignis, benedicéntes Dóminum (<span class="rub">T. P.</span> Allelúia).</p>
+                    <p class="rub" style="text-align:center;">Cánticum Trium Puerórum (Dan. 3, 57-88 et 56)</p>
+                    <p><span class="rub">1.</span> Benedícite, ómnia ópera Dómini, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
+                    <p><span class="rub">2.</span> Benedícite, cæli, Dómino, benedícite, ángeli Dómini, Dómino.</p>
+                    <p><span class="rub">3.</span> Benedícite, aquæ omnes, quæ super cælos sunt, Dómino, benedícat omnis virtus, Dómino.</p>
+                    <p><span class="rub">4.</span> Benedícite, sol et luna, Dómino, benedícite, stellæ cæli, Dómino.</p>
+                    <p><span class="rub">5.</span> Benedícite, omnis imber et ros, Dómino, benedícite, omnes venti, Dómino.</p>
+                    <p><span class="rub">6.</span> Benedícite, ignis et æstus, Dómino, benedícite, frigus et æstus, Dómino.</p>
+                    <p><span class="rub">7.</span> Benedícite, rores et prúina, Dómino, benedícite, gelu et frigus, Dómino.</p>
+                    <p><span class="rub">8.</span> Benedícite, glácies et nives, Dómino, benedícite, noctes et dies, Dómino.</p>
+                    <p><span class="rub">9.</span> Benedícite, lux et ténebræ, Dómino, benedícite, fúlgura et nubes, Dómino.</p>
+                    <p><span class="rub">10.</span> Benedícat terra Dóminum, laudet et superexáltet eum in sǽcula.</p>
+                    <p><span class="rub">11.</span> Benedícite montes et colles, Dómino, benedícite, univérsa germinántia in terra, Dómino.</p>
+                    <p><span class="rub">12.</span> Benedícite, mária et flúmina, Dómino, benedícite, fontes, Dómino.</p>
+                    <p><span class="rub">13.</span> Benedícite, cete et ómnia, quæ movéntur in aquis, Dómino, benedícite, omnes vólucres cæli, Dómino.</p>
+                    <p><span class="rub">14.</span> Benedícite, omnes béstiæ et pécora, Dómino, benedícite, fílii hóminum, Dómino.</p>
+                    <p><span class="rub">15.</span> Bénedic, Ísraël, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
+                    <p><span class="rub">16.</span> Benedícite, sacerdótes Dómini, Dómino, benedícite, servi Dómini, Dómino.</p>
+                    <p><span class="rub">17.</span> Benedícite, spíritus et ánimæ iustórum, Dómino, benedícite, sancti et húmiles corde, Dómino.</p>
+                    <p><span class="rub">18.</span> Benedícite, Ananía, Azaría, Mísaël, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
+                    <p><span class="rub">19.</span> Benedicámus Patrem et Fílium cum Sancto Spíritu; laudémus et superexaltémus eum in sǽcula.</p>
+                    <p><span class="rub">20.</span> Benedíctus es in firmaménto cæli et laudábilis et gloriósus in sǽcula.</p>
+                    <p class="rub">Hic non dícitur Glória Patri, neque Amen.</p>
+                    <br>
+                    <p class="rub" style="text-align:center;">Psalmus 150</p>
+                    <p><span class="rub">1.</span> Laudáte Dóminum in sanctuário eius, laudáte eum in firmaménto virtútis eius.</p>
+                    <p><span class="rub">2.</span> Laudáte eum in magnálibus eius, laudáte eum secúndum multitúdinem magnitúdinis eius.</p>
+                    <p><span class="rub">3.</span> Laudáte eum in sono tubæ, laudáte eum in psaltério et cíthara.</p>
+                    <p><span class="rub">4.</span> Laudáte eum in týmpano et choro, laudáte eum in chordis et órgano.</p>
+                    <p><span class="rub">5.</span> Laudáte eum in cýmbalis benesonántibus, laudáte eum in cýmbalis iubilatiónis: omne quod spirat, laudet Dóminum.</p>
+                    <p>Glória Patri, et Fílio, et Spirítui Sancto. Sicut erat in princípio, et nunc, et semper, et in sǽcula sæculórum. Amen.</p>
+                    <br>
+                    <p><span class="rub">Antíphona.</span> Trium puerórum cantémus hymnum, quem cantábant sancti in camíno ignis, benedicéntes Dóminum (<span class="rub">T. P.</span> Allelúia).</p>
+                    <p class="rub">Omnes exsúrgunt, et qui preces moderátur dicit:</p>
+                    <p><span class="rub">V.</span> Kyrie, eléison. </p>
+                    <p><span class="rub">R.</span> Christe, eléison. Kyrie, eléison.</p>
+                    <p>Pater noster...</p>
+                    <p><span class="rub">V.</span> Et ne nos indúcas in tentatiónem. </p>
+                    <p><span class="rub">R.</span> Sed líbera nos a malo.</p>
+                    <p><span class="rub">V.</span> Confiteántur tibi, Dómine, ómnia ópera tua. </p>
+                    <p><span class="rub">R.</span> Et Sancti tui benedícant tibi.</p>
+                    <p><span class="rub">V.</span> Exsultábunt sancti in glória. </p>
+                    <p><span class="rub">R.</span> Lætabúntur in cubílibus suis.</p>
+                    <p><span class="rub">V.</span> Non nobis, Dómine, non nobis. </p>
+                    <p><span class="rub">R.</span> Sed nómini tuo da glóriam.</p>
+                    <p><span class="rub">V.</span> Dómine, exáudi oratiónem meam. </p>
+                    <p><span class="rub">R.</span> Et clamor meus ad te véniat.</p>
+                    <p class="rub">Sacerdotes addunt:</p>
+                    <p><span class="rub">V.</span> Dóminus vobíscum. </p>
+                    <p><span class="rub">R.</span> Et cum spíritu tuo.</p>
+                    <p class="rub" style="text-align:center; text-transform: uppercase;">Orémus</p>
+                    <p>Deus, qui tribus púeris mitigásti flammas ígnium, concéde propítius; ut nos fámulos tuos non exúrat flamma vitiórum.</p>
+                    <p>Actiónes nostras, quǽsumus, Dómine, aspirándo prǽveni et adiuvándo proséquere: ut cuncta nostra orátio et operátio a te semper incípiat, et per te cœpta finiátur.</p>
+                    <p>Da nobis, quǽsumus, Dómine, vitiórum nostrórum flammas extínguere; qui beato Lauréntio tribuísti tormentórum suórum incéndia superáre. Per Christum Dóminum nostrum.</p>
+                    <p><span class="rub">R.</span> Amen.</p>
+                `
+            },
+            salmo_2: {
+                label: "Salmo 2",
+                title_pt: "Salmo 2",
+                title_la: "Psalmus II",
+                html_la: `
+                    <p><span class="rub">Antiphona.</span> Regnum eius regnum sempitérnum est, et omnes reges sérvient ei et obœdient. (T. P. Allelúia).</p>
+                    <p><span class="rub">1.</span> Quare fremuérunt gentes, et pópuli meditáti sunt inánia?</p>
+                    <p><span class="rub">2.</span> Astitérunt reges terræ, et príncipes convenérunt in unum advérsus Dóminum et advérsus Christum eius:</p>
+                    <p><span class="rub">3.</span> «Dirumpámus víncula eórum et proiciámus a nobis iugum ipsórum!».</p>
+                    <p><span class="rub">4.</span> Qui hábitat in cælis, irridébit eos, Dóminus subsannábit eos.</p>
+                    <p><span class="rub">5.</span> Tunc loquétur ad eos in ira sua et in furóre suo conturbábit eos:</p>
+                    <p><span class="rub">6.</span> «Ego autem constítui regem meum super Sion, montem sanctum meum!».</p>
+                    <p><span class="rub">7.</span> Prædicábo decrétum eius. Dóminus dixit ad me: «Fílius meus es tu; ego hódie génui te.</p>
+                    <p><span class="rub">8.</span> Póstula a me, et dabo tibi gentes hereditátem tuam et possessiónem tuam términos terræ.</p>
+                    <p><span class="rub">9.</span> Reges eos in virga férrea et tamquam vas fíguli confrínges eos».</p>
+                    <p><span class="rub">10.</span> Et nunc, reges, intellégite, erudímini, qui iudicátis terram.</p>
+                    <p><span class="rub">11.</span> Servíte Dómino in timóre et exsultáte ei cum tremóre.</p>
+                    <p><span class="rub">12.</span> Apprehéndite disciplínam, ne quando irascátur, et pereátis de via, cum exárserit in brevi ira eius. Beati omnes, qui confídunt in eo.</p>
+                    <p><span class="rub">13.</span> Glória Patri, et Fílio, et Spirítui Sancto.</p>
+                    <p><span class="rub">14.</span> Sicut erat in princípio, et nunc, et semper, et in sǽcula sæculórum. Amen.</p>
+                    <p><span class="rub">Antiphona.</span> Regnum eius regnum sempitérnum est, et omnes reges sérvient ei et obœdient. (T. P. Allelúia).</p>
+                    <p><span class="rub">V/.</span> Dómine, exáudi oratiónem meam.</p>
+                    <p><span class="rub">R/.</span> Et clamor meus ad te véniat.</p>
+                    <p class="rub" style="text-align:center; text-transform: uppercase;">Sacerdotes addunt:</p>
+                    <p><span class="rub">V/.</span> Dóminus vobíscum.</p>
+                    <p><span class="rub">R/.</span> Et cum spíritu tuo.</p>
+                    <p class="rub" style="text-align:center; text-transform: uppercase;">Orémus</p>
+                    <p> Omnípotens sempitérne Deus, qui in dilécto Fílio tuo, universórum Rege ómnia instauráre voluísti: concéde propítius; ut cunctæ famíliæ géntium, peccáti vúlnere disgregátæ, eius suavíssimo subdántur império: Qui tecum vivit et regnat in unitáte Spíritus Sancti Deus: per ómnia sǽcula sæculórum.</p>
+                    <p><span class="rub">R.</span> Amen.</p>
+                `
+            },
+            adoro_te_devote: {
+                label: "Adoro te devote",
+                title_pt: "Adoro te devote",
+                title_la: "Adóro te devóte",
+                html_la: `
+                    <p><span class="rub">1.</span> Adóro te devóte, latens Déitas, quæ sub his figúris vere látitas. Tibi se cor meum totum súbiicit, quia, te contémplans, totum déficit.</p>
+                    <p><span class="rub">2.</span> Visus, tactus, gustus in te fállitur, sed audítu solo tuto créditur. Credo quidquid dixit Dei Fílius: nil hoc verbo veritátis vérius.</p>
+                    <p><span class="rub">3.</span> In Cruce latébat sola Déitas; at hic latet simul et humánitas. Ambo tamen credens atque cónfitens, peto quod petívit latro pœnitens.</p>
+                    <p><span class="rub">4.</span> Plagas, sicut Thomas, non intúeor; Deum tamen meum te confíteor. Fac me tibi semper magis crédere, in te spem habére, te dilígere.</p>
+                    <p><span class="rub">5.</span> O memoriále mortis Dómini! Panis vivus vitam præstans hómini, præsta meæ menti de te vívere, et te illi semper dulce sápere.</p>
+                    <p><span class="rub">6.</span> Pie pellicáne, Iesu Dómine, me immúndum munda tuo sánguine: cuius una stilla salvum fácere totum mundum quit ab omni scélere.</p>
+                    <p><span class="rub">7.</span> Iesu, quem velátum nunc aspício, oro, fiat illud quod tam sítio; ut te reveláta cernens fácie, visu sim beátus tuæ glóriæ.</p>
+                    <p>Amen.</p>
+                `
+            },
+            preces_opus_dei: {
+                label: "Preces (Opus Dei)",
+                title_pt: "Preces do Opus Dei",
+                title_la: "Preces",
+                html_pt: `
+                    <p>Servirei!</p>
+                    <p><span class="rub">V.</span> À Santíssima Trindade.</p>
+                    <p><span class="rub">R.</span> Graças a vós, Senhor Deus, graças a vós. Verdadeira e única Trindade, divindade suprema e única, indivisa e Santa Trindade.</p>
+                    <p><span class="rub">V.</span> A Jesus Cristo, Rei.</p>
+                    <p><span class="rub">R.</span> O Senhor é nosso Juiz, nosso Legislador e nosso Rei. Ele nos salvará.</p>
+                    <p><span class="rub">V.</span> Cristo, Filho de Deus vivo, tende misericórdia de nós.</p>
+                    <p><span class="rub">R.</span> Cristo, Filho de Deus vivo, tende misericórdia de nós.</p>
+                    <p><span class="rub">V.</span> Levantai-Vos, ó Cristo, vinde em nosso auxílio.</p>
+                    <p><span class="rub">R.</span> Libertai-nos pelo vosso nome.</p>
+                    <p><span class="rub">V.</span> O Senhor é a minha luz e salvação, a quem temerei?</p>
+                    <p><span class="rub">R.</span> Se os inimigos vierem contra mim, não temerá meu coração; se me combaterem, em Deus esperarei.</p>
+                    <p><span class="rub">V.</span> À Bem-aventurada Virgem Maria, Medianeira.</p>
+                    <p><span class="rub">R.</span> Lembrai-vos, ó Virgem Mãe de Deus, de falar coisas boas de nós quando estiverdes na presença do Senhor.</p>
+                    <p><span class="rub">V.</span> A São José, esposo da Santíssima Virgem Maria.</p>
+                    <p><span class="rub">R.</span> Deus colocou-vos no lugar de Pai do Rei e de senhor da sua casa: rogai por nós.</p>
+                    <p><span class="rub">V.</span> Aos Anjos da Guarda.</p>
+                    <p><span class="rub">R.</span> Ó nossos Santos Anjos da Guarda, defendei-nos no combate, para que não pereçamos no tremendo juízo.</p>
+                    <p><span class="rub">V.</span> A São Josemaria, nosso Fundador.</p>
+                    <p><span class="rub">R.</span> Intercedei pelos vossos filhos, para que, fiéis ao espírito do Opus Dei, santifiquemos o trabalho e ganhemos almas para Cristo.</p>
+                    <p><span class="rub">V.</span> Oremos pelo nosso Santo Padre, o Papa N.</p>
+                    <p><span class="rub">R.</span> Que Deus o conserve e lhe dê vida e o faça santo na terra, e não o entregue nas mãos dos seus inimigos.</p>
+                    <p><span class="rub">V.</span> Oremos também pelo Bispo desta diocese.</p>
+                    <p><span class="rub">R.</span> Senhor, que ele apascente, vigilante, o seu rebanho, com a vossa fortaleza e na grandeza do vosso Nome.</p>
+                    <p><span class="rub">V.</span> Oremos pela unidade do apostolado.</p>
+                    <p><span class="rub">R.</span> Que todos sejam um, como tu, Pai, estás em mim, e eu em ti: para que eles sejam um, assim como nós somos um.</p>
+                    <p><span class="rub">V.</span> Todo reino dividido contra si mesmo será destruído.</p>
+                    <p><span class="rub">R.</span> E toda cidade ou casa internamente dividida não se manterá.</p>
+                    <p><span class="rub">V.</span> Oremos pelos nossos benfeitores.</p>
+                    <p><span class="rub">R.</span> Dignai-vos, Senhor, recompensar com a vida eterna todos aqueles que nos fazem o bem pelo vosso nome. Amém.</p>
+                    <p><span class="rub">V.</span> Oremos pelo Padre.</p>
+                    <p><span class="rub">R.</span> Que a misericórdia do Senhor esteja sobre ele desde sempre e para sempre, pois o Senhor protege todos os que o amam.</p>
+                    <p><span class="rub">V.</span> Oremos pelos nossos irmãos do Opus Dei, vivos e defuntos.</p>
+                    <p><span class="rub">R.</span> Salvai, meu Deus, os vossos servos, que em vós esperam.</p>
+                    <p><span class="rub">V.</span> Enviai-lhes, Senhor, o auxílio do céu.</p>
+                    <p><span class="rub">R.</span> E, do santo monte Sião, protegei-os.</p>
+                    <p><span class="rub">V.</span> Dai-lhes, Senhor, o descanso eterno.</p>
+                    <p><span class="rub">R.</span> E brilhe sobre eles a vossa luz.</p>
+                    <p><span class="rub">V.</span> Descansem em paz.</p>
+                    <p><span class="rub">R.</span> Amém.</p>
+                    <p><span class="rub">V.</span> Ouvi, Senhor, minha oração.</p>
+                    <p><span class="rub">R.</span> E chegue até vós o meu clamor.</p>
+                    <p class="rub">Se é um sacerdote quem dirige as Preces, levanta-se e acrescenta: <em>O Senhor esteja convosco</em>, permanecendo de pé enquanto reza a oração.</p>
+                    <p><span class="rub">V.</span> O Senhor esteja convosco.</p>
+                    <p><span class="rub">R.</span> Ele está no meio de nós.</p>
+                    <p>Oremos.</p>
+                    <p>Ó Deus, de quem é próprio ter misericórdia sempre e perdoar: recebei as nossas humildes súplicas. Inflamai, Senhor, as nossas entranhas e o nosso coração com o fogo do Espirito Santo: para que vos sirvamos com um corpo casto, e vos agrademos com o coração limpo.</p>
+                    <p>Nós Vos pedimos, Senhor, que prepareis as nossas ações com a vossa inspiração, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e orações em vós comecem sempre e por vós acabem. Por Cristo, Senhor Nosso.</p>
+                    <p><span class="rub">R.</span> Amém.</p>
+                    <p class="rub">Todos dizem:</p>
+                    <p>Que o Senhor onipotente e misericordioso nos conceda a alegria e a paz, a conversão da nossa vida, um tempo de verdadeira penitência, a graça e o consolo do Espírito Santo e a perseverança no Opus Dei.</p>
+                    <p><span class="rub">V.</span> São Miguel. </p>
+                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p><span class="rub">V.</span> São Gabriel. </p>
+                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p><span class="rub">V.</span> São Rafael. </p>
+                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p><span class="rub">V.</span> São Pedro. </p>
+                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p><span class="rub">V.</span> São Paulo. </p>
+                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p><span class="rub">V.</span> São João. </p>
+                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p class="rub">Quando estiver presente um sacerdote, o diretor ou quem o substitua diz:</p>
+                    <p><span class="rub">V.</span> Dignai-vos, padre, abençoar-nos.</p>
+                    <p class="rub">O sacerdote abençoa:</p>
+                    <p>Que o Senhor esteja em vossos corações e em vossos lábios, em nome do Pai † e do Filho e do Espírito Santo.</p>
+                    <p><span class="rub">R.</span> Amém.</p>
+                    <p><span class="rub">V.</span> Paz.</p>
+                    <p><span class="rub">R.</span> Para sempre.</p>
+                `,
+                html_la: `
+                    <p>Sérviam!</p>
+                    <p><span class="rub">V.</span> Ad Trinitátem Beatíssimam.</p>
+                    <p><span class="rub">R.</span> Grátias tibi, Deus, grátias tibi: vera et una Trínitas, una et summa Déitas, sancta et una Únitas.</p>
+                    <p><span class="rub">V.</span> Ad Iesum Christum Regem.</p>
+                    <p><span class="rub">R.</span> Dóminus Iudex noster; Dóminus Légifer noster; Dóminus Rex noster. Ipse salvábit nos.</p>
+                    <p><span class="rub">V.</span> Christe, Fili Dei vivi, miserére nobis.</p>
+                    <p><span class="rub">R.</span> Christe, Fili Dei vivi, miserére nobis.</p>
+                    <p><span class="rub">V.</span> Exsúrge, Christe, ádiuva nos.</p>
+                    <p><span class="rub">R.</span> Et líbera nos propter nomen tuum.</p>
+                    <p><span class="rub">V.</span> Dóminus illuminátio mea et salus mea: quem timébo?</p>
+                    <p><span class="rub">R.</span> Si consístant advérsum me castra, non timébit cor meum; si exsúrgat advérsum me prœlium, in hoc ego sperábo.</p>
+                    <p><span class="rub">V.</span> Ad Beátam Vírginem Maríam Mediatrícem.</p>
+                    <p><span class="rub">R.</span> Recordáre, Virgo Mater Dei, dum stéteris in conspéctu Dómini, ut loquáris pro nobis bona.</p>
+                    <p><span class="rub">V.</span> Ad Sanctum Ioseph Sponsum Beátæ Maríæ Vírginis.</p>
+                    <p><span class="rub">R.</span> Fecit te Deus quasi Patrem Regis, et dóminum univérsæ domus eius: ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Ad Ángelos Custódes.</p>
+                    <p><span class="rub">R.</span> Sancti Ángeli Custódes nostri, deféndite nos in prœlio ut non pereámus in treméndo iudício.</p>
+                    <p><span class="rub">V.</span> Ad Sanctum Iosephmaríam Conditórem nostrum.</p>
+                    <p><span class="rub">R.</span> Intercéde pro fíliis tuis ut, fidéles spirítui Óperis Dei, labórem sanctificémus et ánimas Christo lucrifácere quærámus.</p>
+                    <p><span class="rub">V.</span> Orémus pro Beatíssimo Papa nostro N.</p>
+                    <p><span class="rub">R.</span> Dóminus consérvet eum, et vivíficet eum, et beátum fáciat eum in terra, et non tradat eum in ánimam inimicórum eius.</p>
+                    <p><span class="rub">V.</span> Orémus et pro Antístite huius diœcésis.</p>
+                    <p><span class="rub">R.</span> Stet et pascat in fortitúdine tua, Dómine, in sublimitáte nóminis tui.</p>
+                    <p><span class="rub">V.</span> Orémus pro unitáte apostolátus.</p>
+                    <p><span class="rub">R.</span> Ut omnes unum sint, sicut tu Pater in me et ego in te: ut sint unum, sicut et nos unum sumus.</p>
+                    <p><span class="rub">V.</span> Omne regnum divísum contra se, desolábitur.</p>
+                    <p><span class="rub">R.</span> Et omnis cívitas vel domus divísa contra se non stabit.</p>
+                    <p><span class="rub">V.</span> Orémus pro benefactóribus nostris.</p>
+                    <p><span class="rub">R.</span> Retribúere dignáre, Dómine, ómnibus nobis bona faciéntibus propter nomen tuum, vitam ætérnam. Amen.</p>
+                    <p><span class="rub">V.</span> Orémus pro Patre.</p>
+                    <p><span class="rub">R.</span> Misericórdia Dómini ab ætérno et usque in ætérnum super eum: custódit enim Dóminus omnes diligéntes se.</p>
+                    <p><span class="rub">V.</span> Orémus et pro frátribus nostris Óperis Dei, vivis atque defúnctis.</p>
+                    <p><span class="rub">R.</span> Salvos fac servos tuos, Deus meus, sperántes in te.</p>
+                    <p><span class="rub">V.</span> Mitte eis, Dómine, auxílium de sancto.</p>
+                    <p><span class="rub">R.</span> Et de Sion tuére eos.</p>
+                    <p><span class="rub">V.</span> Réquiem ætérnam dona eis, Dómine.</p>
+                    <p><span class="rub">R.</span> Et lux perpétua lúceat eis.</p>
+                    <p><span class="rub">V.</span> Requiéscant in pace.</p>
+                    <p><span class="rub">R.</span> Amen.</p>
+                    <p><span class="rub">V.</span> Dómine, exáudi oratiónem meam.</p>
+                    <p><span class="rub">R.</span> Et clamor meus ad te véniat.</p>
+                    <p class="rub">Sacerdos, si Preces moderatur, exsurgit et addit <em>Dóminus vobíscum</em>, stans etiam dum recitat orationem.</p>
+                    <p><span class="rub">V.</span> Dóminus vobíscum.</p>
+                    <p><span class="rub">R.</span> Et cum spíritu tuo.</p>
+                    <p>Orémus.</p>
+                    <p>Deus, cui próprium est miseréri semper et párcere: súscipe deprecatiónem nostram. Ure igne Sancti Spíritus renes nostros et cor nostrum, Dómine: ut tibi casto córpore serviámus, et mundo corde placeámus.</p>
+                    <p>Actiónes nostras, quǽsumus Dómine, aspirándo prǽveni et adiuvándo proséquere: ut cuncta nostra orátio et operátio a te semper incípiat, et per te cœpta finiátur. Per Christum Dóminum nostrum.</p>
+                    <p><span class="rub">R.</span> Amen.</p>
+                    <p class="rub">Omnes dicunt:</p>
+                    <p>Gáudium cum pace, emendatiónem vitæ, spátium veræ pœniténtiæ, grátiam et consolatiónem Sancti Spíritus atque in Ópere Dei perseverántiam, tríbuat nobis Omnípotens et Miséricors Dóminus.</p>
+                    <p><span class="rub">V.</span> Sancte Míchaël. </p>
+                    <p><span class="rub">R.</span> Ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Sancte Gábriel. </p>
+                    <p><span class="rub">R.</span> Ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Sancte Ráphaël. </p>
+                    <p><span class="rub">R.</span> Ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Sancte Petre. </p>
+                    <p><span class="rub">R.</span> Ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Sancte Paule. </p>
+                    <p><span class="rub">R.</span> Ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Sancte Ioánnes. </p>
+                    <p><span class="rub">R.</span> Ora pro nobis.</p>
+                    <p class="rub">Cum adsit aliquis Sacerdos, dignior ait:</p>
+                    <p>Iube, Domne, benedícere.</p>
+                    <p class="rub">Sacerdos benedicit:</p>
+                    <p>Dóminus sit in córdibus vestris, et in lábiis vestris, in nómine Patris † et Fílii et Spíritus Sancti.</p>
+                    <p><span class="rub">R.</span> Amen.</p>
+                    <p><span class="rub">V.</span> Pax.</p>
+                    <p><span class="rub">R.</span> In ætérnum.</p>
+                `
+            }
+        };
+
+        let idiomaAtualOracao = 'pt';
+        let oracaoAtual = null;
+        let clickTimeout = null;
+        let clickCount = 0;
+        let lastClickTime = 0;
+
+        // Determinar qual oração mostrar baseado no dia da semana
+        function getOracaoDoDia() {
+            const hoje = new Date().getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+
+            // Terça-feira (2) = Salmo 2
+            if (hoje === 2) {
+                return 'salmo_2';
+            }
+            // Quinta-feira (4) = Adoro te devote
+            else if (hoje === 4) {
+                return 'adoro_te_devote';
+            }
+            // Segunda (1), Quarta (3), Sexta (5), Sábado (6), Domingo (0) = Cântico 3 Jovens
+            else {
+                return 'cantico_tres_jovens';
+            }
+        }
+
+        // Controle de clique no título (detecta duplo clique)
+        function handleTitleClick() {
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - lastClickTime;
+
+            // Se o tempo entre cliques for menor que 400ms, é duplo clique
+            if (timeDiff < 400 && clickCount === 1) {
+                // Duplo clique detectado
+                clearTimeout(clickTimeout);
+                clickTimeout = null;
+                clickCount = 0;
+                lastClickTime = 0;
+                abrirPreces();
+            } else {
+                // Primeiro clique
+                clickCount = 1;
+                lastClickTime = currentTime;
+
+                // Aguarda para ver se haverá segundo clique
+                if (clickTimeout) {
+                    clearTimeout(clickTimeout);
+                }
+
+                clickTimeout = setTimeout(() => {
+                    clickTimeout = null;
+                    clickCount = 0;
+                    abrirOracaoDoDia();
+                }, 400); // 400ms de espera
+            }
+        }
+
+        // Abrir oração do dia (clique simples)
+        function abrirOracaoDoDia() {
+            oracaoAtual = getOracaoDoDia();
+            abrirOracao();
+        }
+
+        // Abrir Preces (duplo clique)
+        function abrirPreces() {
+            oracaoAtual = 'preces_opus_dei';
+            abrirOracao();
+        }
+
+        // Função genérica para abrir oração
+        function abrirOracao() {
+            const oracaoView = document.getElementById('oracaoView');
+            const btnVoltarTopo = document.getElementById('btnVoltarTopoOracao');
+
+            // Configurar idioma e visibilidade dos botões
+            if (oracaoAtual === 'salmo_2' || oracaoAtual === 'adoro_te_devote' || oracaoAtual === 'preces_opus_dei') {
+                // Somente latim
+                idiomaAtualOracao = 'la';
+                document.getElementById('botoesIdioma').style.display = 'none';
+            } else {
+                // Português e Latim
+                idiomaAtualOracao = 'pt';
+                document.getElementById('botoesIdioma').style.display = 'block';
+            }
+
+            renderOracao();
+            oracaoView.classList.add('ativo');
+            oracaoView.scrollTop = 0;
+
+            // Anexar listener de scroll
+            oracaoView.onscroll = function() {
+                if (oracaoView.scrollTop > 300) {
+                    btnVoltarTopo.classList.add('visivel');
+                } else {
+                    btnVoltarTopo.classList.remove('visivel');
+                }
+            };
+        }
+
+        // Fechar view de oração
+        function fecharOracao() {
+            const oracaoView = document.getElementById('oracaoView');
+            const btnVoltarTopo = document.getElementById('btnVoltarTopoOracao');
+
+            oracaoView.classList.remove('ativo');
+            btnVoltarTopo.classList.remove('visivel');
+        }
+
+        // Mudar idioma da oração
+        function mudarIdiomaOracao(lang) {
+            idiomaAtualOracao = lang;
+
+            // Atualizar botões
+            document.getElementById('btnPtOracao').classList.toggle('ativo', lang === 'pt');
+            document.getElementById('btnLaOracao').classList.toggle('ativo', lang === 'la');
+
+            renderOracao();
+        }
+
+        // Renderizar oração
+        function renderOracao() {
+            const oracao = oracoesDados[oracaoAtual];
+            const tituloElement = document.getElementById('oracaoTitulo');
+            const textoElement = document.getElementById('oracaoTexto');
+
+            // Atualizar título
+            tituloElement.textContent = idiomaAtualOracao === 'pt'
+                ? (oracao.title_pt || oracao.title_la)
+                : oracao.title_la;
+
+            // Atualizar texto
+            const html = idiomaAtualOracao === 'pt'
+                ? (oracao.html_pt || oracao.html_la)
+                : oracao.html_la;
+
+            textoElement.innerHTML = html;
+        }
+
+        // Scroll to top para oração
+        function scrollToTopOracao() {
+            const oracaoView = document.getElementById('oracaoView');
+            oracaoView.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         init();

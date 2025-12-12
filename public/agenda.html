@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda - Hub Kindle</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="timer.js"></script>
     <style>
         /* --- RESET & VARIÁVEIS --- */
         :root {
@@ -27,6 +25,20 @@
             overflow: auto;
         }
 
+        /* --- CABEÇALHO --- */
+        header {
+            padding: var(--spacing);
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .header-content {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px;
+        }
+
+        /* --- CALENDÁRIO --- */
         .calendar-container {
             margin: 8px var(--spacing);
             padding: 20px;
@@ -48,16 +60,6 @@
             margin: 0;
         }
 
-        .calendar-nav {
-            display: flex;
-        }
-        .calendar-nav button {
-            margin-right: 10px;
-        }
-        .calendar-nav button:last-child {
-            margin-right: 0;
-        }
-
         .calendar-nav button {
             padding: 10px 20px;
             font-size: 16px;
@@ -66,7 +68,7 @@
             border: 2px solid #000;
             background: #fff;
             border-radius: 50px;
-            transition: all 0.2s;
+            margin-left: 8px;
             font-family: inherit;
         }
 
@@ -75,16 +77,24 @@
             color: #fff;
         }
 
+        /* --- GRID DO CALENDÁRIO (CORREÇÃO CSS) --- */
         .calendar-grid {
             display: flex;
             flex-wrap: wrap;
             margin-bottom: 10px;
         }
+        
+        /* CORREÇÃO MATEMÁTICA:
+           100% de largura - 12px (que é a soma das 6 margens de 2px)
+           Dividido por 7 colunas.
+        */
         .calendar-grid > * {
-            width: 14.28%; /* 100% / 7 colunas */
+            width: calc((100% - 12px) / 7);
             margin-right: 2px;
             margin-bottom: 2px;
         }
+        
+        /* O 7º item da linha (e múltiplos) não tem margem à direita */
         .calendar-grid > *:nth-child(7n) {
             margin-right: 0;
         }
@@ -106,11 +116,6 @@
             min-height: 30px;
             background: #fff;
             font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .calendar-day:hover {
-            background: #f5f5f5;
         }
 
         .calendar-day.today {
@@ -134,21 +139,17 @@
             text-decoration: underline;
         }
 
+        /* --- NAVEGAÇÃO DA SEMANA --- */
         .week-nav {
             display: flex;
             margin-top: 15px;
             justify-content: center;
             flex-wrap: wrap;
         }
+
         .week-day-btn {
             margin-right: 8px;
             margin-bottom: 8px;
-        }
-        .week-day-btn:last-child {
-            margin-right: 0;
-        }
-
-        .week-day-btn {
             padding: 10px 16px;
             font-size: 14px;
             font-weight: bold;
@@ -156,19 +157,13 @@
             border: 2px solid #000;
             background: #fff;
             border-radius: 20px;
-            transition: all 0.2s;
             font-family: inherit;
         }
 
-        .week-day-btn:hover {
-            background: #f0f0f0;
-        }
+        .week-day-btn:last-child { margin-right: 0; }
+        .week-day-btn.active { background: #000; color: #fff; }
 
-        .week-day-btn.active {
-            background: #000;
-            color: #fff;
-        }
-
+        /* --- LISTA DE EVENTOS --- */
         .events-list {
             margin: 8px var(--spacing);
             padding: 20px;
@@ -176,6 +171,7 @@
             background: #fff;
             border-radius: var(--radius);
             box-shadow: 4px 4px 0px #000;
+            margin-bottom: 40px;
         }
 
         .events-list h2 {
@@ -186,6 +182,9 @@
         }
 
         .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
             padding: 12px;
             border-left: 4px solid #000;
             margin-bottom: 10px;
@@ -193,15 +192,36 @@
             border-radius: 4px;
         }
 
+        .event-item.all-day {
+            background-color: #e0e0e0;
+            border-left-color: #555;
+            align-items: center;
+        }
+
+        .event-info {
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px;
+        }
+
         .event-time {
             font-weight: bold;
-            font-size: 14px;
-            color: #666;
+            font-size: 18px;
+            color: #000;
+            white-space: nowrap;
+            text-align: right;
         }
 
         .event-title {
             font-size: 18px;
-            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        .event-duration {
+            font-weight: normal;
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 6px;
         }
 
         .empty-state {
@@ -213,8 +233,8 @@
     </style>
 </head>
 <body>
-    <header style="padding: var(--spacing); border-bottom: 1px solid #ccc;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <header>
+        <div class="header-content">
             <div style="display:flex;align-items:center;">
                 <a href="dashboard.html" style="display:flex;align-items:center;">
                     <img src="/icones/casa.png" alt="Home" style="width:40px;height:40px;">
@@ -237,15 +257,8 @@
 
         <div class="calendar-grid" id="calendarGrid"></div>
 
-        <div class="week-nav">
-            <button class="week-day-btn" id="btn-0" onclick="selectWeekDay(0)">D 0</button>
-            <button class="week-day-btn" id="btn-1" onclick="selectWeekDay(1)">S 1</button>
-            <button class="week-day-btn" id="btn-2" onclick="selectWeekDay(2)">T 2</button>
-            <button class="week-day-btn" id="btn-3" onclick="selectWeekDay(3)">Q 3</button>
-            <button class="week-day-btn" id="btn-4" onclick="selectWeekDay(4)">Q 4</button>
-            <button class="week-day-btn" id="btn-5" onclick="selectWeekDay(5)">S 5</button>
-            <button class="week-day-btn" id="btn-6" onclick="selectWeekDay(6)">S 6</button>
-        </div>
+        <div class="week-nav" id="weekNav">
+            </div>
     </div>
 
     <div class="events-list">
@@ -259,22 +272,36 @@
         let selectedDate = new Date();
         let allEvents = [];
 
-        // Subtrair 3 horas para corrigir timezone
+        // --- FUNÇÕES UTILITÁRIAS ---
+
+        // 1. Ajusta fuso horário (apenas para horários específicos)
         function adjustTime(date) {
             const adjusted = new Date(date);
             adjusted.setHours(adjusted.getHours() - 3);
             return adjusted;
         }
 
+        // 2. Formata data para String "YYYY-MM-DD" (para comparar eventos de dia inteiro)
+        function formatDateToISO(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Ajusta a data inicial para o timezone correto ao carregar a página
         selectedDate = adjustTime(selectedDate);
 
         const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
         const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
+        // --- LÓGICA DE DADOS ---
+
         async function loadEvents() {
             try {
-                const response = await fetch(`${API_URL}/api/calendar/events?days=30`);
+                // Sugestão: Aumentar o range de dias se necessário
+                const response = await fetch(`${API_URL}/api/calendar/events?days=40`);
                 if (response.ok) {
                     allEvents = await response.json();
                 } else {
@@ -289,6 +316,8 @@
                 displayEventsForDate(selectedDate);
             }
         }
+
+        // --- RENDERIZAÇÃO ---
 
         function renderCalendar() {
             const year = currentMonth.getFullYear();
@@ -306,30 +335,39 @@
 
             let html = '';
 
-            // Cabeçalhos dos dias da semana
+            // Cabeçalhos
             const dayHeaders = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
             dayHeaders.forEach(day => {
                 html += `<div class="calendar-day-header">${day}</div>`;
             });
 
-            // Dias do mês anterior
+            // Dias mês anterior
             for (let i = firstDayWeek - 1; i >= 0; i--) {
                 html += `<div class="calendar-day other-month">${prevLastDate - i}</div>`;
             }
 
-            // Dias do mês atual
+            // Dias mês atual
             const today = adjustTime(new Date());
 
             for (let day = 1; day <= lastDate; day++) {
-                const date = new Date(year, month, day);
-                const isToday = date.toDateString() === today.toDateString();
-                const isSelected = date.toDateString() === selectedDate.toDateString();
+                const dateLoop = new Date(year, month, day);
+                const dateLoopISO = formatDateToISO(dateLoop);
+                
+                const isToday = dateLoop.toDateString() === today.toDateString();
+                const isSelected = dateLoop.toDateString() === selectedDate.toDateString();
 
-                // CORREÇÃO: Ajusta a data do evento ANTES de comparar com o dia do calendário
+                // CORREÇÃO: Verificação híbrida (String vs Date)
                 const hasEvents = allEvents.some(e => {
-                    const rawDate = new Date(e.start.dateTime || e.start.date);
-                    const adjustedEventDate = adjustTime(rawDate); // Aplica -3h antes de comparar
-                    return adjustedEventDate.toDateString() === date.toDateString();
+                    if (e.start.date) {
+                        // Evento de dia inteiro: Comparação de String exata "2025-12-11"
+                        return e.start.date === dateLoopISO;
+                    } else if (e.start.dateTime) {
+                        // Evento com hora: Ajusta fuso e compara
+                        const rawDate = new Date(e.start.dateTime);
+                        const adjustedEventDate = adjustTime(rawDate);
+                        return adjustedEventDate.toDateString() === dateLoop.toDateString();
+                    }
+                    return false;
                 });
 
                 let className = 'calendar-day';
@@ -340,8 +378,10 @@
                 html += `<div class="${className}" onclick="selectDate(${year}, ${month}, ${day})">${day}</div>`;
             }
 
-            // Dias do próximo mês
-            const remainingDays = 7 - ((firstDayWeek + lastDate) % 7);
+            // Dias próximo mês para completar grid
+            const totalCells = firstDayWeek + lastDate;
+            const remainingDays = 7 - (totalCells % 7);
+            
             if (remainingDays < 7) {
                 for (let day = 1; day <= remainingDays; day++) {
                     html += `<div class="calendar-day other-month">${day}</div>`;
@@ -351,10 +391,110 @@
             document.getElementById('calendarGrid').innerHTML = html;
         }
 
+        // Calcular duração entre dois horários
+        function calculateDuration(start, end) {
+            if (!start || !end) return '';
+
+            const diffMs = end - start;
+            const diffMins = Math.round(diffMs / 60000);
+
+            if (diffMins <= 0) return '';
+
+            if (diffMins < 60) {
+                return `${diffMins} min`;
+            } else {
+                const h = Math.floor(diffMins / 60);
+                const m = diffMins % 60;
+                if (m === 0) return `${h}h`;
+                return `${h}h ${m}min`;
+            }
+        }
+
+        function displayEventsForDate(date) {
+            const dayName = dayNames[date.getDay()];
+            const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+            const dateFull = date.toLocaleDateString('pt-BR', optionsDate);
+
+            document.getElementById('selectedDateTitle').textContent = `${dateFull} - ${dayName}`;
+
+            const targetISO = formatDateToISO(date);
+
+            // 1. Filtragem Híbrida
+            let dayEvents = allEvents.filter(event => {
+                if (event.start.date) {
+                    return event.start.date === targetISO;
+                } else if (event.start.dateTime) {
+                    const rawDate = new Date(event.start.dateTime);
+                    const adjustedEventDate = adjustTime(rawDate);
+                    return adjustedEventDate.toDateString() === date.toDateString();
+                }
+                return false;
+            });
+
+            // 2. Ordenação (Dia inteiro primeiro, depois por horário)
+            dayEvents.sort((a, b) => {
+                if (a.start.date && b.start.dateTime) return -1;
+                if (a.start.dateTime && b.start.date) return 1;
+                if (a.start.dateTime && b.start.dateTime) {
+                    return new Date(a.start.dateTime) - new Date(b.start.dateTime);
+                }
+                return 0;
+            });
+
+            const container = document.getElementById('eventsContainer');
+
+            if (dayEvents.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhum evento para este dia</p>';
+                return;
+            }
+
+            container.innerHTML = dayEvents.map(event => {
+                let timeStr = '';
+                let durationStr = '';
+                let isAllDay = false;
+                let cssClass = 'event-item';
+
+                if (event.start.dateTime) {
+                    const start = adjustTime(new Date(event.start.dateTime));
+                    const end = event.end.dateTime ? adjustTime(new Date(event.end.dateTime)) : new Date(start);
+
+                    const durationText = calculateDuration(start, end);
+                    if (durationText) {
+                        durationStr = `<span class="event-duration">(${durationText})</span>`;
+                    }
+
+                    timeStr = start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    if (event.end.dateTime) {
+                        timeStr += ' - ' + end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    }
+                } else {
+                    isAllDay = true;
+                    cssClass += ' all-day';
+                    timeStr = 'Dia Todo';
+                }
+
+                return `
+                    <div class="${cssClass}">
+                        <div class="event-info">
+                            <div class="event-title">
+                                ${event.summary || 'Sem título'}
+                                ${durationStr}
+                            </div>
+                            ${event.description ? `<div style="margin-top: 4px; font-size: 13px; color: #555;">${event.description}</div>` : ''}
+                        </div>
+                        <div class="event-time">${timeStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- INTERATIVIDADE ---
+
         function selectDate(year, month, day) {
             selectedDate = new Date(year, month, day);
             renderCalendar();
             displayEventsForDate(selectedDate);
+            updateWeekButtons();
         }
 
         function changeMonth(delta) {
@@ -372,11 +512,9 @@
         }
 
         function selectWeekDay(dayOfWeek) {
-            // Encontrar a próxima ocorrência desse dia da semana na semana atual
             const today = adjustTime(new Date());
             const currentDay = today.getDay();
             let daysToAdd = dayOfWeek - currentDay;
-
             if (daysToAdd < 0) daysToAdd += 7;
 
             const targetDate = new Date(today);
@@ -390,97 +528,32 @@
         }
 
         function updateWeekButtons() {
-            // Atualizar números dos dias na semana
             const today = adjustTime(new Date());
             const startOfWeek = new Date(today);
             startOfWeek.setDate(today.getDate() - today.getDay());
+            
+            const dayLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+            let html = '';
 
             for (let i = 0; i < 7; i++) {
                 const date = new Date(startOfWeek);
                 date.setDate(startOfWeek.getDate() + i);
-                const btn = document.getElementById(`btn-${i}`);
-                const dayLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-                btn.textContent = `${dayLabels[i]} ${date.getDate()}`;
-
-                if (date.toDateString() === selectedDate.toDateString()) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            }
-        }
-
-        function displayEventsForDate(date) {
-            const dateStr = date.toLocaleDateString('pt-BR');
-            const dayName = dayNames[date.getDay()];
-
-            document.getElementById('selectedDateTitle').textContent =
-                `Eventos de ${dayName}, ${dateStr}`;
-
-            // CORREÇÃO: Ajusta a data do evento ANTES de filtrar
-            const dayEvents = allEvents.filter(event => {
-                const rawDate = new Date(event.start.dateTime || event.start.date);
-                const adjustedEventDate = adjustTime(rawDate); // Transforma em horário BR antes de filtrar
-
-                // Compara a data JÁ ajustada com a data selecionada no calendário
-                return adjustedEventDate.toDateString() === date.toDateString();
-            });
-
-            // Filtrar eventos passados SOMENTE se for o dia de hoje
-            const now = adjustTime(new Date());
-            const isToday = date.toDateString() === now.toDateString();
-
-            const filteredEvents = dayEvents.filter(event => {
-                // Se não for hoje, mostrar todos os eventos
-                if (!isToday) {
-                    return true;
-                }
-
-                // Se não tem horário específico (evento de dia inteiro), sempre mostrar
-                if (!event.start.dateTime) {
-                    return true;
-                }
-
-                // Para eventos de hoje com horário, verificar se já terminou
-                const eventEnd = event.end.dateTime ? adjustTime(new Date(event.end.dateTime)) : adjustTime(new Date(event.start.dateTime));
-
-                // Só mostrar se o evento ainda não terminou
-                return eventEnd > now;
-            });
-
-            const container = document.getElementById('eventsContainer');
-
-            if (filteredEvents.length === 0) {
-                container.innerHTML = '<p class="empty-state">Nenhum evento futuro para este dia</p>';
-                return;
-            }
-
-            container.innerHTML = filteredEvents.map(event => {
-                let timeStr = '';
-                if (event.start.dateTime) {
-                    // Aqui mantemos o ajuste visual para exibir a hora correta
-                    const start = adjustTime(new Date(event.start.dateTime));
-                    const end = event.end.dateTime ? adjustTime(new Date(event.end.dateTime)) : null;
-
-                    timeStr = start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    if (end) {
-                        timeStr += ' - ' + end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    }
-                }
-
-                return `
-                    <div class="event-item">
-                        ${timeStr ? `<div class="event-time">${timeStr}</div>` : ''}
-                        <div class="event-title">${event.summary || 'Sem título'}</div>
-                        ${event.description ? `<div style="margin-top: 8px; font-size: 14px; color: #666;">${event.description}</div>` : ''}
-                    </div>
+                
+                const isActive = date.toDateString() === selectedDate.toDateString() ? 'active' : '';
+                
+                html += `
+                    <button class="week-day-btn ${isActive}" onclick="selectWeekDay(${i})">
+                        ${dayLabels[i]} ${date.getDate()}
+                    </button>
                 `;
-            }).join('');
+            }
+            document.getElementById('weekNav').innerHTML = html;
         }
 
-        // Inicializar
+        // --- INICIALIZAÇÃO ---
         loadEvents();
         updateWeekButtons();
+
     </script>
 </body>
 </html>

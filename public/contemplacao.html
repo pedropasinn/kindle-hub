@@ -450,15 +450,44 @@
         function anterior() {
             if (imagens.length === 0) return;
             indiceAtual--;
-            if (indiceAtual < 0) indiceAtual = imagens.length - 1;
+            if (indiceAtual < 0) {
+                // Voltar para sessão anterior
+                const ordemMisterios = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
+                const indiceAtualMisterio = ordemMisterios.indexOf(misterioAtual);
+                const proximoIndice = (indiceAtualMisterio - 1 + ordemMisterios.length) % ordemMisterios.length;
+                misterioAtual = ordemMisterios[proximoIndice];
+                indiceAtual = 4; // Última imagem (índice 4)
+                atualizarBotoesAtivos();
+                carregarImagens();
+                return;
+            }
             exibirImagem();
         }
 
         function proximo() {
             if (imagens.length === 0) return;
             indiceAtual++;
-            if (indiceAtual >= imagens.length) indiceAtual = 0;
+            if (indiceAtual >= imagens.length) {
+                // Avançar para próxima sessão
+                const ordemMisterios = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
+                const indiceAtualMisterio = ordemMisterios.indexOf(misterioAtual);
+                const proximoIndice = (indiceAtualMisterio + 1) % ordemMisterios.length;
+                misterioAtual = ordemMisterios[proximoIndice];
+                indiceAtual = 0; // Primeira imagem
+                atualizarBotoesAtivos();
+                carregarImagens();
+                return;
+            }
             exibirImagem();
+        }
+
+        function atualizarBotoesAtivos() {
+            document.querySelectorAll('.misterio-btn').forEach(btn => {
+                btn.classList.remove('ativo');
+                if(btn.getAttribute('onclick').includes(misterioAtual)) {
+                    btn.classList.add('ativo');
+                }
+            });
         }
 
         // Atalhos de teclado (Setas)
