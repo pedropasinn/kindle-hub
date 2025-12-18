@@ -10,12 +10,12 @@
         :root{--bg:#e8e8e0;--screen:#c4cfa1;--screen-dark:#9baa7c;--text:#2d2d2d;--border:#1a1a1a}
         html,body{height:100%;overflow:hidden}
         body{font-family:'VT323',monospace;background:var(--bg);display:flex;flex-direction:column;color:var(--text)}
-        .game{flex:1;display:flex;flex-direction:column;max-width:500px;width:100%;margin:0 auto;padding:8px;height:100vh}
+        .game{flex:1;display:flex;flex-direction:column;max-width:600px;width:100%;margin:0 auto;padding:8px;height:100vh}
         .screen{flex:1;background:var(--screen);border:3px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;min-height:0}
         .header{display:flex;justify-content:space-between;margin-bottom:8px;font-size:16px}
         .name{font-family:'Press Start 2P',monospace;font-size:14px;text-transform:uppercase}
-        .lvl{background:var(--screen-dark);padding:2px 6px;border-radius:4px;font-size:12px;margin-top:4px;display:inline-block}
-        .hdr-r{text-align:right;font-size:14px}
+        .lvl{background:var(--screen-dark);padding:2px 6px;border-radius:4px;font-size:16px;margin-top:4px;display:inline-block}
+        .hdr-r{text-align:right;font-size:25px}
         .hdr-r div{margin-bottom:2px}
         .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px}
         .stat{display:flex;align-items:center;gap:4px;font-size:14px}
@@ -23,7 +23,7 @@
         .track{flex:1;height:12px;background:var(--screen-dark);border-radius:3px;overflow:hidden;border:1px solid var(--text)}
         .fill{height:100%;transition:width 0.5s}
         .fill.hunger{background:#6b8e4e}.fill.happy{background:#c9a857}.fill.energy{background:#5a7a9e}.fill.health{background:#9e5a5a}
-        .arena{flex:1;background:var(--screen-dark);border-radius:8px;display:flex;justify-content:center;align-items:center;position:relative;margin-bottom:8px;border:2px solid var(--text);overflow:hidden;min-height:120px}
+        .arena{flex:1;background:#ffffff;border-radius:8px;display:flex;justify-content:center;align-items:center;position:relative;margin-bottom:8px;border:2px solid var(--text);overflow:hidden;min-height:120px}
         .sprite {
             width: 300px;
             height: 300px;
@@ -123,8 +123,11 @@ const IMGS = {
     feliz: 'pokemons/squirtle/feliz.png',
     fome: 'pokemons/squirtle/Fome.png',
     medicine: 'pokemons/squirtle/medicine.png',
-    brincando: 'pokemons/squirtle/brincando.png'
+    brincando: 'pokemons/squirtle/brincando.png',
+    waiting: 'pokemons/squirtle/waiting.png'
 };
+
+const WAITING_TIME = 120000; // 2 minutos sem interação
 
 let G = {
     lv: 1,
@@ -273,8 +276,14 @@ function updateImage() {
     if (G.status === 'sleeping') {
         setImage('dormindo');
     } else if (G.status === 'idle') {
+        const timeSinceInteraction = Date.now() - G.lastInt;
+
+        // Se passou muito tempo sem interação, mostra waiting
+        if (timeSinceInteraction > WAITING_TIME) {
+            setImage('waiting');
+        }
         // Prioridade: doente > fome > base
-        if (G.st.hp < 30) {
+        else if (G.st.hp < 30) {
             // Já gerenciado pelo sickTimer
             if (G.currentImg !== 'doente' && G.currentImg !== 'base') {
                 setImage('doente');
