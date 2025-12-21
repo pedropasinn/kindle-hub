@@ -45,36 +45,68 @@
         header h1 { font-size: 24px; font-weight: bold; margin: 0; }
         .flex { display: flex; align-items: center; }
 
-        /* --- NAVEGAÇÃO (CHIPS) --- */
-        .chips-container {
+        /* --- NAVEGAÇÃO (CONTROLE SEGMENTADO) --- */
+        .segmented {
             position: relative;
             display: flex;
-            overflow-x: auto;
-            padding: 0 var(--spacing) 8px var(--spacing);
+            width: 100%;
+            height: 39px;
+            margin: 0;
+            background: #D2D1D9;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             border-bottom: 2px solid #e0e0e0;
-            background: white;
-            flex-shrink: 0;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
         }
-        .chips-container::-webkit-scrollbar { display: none; }
-        
-        .chip {
-            margin-right: 10px;
-            border: 2px solid var(--border-color);
-            border-radius: 50px;
-            padding: 8px 16px;
-            font-weight: bold;
-            font-size: 16px;
-            white-space: nowrap;
-            background: white;
-            color: var(--text-color);
+
+        .seg-item {
+            flex: 1 1 0;
+            height: 39px;
+            border: none;
+            background: transparent;
             cursor: pointer;
-            font-family: inherit;
-            transition: all 0.2s ease;
+            position: relative;
+
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-style: italic;
+            font-weight: 700;
+
+            /* fica melhor no mobile: diminui sozinho se precisar */
+            font-size: clamp(12px, 2.6vw, 18px);
+            line-height: 1;
+            text-transform: uppercase;
+            text-align: center;
+            color: #FFFFFF;
+            font-variation-settings: 'slnt' -5;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
         }
-        .chip:last-child { margin-right: 0; }
-        .chip.active { background: var(--text-color); color: var(--bg-color); }
+
+        .seg-item::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 100%;
+            border-right: 2px solid #FFFFFF;
+        }
+        .seg-item:last-child::after { display: none; }
+
+        .seg-item:first-child { border-radius: 15px 0 0 15px; }
+        .seg-item:last-child { border-radius: 0 15px 15px 0; }
+
+        .seg-item.active {
+            background: #5C5A5A;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.25);
+        }
+
+        .seg-item:not(.active):hover {
+            background: rgba(255,255,255,0.10);
+        }
 
         /* --- ÁREA DE CONTEÚDO (GERAL) --- */
         .content-area {
@@ -165,8 +197,8 @@
         #btnVoltarTopo {
             position: fixed; bottom: 30px; right: 30px;
             width: 50px; height: 50px;
-            background: #000; color: #fff;
-            border: 3px solid #000; border-radius: 50%;
+            background: #5C5A5A; color: #fff;
+            border: 3px solid #5C5A5A; border-radius: 50%;
             font-size: 24px; cursor: pointer;
             opacity: 0; visibility: hidden;
             transition: 0.3s;
@@ -198,7 +230,7 @@
         
 
     <div id="mainView" style="flex: 1; overflow: hidden;">
-        <div class="chips-container" id="chipsNav">
+        <div class="segmented" id="chipsNav" aria-label="Navegação por seções">
             </div>
 
         <div class="content-area" id="mainContentScroll">
@@ -500,6 +532,18 @@
         const pageTitle = document.getElementById('pageTitle');
         const canticoTexto = document.getElementById('canticoTexto');
 
+        // Abreviações para o controle segmentado
+        const abrevsAG = {
+            intercessores: "INT",
+            familia: "FAM",
+            opus: "OBR",
+            amigos: "AMI",
+            igreja: "IGR",
+            agradecer: "AGR",
+            peticoes: "PET",
+            diario: "LEM"
+        };
+
         let idiomaAtualCantico = 'pt';
         let scrollTarget = mainContentScroll; // Define quem está rolando para o botão de topo
 
@@ -519,8 +563,11 @@
             for (const key in dataAG) {
                 const cat = dataAG[key];
                 const btn = document.createElement('button');
-                btn.className = 'chip';
-                btn.textContent = cat.label;
+                btn.type = 'button';
+                btn.className = 'seg-item';
+                btn.textContent = abrevsAG[key] || cat.label.slice(0, 3);
+                btn.title = cat.label;
+                btn.setAttribute('aria-label', cat.label);
                 btn.onclick = () => loadCategory(key, btn);
                 if(key === 'intercessores') btn.classList.add('active');
                 chipsContainer.appendChild(btn);
@@ -528,20 +575,20 @@
         }
 
         function loadCategory(key, clickedBtn) {
-            // Atualizar UI dos chips
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            // Atualizar UI dos segmentos
+            document.querySelectorAll('.seg-item').forEach(c => c.classList.remove('active'));
             if(clickedBtn) clickedBtn.classList.add('active');
             else {
-                const btns = document.querySelectorAll('.chip');
+                const btns = document.querySelectorAll('.seg-item');
                 for(let b of btns) {
-                    if(b.textContent === dataAG[key].label) b.classList.add('active');
+                    if((b.getAttribute('aria-label') || '') === dataAG[key].label) b.classList.add('active');
                 }
             }
 
             // Renderizar Conteúdo
             const data = dataAG[key];
             let html = `<div class="category-title">${data.label}</div>`;
-            
+
             data.items.forEach(item => {
                 if (data.isQuotes) {
                     html += `<div class="quote-style">${item}</div>`;
