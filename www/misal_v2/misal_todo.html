@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text.html;" charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>TEMPORA</title>
+
+    <link rel="stylesheet" href="misal.css" type="text/css" />
+        <link rel="stylesheet" href="misal_ui_moderno.css?v=1" type="text/css" />
+        
+    <style>
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #piedepantalla {
+    margin: 0;
+    text-align: center;
+    background-color: maroon;
+    color: white;
+                border:0px;
+                position: fixed;  /* Fijo en la pantalla */
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 2.1em;
+                display: table;
+}
+
+  /* Solo en iOS */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      #piedepantalla {
+          padding-bottom: env(safe-area-inset-bottom);
+      }
+      body {
+          padding-bottom: env(safe-area-inset-bottom);
+      }
+  }
+		
+      .visibleb {
+        display: inline-block;
+      }
+
+      .novisibleb {
+        display: none;
+      }
+      .visibeilb {
+        display: inline-block;
+      }
+      .visibeil {
+        display: inline;
+      }
+      #icono-sticky {
+        position: absolute;
+  right: 0em;
+  text-align: left;
+  width: auto;
+  max-width: 45%;
+  opacity: 0.9;
+  background: transparent;
+  z-index: 50000;
+}
+
+#mis_intenciones0 {
+  background-color: maroon; 
+  color: white; 
+  opacity: .8; 
+  border-radius: 5px;
+  display: none;
+  max-height: 50vh;
+  max-width: 100%;
+  min-width: 50%;
+  overflow-y: auto;
+}
+
+#mis_intenciones {
+  padding: 1em; 
+  opacity: .8; 
+  border-radius: 5px;
+}
+</style>
+
+
+<script type="text/javascript" charset="utf-8" src="../cordova_loader.js"></script>
+
+    <script src="../iscroll-lite.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../jquery.js"></script>
+    <script
+      type="text/javascript"
+      charset="utf-8"
+      src="mis_funciones_misal.js"></script>
+    <!-- 	<script src="../autocolumn.js" type="text/javascript" charset="utf-8"></script> -->
+    <script>
+      var pestana = "o"
+      var mipestana = "o"
+      var sinmisal = false
+
+      mimisal_1 = idiomas[mipreferencia["misal_pral"]]
+      mimisal_2 = idiomas[mipreferencia["segundoidioma"]]
+      var parcial2 = getUrlVars()["parcial"]
+
+    </script>
+  </head>
+
+  <body onload=" ">
+    <script type="text/javascript">
+      pinta_tabs("../", mipestana)
+    </script>
+    <div id="icono-sticky">
+      <img src="../estrella_intenc4.png" alt="Icono"
+        style="float: right; height: 3em;"
+        ontouchend="$('#mis_intenciones0').toggle()" />
+      <div id=mis_intenciones0>
+        <div style="text-align: right;"><a
+            href="devocionario.html?editar=1"><img
+              src="../images/icons-png/edit-white.png"
+              style="margin-right: .5em"></a></div>
+        <div id=mis_intenciones></div>
+      </div>
+    </div>
+    <div id="contenedor">
+      <div id="scroller">
+        <div id="tab_o" class="cont_tab"></div>
+        <div id="tab_t" class="cont_tab" style="display: none"></div>
+        <div id="tab_s" class="cont_tab" style="display: none"></div>
+        <div id="tab_c" class="cont_tab" style="display: none"></div>
+        <div id="tab_le" class="cont_tab" style="display: none"></div>
+        <div id="tab_pf" class="cont_tab" style="display: none"></div>
+        <div id="tab_pe" class="cont_tab" style="display: none"></div>
+        <div class="final_pagina">
+          <div style="margin-bottom: 30pt; text-align: center">
+            <a class="boton"
+              ontouchend="myScroll.scrollToPage(0,0,100)">&#9679;</a>
+          </div>
+          <hr class="red" />
+          <hr class="red" />
+        </div>
+
+      </div>
+    </div>
+    <div id="mi_estr" style="display: none"></div>
+    <div id="mi_idiom1" style="display: none"></div>
+    <div id="mi_idiom2" style="display: none"></div>
+    <script>
+  arregla_top();
+  arregla_bottom();
+
+      pinta_botones("../", mipestana)
+
+
+    </script>
+  </body>
+</html>

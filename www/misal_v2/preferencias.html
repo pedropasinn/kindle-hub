@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text.html;" charset="utf-8" />
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1, viewport-fit=cover">
+		<title>TEMPORA</title>
+
+		<link rel="stylesheet" href="misal.css" type="text/css" />
+        <link rel="stylesheet" href="misal_ui_moderno.css?v=1" type="text/css" />
+
+		<link rel="stylesheet" href="devoc.css" type="text/css" />
+		<style>
+       html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #piedepantalla {
+                margin: 0;
+                text-align: center;
+                background-color: maroon;
+                color: white;
+                border:0px;
+                position: fixed;  /* Fijo en la pantalla */
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 1.9em;
+                display: table;
+                z-index: 30000;
+}
+
+            #contenedor {
+        position: absolute;
+        top: 2.1em;  /* Espacio debajo de la barra superior */
+        bottom: 1.9em; /* Espacio encima de la barra inferior */
+        left: 0;
+        width: 100vw;
+        overflow: auto; /* Evita que el contenedor haga scroll */
+        display: flex;
+        flex-direction: column;
+    }
+    #scroller {
+        flex: 1; /* Se expande para ocupar el espacio restante */
+        
+         /* 🔥 Habilita scroll táctil en iOS */
+        padding: 1em;
+        margin: 0;
+        width: 95%;
+        touch-action: pan-y;
+        position: absolute;
+        left:0;
+    }
+  /* Solo en iOS */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      #piedepantalla {
+          padding-bottom: env(safe-area-inset-bottom);
+      }
+      body {
+          padding-bottom: env(safe-area-inset-bottom);
+      }
+                        #contenedor {
+                            bottom: -1.9em;
+  }
+    }
+  
+    @-moz-document url-prefix() {
+  #contenedor {
+    bottom: 2.1em;  /* Solo en Firefox */
+  }
+}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            bottom: -1.9em;
+        }
+.noche {
+  background-color: #121212;
+  color: white;
+}
+            #header {
+                background-color: maroon;
+                color: white;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 1000;
+                padding-bottom:0;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+               	padding-top: env(safe-area-inset-top);
+            }
+
+            #header h1 {
+                margin: 0;
+                text-align: center;
+                background-color: maroon;
+                color: white;
+                border:0px;
+            }
+h3 {
+	margin-top: 2em;
+	line-height: 3em;
+}
+.pestana2 {
+	background: maroon;
+	color: white;
+	padding: .5em;
+	display: inline-block;
+	border-radius: 5px;
+}
+table {
+	width: 95%;
+}
+td {
+	padding: 3pt;
+	margin-left: 1em;
+	text-align:left;
+width: 50%;
+border-style: solid;
+border-width: 1px;
+border-collapse:collapse	;	
+}
+.tamanotexto	, .tamanomenus, .margen_superior, .margen_inferior {	
+	display: inline-block;
+	width: 4em;
+	text-align: center;
+}
+table {
+	table-layout: fixed;
+        border-collapse: collapse;
+        width: 95%;
+    }
+
+    td {
+        border-bottom: 1px solid black; /* Línea solo debajo de cada fila */
+        padding: 8px;
+    }
+				td {
+}
+td select {
+	text-overflow: ellipsis;
+    width: 100%; /* Se ajustará al ancho de la celda */
+				max-width:15em;
+				padding: .3em;
+}
+            
+            .select-wrapper {
+                        position: relative;
+                        display: inline-block;
+                        width: 100%; /* Hace que el contenedor respete el ancho */
+                    }
+
+                    .select-wrapper select {
+                        -webkit-appearance: none;
+                        -moz-appearance: none;
+                        appearance: none;
+                        border: 0;
+                        outline: 0;
+                        font: inherit;
+                        font-size: inherit;
+                        width: 100%; /* Asegurar que ocupa todo el contenedor */
+                        height: 3em;
+                        padding: 0 3em 0 1em; /* Espacio para la flecha */
+                        background-color: maroon;
+                        color: white;
+                        border-radius: 0.25em;
+                        box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
+                        cursor: pointer;
+                    }
+
+                    /* Flecha ▼ */
+                    .select-wrapper span {
+                        position: absolute;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        font-size: 14px;
+                        color: white;
+                        pointer-events: none;
+                        font-weight: bold;
+                    }
+
+                    /* Para float-right */
+                    .float-right span {
+                        right: 1.2em;
+                    }
+
+                    /* Para float-left */
+                    .float-left span {
+                        right: 1.2em; /* En float left también se usa "right" */
+                    }
+</style>
+		<script type="text/javascript" charset="utf-8"
+			src="../jquery.js"></script>
+			<script type="text/javascript" charset="utf-8" src="../cordova_loader.js"></script>
+		<script
+			type="text/javascript"
+			charset="utf-8"
+			src="mis_funciones_devoc.js"></script>
+		<script>
+					$(document).ready(function () {
+    // Manejar clics en enlaces internos para cambiar de página
+    $('a').not('li a').on('click', function (event) {
+        event.preventDefault(); // Evitar comportamiento predeterminado del enlace
+        let targetPage = $(this).attr('href'); // Obtener el destino del enlace
+        
+        if (targetPage.startsWith('#')) {
+            // Mostrar la página correspondiente
+            $('.page').hide(); // Ocultar todas las páginas
+            $(targetPage).fadeIn(); // Mostrar la página seleccionada con animación
+        } else {
+            // Para enlaces externos o de descarga
+            window.location.href = targetPage;
+        }
+    });
+	//					$('#contenedor').css('top', (parseFloat(mipreferencia["margen_superior"]) + 5) + 'em');
+
+    // Mostrar la primera página al cargar
+    $('.page').hide(); // Ocultar todas las páginas
+$('#idioma_pref').val(dime_pref('id_pref','cast')); 
+$('#pref_'+dime_pref('id_pref','cast')).show();
+
+    // Configuración adicional: por ejemplo, botones o interacción dinámica
+    $('.button-action').on('click', function () {
+        alert('¡Botón presionado!');
+    });
+
+    // Opcional: ajustar el título de la página dinámicamente
+    $('.page').on('show', function () {
+        let pageTitle = $(this).data('title');
+        $('title').text(pageTitle || 'Mi Aplicación');
+    });
+if (!esDispositivoMovil) {
+    var elementos = document.querySelectorAll("[ontouchend]")
+    elementos.forEach(function (elemento) {
+      var contenido = elemento.getAttribute("ontouchend")
+      elemento.removeAttribute("ontouchend")
+      elemento.setAttribute("onclick", contenido)
+    })
+  }
+});
+					function ejecutarCodigo(el) {
+    let codigo = el.getAttribute("data-url");
+    let funcion = new Function(codigo);
+    funcion(); // Ejecuta el código almacenado en data-url
+}
+				</script>
+	</head>
+	<body>
+		<div id="header" style="position: absolute; top: 0;">
+			<h1 style='width: 95%'>Missale Romanum</h1>
+			<div class="navbar">
+				<ul>
+					<li><a href="feria_actual.html"
+							class="pestana"
+							id=tab_ind><img src="../calendario_blanco.png"
+								style="height:1.3em;"></a></li>
+					<li><a
+							href="devocionario.html#devotionarium"
+							class="pestana" id=tab_dev>Devotionarium</a></li>
+					<li><a
+							href="devocionario.html#sacerdotale"
+							class="pestana" id=tab_sac>Sacerdotale</a></li>
+					<li><a
+							data-url="console.log('Ejecutando código antes de redirigir'); window.location='igmr/igmr_'+dime_pref('id_igmr','cast')+'.html'"
+							onclick="ejecutarCodigo(this)"
+							class="pestana" id=tab_igmr>IGMR</a></li>
+					<li><a
+							href="misal_todo.html"
+							class="pestana">MR</a></li>
+				</ul>
+			</div>
+		</div>
+		<div id=contenedor>
+			<div id=scroller style="position: absolute;">
+				<div><h1>Dilectus</h1></div>
+				<div style='float: right; margin-right: 2em;width: 50%;'  class="select-wrapper float-right">
+					<select id="idioma_pref" style="float: right;"
+						onchange="pon_pref('id_pref',	this.value); $('.collapsible, .page').hide(); $('#pref_'+this.value).show();">
+						<option value="cast">Español</option>
+						<option value="engl">English</option>
+						<option value="ital">Italiano</option>
+						<option value="germ">Deutsch</option>
+						<option value="port">Portuguese</option>
+						<option value="fran">Français</option>
+					</select>
+                    <span>&#9660;&#xFE0E;</span> 
+				</div>
+				<div class='page' id='pref_cast'>
+
+					<div><h2>Preferencias</h2></div>
+
+					<div><h3>Idiomas</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Idioma principal
+								</td>
+								<td><select class=misal_pral
+										onchange="pon_pref('misal_pral_defecto',this.value);">
+										<option value=0>Latín</option>
+										<option value=1>Español</option>
+										<option value=2>English</option>
+										<option value=3>Deutsch</option>
+										<option value=4>Italiano</option>
+										<option value=5>Português</option>
+										<option value=6>Français</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Segundo idioma
+								</td>
+								<td><select class=segundoidioma
+										onchange="pon_pref('segundoidioma_defecto',this.value);">
+										<option value=0>Latín</option>
+										<option value=1>Español</option>
+										<option value=2>English</option>
+										<option value=3>Deutsch</option>
+										<option value=4>Italiano</option>
+										<option value=5>Português</option>
+										<option value=6>Français</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Método de Traducción
+								</td>
+								<td><select class=presentaciontexto
+										onchange="pon_pref('presentaciontexto_defecto',this.value);">
+										<option value=0>Sin traducción</option>
+										<option value=1>2 columnas</option>
+										<option value=2>cambio tocando texto</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Respuestas en lecturas
+								</td>
+								<td><select class=presentacionrespuestas
+										onchange="pon_pref('presentacionrespuestas_defecto',this.value);">
+										<option value=1>Idioma misal</option>
+										<option value=2>2º idioma</option>
+										<option value=3>Ambas (filas)</option>
+										<option value=4>Ambas (columnas)</option>
+										<option value=5>cambio tocando texto</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div><h3>Presentación</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Color de fondo
+								</td>
+								<td><select class=fondo
+										onchange="pon_pref('fondo_defecto',this.value);">
+										<option value=0>Blanco</option>
+										<option value=1>Sepia</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tipo de letra
+								</td>
+								<td><select class=tipoletra
+										onchange="pon_pref('tipoletra_defecto',this.value);">
+										<option value=0>Arial sans serif</option>
+										<option value=1>Times New Roman</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tamaño fuente texto
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanotexto')"> - </span>
+									<span class="tamanotexto"></span> <span class="pestana2"
+										ontouchend="sube('tamanotexto')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Tamaño fuente rúbricas
+								</td>
+								<td><select class=tamanorubrica
+										onchange="pon_pref('tamanorubrica_defecto',this.value);">
+										<option value=100>Grande</option>
+										<option value=90 selected>Normal</option>
+										<option value=60>Pequeño</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tamaño fuente pestañas
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanomenus')"> - </span>
+									<span class="tamanomenus"></span> <span class="pestana2"
+										ontouchend="sube('tamanomenus')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Tipo de fuente para las oraciones de sacerdote y pueblo<br><span
+										style="font-size: 80%;">(Ej: Padrenuestro,Agnus Dei...)</span>
+								</td>
+								<td><select class=oracionestodos_defecto
+										onchange="pon_pref('oracionestodos_defecto',this.value);">
+										<option value=0>Normal</option>
+										<option value=1>Cursiva</option>
+										<option value=2>Negrita</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td> Barra de Pestañas:
+								</td>
+								<td><select class=presentacionpestanas
+										onchange="pon_pref('presentacionpestanas_defecto',this.value);">
+										<option value=3>Emergente en parte superior</option>
+										<option value=0>Siempre vista en parte superior</option>
+										<option value=1>Emergente en lateral</option>
+									</select>
+								</td>
+							</tr>
+
+							<tr>
+								<td>Posición de los botones de arriba/abajo<br><span
+										style="font-size: 80%;">(usuarios zurdos/diestros)</span>
+								</td>
+								<td><select class=botoneszurdos
+										onchange="pon_pref('botoneszurdos_defecto',this.value);">
+										<option value=0>Arriba-izquierda, Abajo-derecha</option>
+										<option value=1>Arriba-derecha, Abajo-izquierda</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Habilitar gesto de pasar página.
+								</td>
+								<td><select class=pasarpagina
+										onchange="pon_pref('pasarpagina_defecto',this.value);">
+										<option value=1>Sí</option>
+										<option value=0>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Ver botón de intenciones
+								</td>
+								<td><select class=ver_bot_int
+										onchange="pon_pref('ver_bot_int_defecto',this.value);">
+										<option value=1>Sí</option>
+										<option value=0>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>En la pestaña "Ord", mostrar los textos variables de las otras
+									pestañas.
+								</td>
+								<td><select class=ordinarionormal
+										onchange="pon_pref('ordinarionormal_defecto',this.value);">
+										<option value=0>Sí</option>
+										<option value=1>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>% de desplazamiento de la pantalla en los botones de arriba/abajo
+								</td>
+								<td><select class=avance
+										onchange="pon_pref('avance_defecto',this.value);">
+										<option value=25>25%</option>
+										<option value=50>50%</option>
+										<option value=75>75%</option>
+										<option value=80>80%</option>
+										<option value=85>85%</option>
+										<option value=90>90%</option>
+										<option value=95>95%</option>
+										<option value=100>100%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Margen superior<br><span style="font-size: 80%;">(para salvar
+										cámara,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_superior',0)"> -
+									</span> <span class="margen_superior"></span> <span class="pestana2"
+										ontouchend="sube('margen_superior')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Margen inferior<br><span style="font-size: 80%;">(para salvar
+										micrófono,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_inferior',0)"> -
+									</span> <span class="margen_inferior"></span> <span class="pestana2"
+										ontouchend="sube('margen_inferior')"> + </span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class='page' id='pref_engl'>
+					<div><h2>Preferences</h2></div>
+
+					<div><h3>Languages</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Main language
+								</td>
+								<td><select class=misal_pral
+										onchange="pon_pref('misal_pral_defecto',this.value);">
+										<option value=0>Latin</option>
+										<option value=1>Spanish</option>
+										<option value=2>English</option>
+										<option value=3>German</option>
+										<option value=4>Italian</option>
+										<option value=5>Portuguese</option>
+										<option value=6>French</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Second language
+								</td>
+								<td><select class=segundoidioma
+										onchange="pon_pref('segundoidioma_defecto',this.value);">
+										<option value=0>Latin</option>
+										<option value=1>Spanish</option>
+										<option value=2>English</option>
+										<option value=3>German</option>
+										<option value=4>Italian</option>
+										<option value=5>Portuguese</option>
+										<option value=6>French</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Translation method
+								</td>
+								<td><select class=presentaciontexto
+										onchange="pon_pref('presentaciontexto_defecto',this.value);">
+										<option value=0>No translation</option>
+										<option value=1>2 columns</option>
+										<option value=2>Switch by tapping text</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Responses in readings
+								</td>
+								<td><select class=presentacionrespuestas
+										onchange="pon_pref('presentacionrespuestas_defecto',this.value);">
+										<option value=1>Missal language</option>
+										<option value=2>2nd language</option>
+										<option value=3>Both (rows)</option>
+										<option value=4>Both (columns)</option>
+										<option value=5>Switch by tapping text</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div><h3>Presentation</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Background color
+								</td>
+								<td><select class=fondo
+										onchange="pon_pref('fondo_defecto',this.value);">
+										<option value=0>White</option>
+										<option value=1>Sepia</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Font type
+								</td>
+								<td><select class=tipoletra
+										onchange="pon_pref('tipoletra_defecto',this.value);">
+										<option value=0>Arial sans serif</option>
+										<option value=1>Times New Roman</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Text font size
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanotexto')"> - </span>
+									<span class="tamanotexto"></span> <span class="pestana2"
+										ontouchend="sube('tamanotexto')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Rubrics font size
+								</td>
+								<td><select class=tamanorubrica
+										onchange="pon_pref('tamanorubrica_defecto',this.value);">
+										<option value=100>Large</option>
+										<option value=90 selected>Normal</option>
+										<option value=60>Small</option>
+									</select>
+								</td>
+							</tr><tr>
+								<td>Tabs font size
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanomenus')"> - </span>
+									<span class="tamanomenus"></span> <span class="pestana2"
+										ontouchend="sube('tamanomenus')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Font style for prayers of priest and congregation<br><span
+										style="font-size: 80%;">(e.g., Our Father, Agnus Dei...)</span>
+								</td>
+								<td><select class=oracionestodos_defecto
+										onchange="pon_pref('oracionestodos_defecto',this.value);">
+										<option value=0>Normal</option>
+										<option value=1>Italic</option>
+										<option value=2>Bold</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tabs bar:
+								</td>
+								<td><select class=presentacionpestanas
+										onchange="pon_pref('presentacionpestanas_defecto',this.value);">
+										<option value=3>Popup at the top</option>
+										<option value=0>Always visible at the top</option>
+										<option value=1>Popup on the side</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Position of up/down buttons<br><span
+										style="font-size: 80%;">(left-handed/right-handed users)</span>
+								</td>
+								<td><select class=botoneszurdos
+										onchange="pon_pref('botoneszurdos_defecto',this.value);">
+										<option value=0>Up-left, Down-right</option>
+										<option value=1>Up-right, Down-left</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Enable page-turn gesture.</td>
+								<td>
+									<select class=pasarpagina onchange="pon_pref('pasarpagina_defecto',this.value);">
+										<option value=1>Yes</option>
+										<option value=0>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>See intentions button
+								</td>
+								<td><select class=ver_bot_int
+										onchange="pon_pref('ver_bot_int_defecto',this.value);">
+										<option value=1>Yes</option>
+										<option value=0>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>In the "Ord" tab, display variable texts from other tabs.
+								</td>
+								<td><select class=ordinarionormal
+										onchange="pon_pref('ordinarionormal_defecto',this.value);">
+										<option value=0>Yes</option>
+										<option value=1>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Screen scroll percentage for up/down buttons
+								</td>
+								<td><select class=avance
+										onchange="pon_pref('avance_defecto',this.value);">
+										<option value=25>25%</option>
+										<option value=50>50%</option>
+										<option value=75>75%</option>
+										<option value=80>80%</option>
+										<option value=85>85%</option>
+										<option value=90>90%</option>
+										<option value=95>95%</option>
+										<option value=100>100%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Top margin<br><span style="font-size: 80%;">(to avoid the
+										camera,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_superior',0)"> -
+									</span>
+									<span class="margen_superior"></span> <span class="pestana2"
+										ontouchend="sube('margen_superior')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Bottom margin<br><span style="font-size: 80%;">(to avoid the
+										microphone,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_inferior',0)"> -
+									</span>
+									<span class="margen_inferior"></span> <span class="pestana2"
+										ontouchend="sube('margen_inferior')"> + </span>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+
+				</div>
+				<div class='page' id='pref_ital'>
+					<div><h2>Preferenze</h2></div>
+
+					<div><h3>Lingue</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Lingua principale
+								</td>
+								<td><select class=misal_pral
+										onchange="pon_pref('misal_pral_defecto',this.value);">
+										<option value=0>Latino</option>
+										<option value=1>Spagnolo</option>
+										<option value=2>Inglese</option>
+										<option value=3>Tedesco</option>
+										<option value=4>Italiano</option>
+										<option value=5>Portoghese</option>
+										<option value=6>Francese</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Seconda lingua
+								</td>
+								<td><select class=segundoidioma
+										onchange="pon_pref('segundoidioma_defecto',this.value);">
+										<option value=0>Latino</option>
+										<option value=1>Spagnolo</option>
+										<option value=2>Inglese</option>
+										<option value=3>Tedesco</option>
+										<option value=4>Italiano</option>
+										<option value=5>Portoghese</option>
+										<option value=6>Francese</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Metodo di traduzione
+								</td>
+								<td><select class=presentaciontexto
+										onchange="pon_pref('presentaciontexto_defecto',this.value);">
+										<option value=0>Senza traduzione</option>
+										<option value=1>2 colonne</option>
+										<option value=2>Cambio toccando il testo</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Risposte nelle letture
+								</td>
+								<td><select class=presentacionrespuestas
+										onchange="pon_pref('presentacionrespuestas_defecto',this.value);">
+										<option value=1>Lingua del messale</option>
+										<option value=2>2ª lingua</option>
+										<option value=3>Entrambe (righe)</option>
+										<option value=4>Entrambe (colonne)</option>
+										<option value=5>Cambio toccando il testo</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div><h3>Presentazione</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Colore dello sfondo
+								</td>
+								<td><select class=fondo
+										onchange="pon_pref('fondo_defecto',this.value);">
+										<option value=0>Bianco</option>
+										<option value=1>Seppia</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tipo di carattere
+								</td>
+								<td><select class=tipoletra
+										onchange="pon_pref('tipoletra_defecto',this.value);">
+										<option value=0>Arial sans serif</option>
+										<option value=1>Times New Roman</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Dimensione carattere testo
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanotexto')"> - </span>
+									<span class="tamanotexto"></span> <span class="pestana2"
+										ontouchend="sube('tamanotexto')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Dimensione carattere rubriche
+								</td>
+								<td><select class=tamanorubrica
+										onchange="pon_pref('tamanorubrica_defecto',this.value);">
+										<option value=100>Grande</option>
+										<option value=90 selected>Normale</option>
+										<option value=60>Piccolo</option>
+									</select>
+								</td>
+							</tr><tr>
+								<td>Dimensione carattere schede
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanomenus')"> - </span>
+									<span class="tamanomenus"></span> <span class="pestana2"
+										ontouchend="sube('tamanomenus')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Stile di carattere per le preghiere del sacerdote e del
+									popolo<br><span
+										style="font-size: 80%;">(Es: Padre Nostro, Agnus Dei...)</span>
+								</td>
+								<td><select class=oracionestodos_defecto
+										onchange="pon_pref('oracionestodos_defecto',this.value);">
+										<option value=0>Normale</option>
+										<option value=1>Corsivo</option>
+										<option value=2>Grassetto</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Barra delle schede:
+								</td>
+								<td><select class=presentacionpestanas
+										onchange="pon_pref('presentacionpestanas_defecto',this.value);">
+										<option value=3>Popup in alto</option>
+										<option value=0>Sempre visibile in alto</option>
+										<option value=1>Popup laterale</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Posizione dei pulsanti su/giù<br><span
+										style="font-size: 80%;">(per utenti mancini/destrimani)</span>
+								</td>
+								<td><select class=botoneszurdos
+										onchange="pon_pref('botoneszurdos_defecto',this.value);">
+										<option value=0>Su-sinistra, Giù-destra</option>
+										<option value=1>Su-destra, Giù-sinistra</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Abilita il gesto per cambiare pagina.</td>
+								<td>
+									<select class=pasarpagina onchange="pon_pref('pasarpagina_defecto',this.value);">
+										<option value=1>Sì</option>
+										<option value=0>No</option>
+									</select>
+								</td>
+							</tr>			
+							<tr>
+								<td>Vedi il pulsante delle intenzioni
+								</td>
+								<td><select class=ver_bot_int
+										onchange="pon_pref('ver_bot_int_defecto',this.value);">
+										<option value=1>Sì</option>
+										<option value=0>No</option>
+									</select>
+								</td>
+							</tr>				
+							<tr>
+								<td>Nella scheda "Ord", mostra i testi variabili delle altre schede.
+								</td>
+								<td><select class=ordinarionormal
+										onchange="pon_pref('ordinarionormal_defecto',this.value);">
+										<option value=0>Sì</option>
+										<option value=1>No</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Percentuale di scorrimento dello schermo per i pulsanti su/giù
+								</td>
+								<td><select class=avance
+										onchange="pon_pref('avance_defecto',this.value);">
+										<option value=25>25%</option>
+										<option value=50>50%</option>
+										<option value=75>75%</option>
+										<option value=80>80%</option>
+										<option value=85>85%</option>
+										<option value=90>90%</option>
+										<option value=95>95%</option>
+										<option value=100>100%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Margine superiore<br><span style="font-size: 80%;">(per evitare la
+										fotocamera,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_superior',0)"> -
+									</span>
+									<span class="margen_superior"></span> <span class="pestana2"
+										ontouchend="sube('margen_superior')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Margine inferiore<br><span style="font-size: 80%;">(per evitare il
+										microfono,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_inferior',0)"> -
+									</span>
+									<span class="margen_inferior"></span> <span class="pestana2"
+										ontouchend="sube('margen_inferior')"> + </span>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+
+				</div>
+				<div class='page' id='pref_fran'>
+					<div><h2>Préférences</h2></div>
+
+					<div><h3>Langues</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Langue principale
+								</td>
+								<td><select class=misal_pral
+										onchange="pon_pref('misal_pral_defecto',this.value);">
+										<option value=0>Latin</option>
+										<option value=1>Espagnol</option>
+										<option value=2>Anglais</option>
+										<option value=3>Allemand</option>
+										<option value=4>Italien</option>
+										<option value=5>Portugais</option>
+										<option value=6>Français</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Deuxième langue
+								</td>
+								<td><select class=segundoidioma
+										onchange="pon_pref('segundoidioma_defecto',this.value);">
+										<option value=0>Latin</option>
+										<option value=1>Espagnol</option>
+										<option value=2>Anglais</option>
+										<option value=3>Allemand</option>
+										<option value=4>Italien</option>
+										<option value=5>Portugais</option>
+										<option value=6>Français</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Méthode de traduction
+								</td>
+								<td><select class=presentaciontexto
+										onchange="pon_pref('presentaciontexto_defecto',this.value);">
+										<option value=0>Sans traduction</option>
+										<option value=1>2 colonnes</option>
+										<option value=2>Changement en touchant le texte</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Réponses dans les lectures
+								</td>
+								<td><select class=presentacionrespuestas
+										onchange="pon_pref('presentacionrespuestas_defecto',this.value);">
+										<option value=1>Langue du missel</option>
+										<option value=2>2ᵉ langue</option>
+										<option value=3>Les deux (lignes)</option>
+										<option value=4>Les deux (colonnes)</option>
+										<option value=5>Changement en touchant le texte</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div><h3>Présentation</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Couleur de fond
+								</td>
+								<td><select class=fondo
+										onchange="pon_pref('fondo_defecto',this.value);">
+										<option value=0>Blanc</option>
+										<option value=1>Sépia</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Type de police
+								</td>
+								<td><select class=tipoletra
+										onchange="pon_pref('tipoletra_defecto',this.value);">
+										<option value=0>Arial sans serif</option>
+										<option value=1>Times New Roman</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Taille de police du texte
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanotexto')"> - </span>
+									<span class="tamanotexto"></span> <span class="pestana2"
+										ontouchend="sube('tamanotexto')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Taille de police des rubriques
+								</td>
+								<td><select class=tamanorubrica
+										onchange="pon_pref('tamanorubrica_defecto',this.value);">
+										<option value=100>Grande</option>
+										<option value=90 selected>Normale</option>
+										<option value=60>Petite</option>
+									</select>
+								</td>
+							</tr><tr>
+								<td>Taille de la police des onglets
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanomenus')"> - </span>
+									<span class="tamanomenus"></span> <span class="pestana2"
+										ontouchend="sube('tamanomenus')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Style de police pour les prières du prêtre et de
+									l'assemblée<br><span
+										style="font-size: 80%;">(Ex : Notre Père, Agnus Dei...)</span>
+								</td>
+								<td><select class=oracionestodos_defecto
+										onchange="pon_pref('oracionestodos_defecto',this.value);">
+										<option value=0>Normal</option>
+										<option value=1>Italique</option>
+										<option value=2>Gras</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Barre des onglets :
+								</td>
+								<td><select class=presentacionpestanas
+										onchange="pon_pref('presentacionpestanas_defecto',this.value);">
+										<option value=3>Popup en haut</option>
+										<option value=0>Toujours visible en haut</option>
+										<option value=1>Popup latéral</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Position des boutons haut/bas<br><span
+										style="font-size: 80%;">(pour utilisateurs gauchers/droitiers)</span>
+								</td>
+								<td><select class=botoneszurdos
+										onchange="pon_pref('botoneszurdos_defecto',this.value);">
+										<option value=0>Haut-gauche, Bas-droite</option>
+										<option value=1>Haut-droite, Bas-gauche</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Activer le geste pour tourner la page.</td>
+								<td>
+									<select class=pasarpagina onchange="pon_pref('pasarpagina_defecto',this.value);">
+										<option value=1>Oui</option>
+										<option value=0>Non</option>
+									</select>
+								</td>
+							</tr>	
+							<tr>
+								<td>Voir le bouton des intentions
+								</td>
+								<td><select class=ver_bot_int
+										onchange="pon_pref('ver_bot_int_defecto',this.value);">
+										<option value=1>Oui</option>
+										<option value=0>Non</option>
+									</select>
+								</td>
+							</tr>						
+							<tr>
+								<td>Dans l'onglet "Ord", afficher les textes variables des autres
+									onglets.
+								</td>
+								<td><select class=ordinarionormal
+										onchange="pon_pref('ordinarionormal_defecto',this.value);">
+										<option value=0>Oui</option>
+										<option value=1>Non</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Pourcentage de défilement de l'écran avec les boutons haut/bas
+								</td>
+								<td><select class=avance
+										onchange="pon_pref('avance_defecto',this.value);">
+										<option value=25>25%</option>
+										<option value=50>50%</option>
+										<option value=75>75%</option>
+										<option value=80>80%</option>
+										<option value=85>85%</option>
+										<option value=90>90%</option>
+										<option value=95>95%</option>
+										<option value=100>100%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Marge supérieure<br><span style="font-size: 80%;">(pour éviter la
+										caméra,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_superior',0)"> -
+									</span>
+									<span class="margen_superior"></span> <span class="pestana2"
+										ontouchend="sube('margen_superior')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Marge inférieure<br><span style="font-size: 80%;">(pour éviter le
+										microphone,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_inferior',0)"> -
+									</span>
+									<span class="margen_inferior"></span> <span class="pestana2"
+										ontouchend="sube('margen_inferior')"> + </span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+				<div class='page' id='pref_germ'>
+					<div><h2>Einstellungen</h2></div>
+
+					<div><h3>Sprachen</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Hauptsprache
+								</td>
+								<td><select class=misal_pral
+										onchange="pon_pref('misal_pral_defecto',this.value);">
+										<option value=0>Latein</option>
+										<option value=1>Spanisch</option>
+										<option value=2>Englisch</option>
+										<option value=3>Deutsch</option>
+										<option value=4>Italienisch</option>
+										<option value=5>Portugiesisch</option>
+										<option value=6>Französisch</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Zweitsprache
+								</td>
+								<td><select class=segundoidioma
+										onchange="pon_pref('segundoidioma_defecto',this.value);">
+										<option value=0>Latein</option>
+										<option value=1>Spanisch</option>
+										<option value=2>Englisch</option>
+										<option value=3>Deutsch</option>
+										<option value=4>Italienisch</option>
+										<option value=5>Portugiesisch</option>
+										<option value=6>Französisch</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Übersetzungsmethode
+								</td>
+								<td><select class=presentaciontexto
+										onchange="pon_pref('presentaciontexto_defecto',this.value);">
+										<option value=0>Keine Übersetzung</option>
+										<option value=1>2 Spalten</option>
+										<option value=2>Wechsel durch Antippen des Textes</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Antworten in den Lesungen
+								</td>
+								<td><select class=presentacionrespuestas
+										onchange="pon_pref('presentacionrespuestas_defecto',this.value);">
+										<option value=1>Missalsprache</option>
+										<option value=2>2. Sprache</option>
+										<option value=3>Beide (Zeilen)</option>
+										<option value=4>Beide (Spalten)</option>
+										<option value=5>Wechsel durch Antippen des Textes</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div><h3>Präsentation</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Hintergrundfarbe
+								</td>
+								<td><select class=fondo
+										onchange="pon_pref('fondo_defecto',this.value);">
+										<option value=0>Weiß</option>
+										<option value=1>Sepia</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Schriftart
+								</td>
+								<td><select class=tipoletra
+										onchange="pon_pref('tipoletra_defecto',this.value);">
+										<option value=0>Arial sans serif</option>
+										<option value=1>Times New Roman</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Textschriftgröße
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanotexto')"> - </span>
+									<span class="tamanotexto"></span> <span class="pestana2"
+										ontouchend="sube('tamanotexto')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Schriftgröße der Rubriken
+								</td>
+								<td><select class=tamanorubrica
+										onchange="pon_pref('tamanorubrica_defecto',this.value);">
+										<option value=100>Groß</option>
+										<option value=90 selected>Normal</option>
+										<option value=60>Klein</option>
+									</select>
+								</td>
+							</tr><tr>
+								<td>Schriftgröße der Tabs
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanomenus')"> - </span>
+									<span class="tamanomenus"></span> <span class="pestana2"
+										ontouchend="sube('tamanomenus')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Schriftstil für die Gebete des Priesters und der Gemeinde<br><span
+										style="font-size: 80%;">(z.B. Vaterunser, Agnus Dei...)</span>
+								</td>
+								<td><select class=oracionestodos_defecto
+										onchange="pon_pref('oracionestodos_defecto',this.value);">
+										<option value=0>Normal</option>
+										<option value=1>Kursiv</option>
+										<option value=2>Fett</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Registerkartenleiste:
+								</td>
+								<td><select class=presentacionpestanas
+										onchange="pon_pref('presentacionpestanas_defecto',this.value);">
+										<option value=3>Popup oben</option>
+										<option value=0>Immer oben sichtbar</option>
+										<option value=1>Popup seitlich</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Position der Hoch-/Runter-Tasten<br><span
+										style="font-size: 80%;">(für Linkshänder/Rechtshänder)</span>
+								</td>
+								<td><select class=botoneszurdos
+										onchange="pon_pref('botoneszurdos_defecto',this.value);">
+										<option value=0>Oben-links, Unten-rechts</option>
+										<option value=1>Oben-rechts, Unten-links</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Seitenwisch-Geste aktivieren.</td>
+								<td>
+									<select class=pasarpagina onchange="pon_pref('pasarpagina_defecto',this.value);">
+										<option value=1>Ja</option>
+										<option value=0>Nein</option>
+									</select>
+								</td>
+							</tr>						
+							<tr>
+								<td>Intentionen-Button anzeigen
+								</td>
+								<td><select class=ver_bot_int
+										onchange="pon_pref('ver_bot_int_defecto',this.value);">
+										<option value=1>Ja</option>
+										<option value=0>Nein</option>
+									</select>
+								</td>
+							</tr>	
+							<tr>
+								<td>Im Reiter "Ord" die variablen Texte der anderen Reiter anzeigen.
+								</td>
+								<td><select class=ordinarionormal
+										onchange="pon_pref('ordinarionormal_defecto',this.value);">
+										<option value=0>Ja</option>
+										<option value=1>Nein</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Bildlauf-Prozentsatz der Seite mit den Hoch-/Runter-Tasten
+								</td>
+								<td><select class=avance
+										onchange="pon_pref('avance_defecto',this.value);">
+										<option value=25>25%</option>
+										<option value=50>50%</option>
+										<option value=75>75%</option>
+										<option value=80>80%</option>
+										<option value=85>85%</option>
+										<option value=90>90%</option>
+										<option value=95>95%</option>
+										<option value=100>100%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Oberer Rand<br><span style="font-size: 80%;">(um die Kamera zu
+										umgehen,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_superior',0)"> -
+									</span>
+									<span class="margen_superior"></span> <span class="pestana2"
+										ontouchend="sube('margen_superior')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Unterer Rand<br><span style="font-size: 80%;">(um das Mikrofon zu
+										umgehen,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_inferior',0)"> -
+									</span>
+									<span class="margen_inferior"></span> <span class="pestana2"
+										ontouchend="sube('margen_inferior')"> + </span>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+
+				</div>
+				<div class='page' id='pref_port'>
+					<div><h2>Preferências</h2></div>
+
+					<div><h3>Idiomas</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Idioma principal
+								</td>
+								<td><select class=misal_pral
+										onchange="pon_pref('misal_pral_defecto',this.value);">
+										<option value=0>Latim</option>
+										<option value=1>Espanhol</option>
+										<option value=2>Inglês</option>
+										<option value=3>Alemão</option>
+										<option value=4>Italiano</option>
+										<option value=5>Português</option>
+										<option value=6>Francês</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Segundo idioma
+								</td>
+								<td><select class=segundoidioma
+										onchange="pon_pref('segundoidioma_defecto',this.value);">
+										<option value=0>Latim</option>
+										<option value=1>Espanhol</option>
+										<option value=2>Inglês</option>
+										<option value=3>Alemão</option>
+										<option value=4>Italiano</option>
+										<option value=5>Português</option>
+										<option value=6>Francês</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Método de tradução
+								</td>
+								<td><select class=presentaciontexto
+										onchange="pon_pref('presentaciontexto_defecto',this.value);">
+										<option value=0>Sem tradução</option>
+										<option value=1>2 colunas</option>
+										<option value=2>Troca ao tocar no texto</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Respostas nas leituras
+								</td>
+								<td><select class=presentacionrespuestas
+										onchange="pon_pref('presentacionrespuestas_defecto',this.value);">
+										<option value=1>Idioma do missal</option>
+										<option value=2>2º idioma</option>
+										<option value=3>Ambos (linhas)</option>
+										<option value=4>Ambos (colunas)</option>
+										<option value=5>Troca ao tocar no texto</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div><h3>Apresentação</h3></div>
+					<table>
+						<tbody>
+							<tr>
+								<td>Cor de fundo
+								</td>
+								<td><select class=fondo
+										onchange="pon_pref('fondo_defecto',this.value);">
+										<option value=0>Branco</option>
+										<option value=1>Sépia</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tipo de fonte
+								</td>
+								<td><select class=tipoletra
+										onchange="pon_pref('tipoletra_defecto',this.value);">
+										<option value=0>Arial sans serif</option>
+										<option value=1>Times New Roman</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Tamanho da fonte do texto
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanotexto')"> - </span>
+									<span class="tamanotexto"></span> <span class="pestana2"
+										ontouchend="sube('tamanotexto')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Tamanho da fonte das rubricas
+								</td>
+								<td><select class=tamanorubrica
+										onchange="pon_pref('tamanorubrica_defecto',this.value);">
+										<option value=100>Grande</option>
+										<option value=90 selected>Normal</option>
+										<option value=60>Pequeno</option>
+									</select>
+								</td>
+							</tr><tr>
+								<td>Tamanho da fonte das abas
+								</td>
+								<td><span class="pestana2" ontouchend="baja('tamanomenus')"> - </span>
+									<span class="tamanomenus"></span> <span class="pestana2"
+										ontouchend="sube('tamanomenus')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Estilo de fonte para as orações do sacerdote e do povo<br><span
+										style="font-size: 80%;">(Ex: Pai Nosso, Agnus Dei...)</span>
+								</td>
+								<td><select class=oracionestodos_defecto
+										onchange="pon_pref('oracionestodos_defecto',this.value);">
+										<option value=0>Normal</option>
+										<option value=1>Itálico</option>
+										<option value=2>Negrito</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Barra de abas:
+								</td>
+								<td><select class=presentacionpestanas
+										onchange="pon_pref('presentacionpestanas_defecto',this.value);">
+										<option value=3>Popup na parte superior</option>
+										<option value=0>Sempre visível na parte superior</option>
+										<option value=1>Popup na lateral</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Posição dos botões de cima/baixo<br><span
+										style="font-size: 80%;">(para usuários canhotos/destros)</span>
+								</td>
+								<td><select class=botoneszurdos
+										onchange="pon_pref('botoneszurdos_defecto',this.value);">
+										<option value=0>Cima-esquerda, Baixo-direita</option>
+										<option value=1>Cima-direita, Baixo-esquerda</option>
+									</select>
+								</td>
+							</tr><tr>
+								<td>Ativar gesto de virar página.</td>
+								<td>
+									<select class=pasarpagina onchange="pon_pref('pasarpagina_defecto',this.value);">
+										<option value=1>Sim</option>
+										<option value=0>Não</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Ver botão de intenções
+								</td>
+								<td><select class=ver_bot_int
+										onchange="pon_pref('ver_bot_int_defecto',this.value);">
+										<option value=1>Sim</option>
+										<option value=0>Não</option>
+									</select>
+								</td>
+							</tr>
+							
+							<tr>
+								<td>Na aba "Ord", exibir os textos variáveis das outras abas.
+								</td>
+								<td><select class=ordinarionormal
+										onchange="pon_pref('ordinarionormal_defecto',this.value);">
+										<option value=0>Sim</option>
+										<option value=1>Não</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Percentual de rolagem da tela nos botões de cima/baixo
+								</td>
+								<td><select class=avance
+										onchange="pon_pref('avance_defecto',this.value);">
+										<option value=25>25%</option>
+										<option value=50>50%</option>
+										<option value=75>75%</option>
+										<option value=80>80%</option>
+										<option value=85>85%</option>
+										<option value=90>90%</option>
+										<option value=95>95%</option>
+										<option value=100>100%</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>Margem superior<br><span style="font-size: 80%;">(para evitar a
+										câmera,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_superior',0)"> -
+									</span>
+									<span class="margen_superior"></span> <span class="pestana2"
+										ontouchend="sube('margen_superior')"> + </span>
+								</td>
+							</tr>
+							<tr>
+								<td>Margem inferior<br><span style="font-size: 80%;">(para evitar o
+										microfone,...)</span>
+								</td>
+								<td><span class="pestana2" ontouchend="baja('margen_inferior',0)"> -
+									</span>
+									<span class="margen_inferior"></span> <span class="pestana2"
+										ontouchend="sube('margen_inferior')"> + </span>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+
+				</div>
+				<div style="height: 5em;"></div>
+			</div>
+		</div>
+
+		<div id="menu_diamante"
+			style="  position: absolute;  bottom: 2em;  left: 50%;  transform: translateX(-50%);  width: auto;  font-weight: bold;  display: none;  z-index: 30000;  text-align: left;">
+			<ul
+				class="ul_normal" id="tab_diamante">
+				<li  id="exitBtn" ontouchend="navigator.app.exitApp()">
+					<img src="../exit.png" alt="Icono"	style="height: 1.2em;" /></li>
+				<li
+					ontouchend="event.stopPropagation();cambia_vista('menu_diamante'); window.location='ayuda.html'; return false"><img
+						src="../interrogacion_rojo.png" style="height:1.3em;"></li>
+				<li
+					id="menunoche"
+					ontouchend="event.stopPropagation();cambia_vista('menu_diamante'); pon_noche();"><img
+						style="height: 1em;" id="bot_noche" src="../noche.png"></li>
+				<li
+					ontouchend="cambia_pref('tipoletra', nuevaletra ); cambia_fuente(); "><span
+						style=" font-family: Times New Roman; ">ABC</span> &nbsp;<=>&nbsp; <span
+						style=" font-family: Arial; ">ABC</span></li>
+				<li id="titulo002"
+					ontouchend="cambia_pref('tamanotexto', masgrande ); cambia_tamanoletra(masgrande);">12&nbsp;=>&nbsp;<span
+						style=" font-size: 13pt; ">13</span></li>
+				<li id="titulo003"
+					ontouchend="cambia_pref('tamanotexto', maspeq ); cambia_tamanoletra(maspeq); ">12&nbsp;=>&nbsp;<span
+						style=" font-size: 11pt; ">11</span></li>
+			</ul>
+		</div>
+		<div id="piedepantalla" class="navbar">
+			<ol
+				id="menupie">
+				<li class="botonabajo" ontouchend="botonPantArriba();"><img
+						id="bot_arriba" src="../angle-double-up2.png"
+						style=" height: 1.6em;"
+						border="0"></li>
+				<li
+					ontouchend="event.stopPropagation();cambia_vista('menu_diamante');"><img id="bot_indice"
+						src="../asterisk2.png" style=" height: 1.6em;"></li>
+				<li class="botonabajo"
+					ontouchend="botonPantAbajo();"><img id="bot_abajo"
+						src="../angle-double-down2.png" style=" height: 1.6em;"></li>
+			</ol>
+		</div>
+	</body>
+	<script>
+$('#titulo002').html(mipreferencia['tamanotexto'] + "&nbsp;&#9654;&#xFE0E;&nbsp;<span style=' font-size: 120%; '>" + masgrande + "</span>");
+$('#titulo003').html(mipreferencia['tamanotexto'] + "&nbsp;&#9654;&#xFE0E;&nbsp;<span style=' font-size: 80%; '>" + maspeq + "</span>");
+
+document.addEventListener('DOMContentLoaded', function() {
+	
+$('.misal_pral').val(dime_pref("misal_pral_defecto", 0))
+$('.segundoidioma').val(dime_pref("segundoidioma_defecto",1))
+$('.presentaciontexto').val(dime_pref("presentaciontexto_defecto",2))
+$('.presentacionrespuestas').val(dime_pref("presentacionrespuestas_defecto",5))
+$('.fondo').val(dime_pref("fondo_defecto", 1))
+$('.tipoletra').val(dime_pref("tipoletra_defecto", 1))
+$('.tamanotexto').html(dime_pref("tamanotexto_defecto",12))
+$('.tamanorubrica').val(dime_pref("tamanorubrica_defecto",90))
+$('.tamanomenus').html(dime_pref("tamanomenus_defecto",10))
+$('.oracionestodos').val(dime_pref("oracionestodos_defecto",0))
+$('.presentacionpestanas').val(dime_pref("presentacionpestanas_defecto",0))
+$('.botoneszurdos').val(dime_pref("botoneszurdos_defecto",0))
+$('.pasarpagina').val(dime_pref("pasarpagina_defecto",1))
+$('.ver_bot_int').val(dime_pref("ver_bot_int_defecto",1))
+$('.ordinarionormal').val(dime_pref("ordinarionormal_defecto",0))
+$('.avance').val(dime_pref("avance_defecto", 100))
+$('.margen_superior').html(dime_pref("margen_superior_defecto", 16))
+$('.margen_inferior').html(dime_pref("margen_inferior_defecto", 0))
+
+arregla_top()
+arregla_bottom()
+
+});
+function baja(preferencia, minimo = 8) {
+	if (preferencia=='tamanotexto'|| preferencia=='tamanomenus') { defecto=12; } else defecto=0;
+    var valor = parseInt(dime_pref(preferencia + '_defecto', defecto));
+    if (valor > minimo) {  // Se asegura de no bajar más del mínimo
+        valor = valor - 1;
+        pon_pref(preferencia + '_defecto', valor);
+        $('.' + preferencia).html(valor);
+								if (preferencia=='tamanotexto') cambia_tamanoletra(valor);
+
+		if (preferencia=='margen_superior') arregla_top()
+			if (preferencia=='margen_inferior') arregla_bottom()
+    }
+}
+function sube(preferencia){	
+	if (preferencia=='tamanotexto'|| preferencia=='tamanomenus') { defecto=12; } else defecto=0;
+	var valor = parseInt(dime_pref(preferencia+'_defecto',defecto));
+		valor = valor + 1;
+		pon_pref(preferencia+'_defecto',valor);
+		$('.'+preferencia).html(valor);
+		if (preferencia=='tamanotexto') cambia_tamanoletra(valor);
+
+		if (preferencia=='margen_superior') arregla_top()
+			if (preferencia=='margen_inferior') arregla_bottom()
+
+}
+
+</script>
+</html>
