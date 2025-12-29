@@ -1,0 +1,2407 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bullet Journal Digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --text-light: #666666;
+            --border: #000000;
+            --border-light: #cccccc;
+            --accent: #000000;
+            
+            /* Cores das dimensões do plano */
+            --cor-espiritual: #dc2626;
+            --cor-linguas: #2563eb;
+            --cor-academico: #059669;
+            --cor-fisico: #0891b2;
+            --cor-literatura: #7c3aed;
+            --cor-financeiro: #d97706;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 16px;
+            line-height: 1.6;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ===== LAYOUT PRINCIPAL ===== */
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
+            border-bottom: 2px solid var(--border);
+            padding: 12px 16px;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .header-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* ===== NAVEGAÇÃO PRINCIPAL ===== */
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 6px 10px;
+            border: 1px solid var(--border-light);
+            background: var(--bg);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.1s;
+        }
+
+        .nav-tab:active,
+        .nav-tab.active {
+            background: var(--border);
+            color: var(--bg);
+            border-color: var(--border);
+        }
+
+        /* ===== CONTEÚDO PRINCIPAL ===== */
+        .main {
+            flex: 1;
+            padding: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ===== COMPONENTES COMUNS ===== */
+        .card {
+            border: 2px solid var(--border);
+            padding: 16px;
+            margin-bottom: 16px;
+            background: var(--bg);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:active {
+            background: var(--border);
+            color: var(--bg);
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.65rem;
+            border-width: 1px;
+        }
+
+        .btn-icon {
+            padding: 4px 8px;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        input, textarea, select {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1rem;
+            padding: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg);
+            width: 100%;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--border);
+        }
+
+        /* ===== LEGENDA (KEY) ===== */
+        .key-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 12px;
+        }
+
+        .key-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .key-symbol {
+            width: 18px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* ===== ENTRADA DO DIÁRIO ===== */
+        .entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px dotted var(--border-light);
+        }
+
+        .entry:last-child {
+            border-bottom: none;
+        }
+
+        .entry-symbol {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        .entry-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .entry-text {
+            word-wrap: break-word;
+        }
+
+        .entry-text.completed {
+            text-decoration: line-through;
+            color: var(--text-light);
+        }
+
+        .entry-text.migrated {
+            color: var(--text-light);
+        }
+
+        .entry-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .entry-actions button {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border: 1px solid var(--border-light);
+            background: var(--bg);
+            cursor: pointer;
+        }
+
+        /* ===== ADICIONAR ENTRADA ===== */
+        .add-entry {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .add-entry select {
+            width: auto;
+            padding: 8px;
+        }
+
+        .add-entry input {
+            flex: 1;
+        }
+
+        /* ===== TRACKER DE HÁBITOS ===== */
+        .tracker-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .tracker-row {
+            display: grid;
+            grid-template-columns: 120px repeat(7, 1fr);
+            gap: 4px;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .tracker-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .tracker-label {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tracker-cell {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .tracker-cell.checked {
+            background: var(--border);
+            color: var(--bg);
+        }
+
+        .tracker-cell.partial {
+            background: var(--border-light);
+        }
+
+        /* ===== DIMENSÕES (BADGES) ===== */
+        .badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-espiritual { background: #fecaca; color: var(--cor-espiritual); border: 1px solid var(--cor-espiritual); }
+        .badge-linguas { background: #bfdbfe; color: var(--cor-linguas); border: 1px solid var(--cor-linguas); }
+        .badge-academico { background: #a7f3d0; color: var(--cor-academico); border: 1px solid var(--cor-academico); }
+        .badge-fisico { background: #a5f3fc; color: var(--cor-fisico); border: 1px solid var(--cor-fisico); }
+        .badge-literatura { background: #ddd6fe; color: var(--cor-literatura); border: 1px solid var(--cor-literatura); }
+        .badge-financeiro { background: #fed7aa; color: var(--cor-financeiro); border: 1px solid var(--cor-financeiro); }
+
+        /* ===== FUTURE LOG ===== */
+        .future-month {
+            margin-bottom: 16px;
+        }
+
+        .future-month-title {
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 8px;
+            background: var(--border);
+            color: var(--bg);
+            margin-bottom: 8px;
+        }
+
+        .future-entries {
+            padding-left: 8px;
+        }
+
+        /* ===== CALENDÁRIO MENSAL ===== */
+        .month-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 16px;
+        }
+
+        .month-calendar-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 4px;
+            font-weight: 500;
+        }
+
+        .month-calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .month-calendar-day.today {
+            border: 2px solid var(--border);
+            font-weight: 700;
+        }
+
+        .month-calendar-day.has-events {
+            background: #f0f0f0;
+        }
+
+        .month-calendar-day .day-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        .month-calendar-day .day-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        /* ===== PROJETOS ===== */
+        .project-card {
+            border-left: 4px solid var(--border);
+            padding-left: 12px;
+            margin-bottom: 16px;
+        }
+
+        .project-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .project-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .project-section {
+            margin-bottom: 8px;
+        }
+
+        .project-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        /* ===== ÍNDICE ===== */
+        .index-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted var(--border-light);
+            cursor: pointer;
+        }
+
+        .index-item:hover {
+            background: #f5f5f5;
+        }
+
+        .index-page {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-light);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: var(--text-light);
+        }
+
+        /* ===== SEÇÃO VISÃO SEMANA ===== */
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .week-day {
+            border: 1px solid var(--border-light);
+            min-height: 150px;
+        }
+
+        .week-day-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            padding: 6px;
+            border-bottom: 1px solid var(--border-light);
+            background: #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .week-day-header.today {
+            background: var(--border);
+            color: var(--bg);
+        }
+
+        .week-day-content {
+            padding: 6px;
+            font-size: 0.85rem;
+        }
+
+        .week-day-entry {
+            padding: 2px 0;
+            border-bottom: 1px dotted var(--border-light);
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 600px) {
+            .week-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tracker-row {
+                grid-template-columns: 100px repeat(7, 1fr);
+            }
+
+            .tracker-label {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* ===== OCULTAR SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+        }
+
+        /* ===== UTILITÁRIOS ===== */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mb-8 { margin-bottom: 8px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mt-8 { margin-top: 8px; }
+        .mt-16 { margin-top: 16px; }
+        .flex { display: flex; }
+        .flex-between { justify-content: space-between; }
+        .gap-8 { gap: 8px; }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <h1>BULLET JOURNAL</h1>
+                <span class="header-date" id="header-date"></span>
+            </div>
+            <nav class="nav-tabs" id="nav-tabs">
+                <button class="nav-tab active" data-view="dia">Dia</button>
+                <button class="nav-tab" data-view="semana">Semana</button>
+                <button class="nav-tab" data-view="mes">Mês</button>
+                <button class="nav-tab" data-view="future">Future</button>
+                <button class="nav-tab" data-view="tracker">Tracker</button>
+                <button class="nav-tab" data-view="projetos">Projetos</button>
+                <button class="nav-tab" data-view="indice">Índice</button>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main" id="main-content">
+            <!-- Views serão injetadas via JS -->
+        </main>
+    </div>
+
+    <!-- Modal para adicionar/editar -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-content">
+            <!-- Conteúdo do modal injetado via JS -->
+        </div>
+    </div>
+
+    <script>
+    // ============================================================================
+    // BULLET JOURNAL DIGITAL - APLICAÇÃO PRINCIPAL
+    // ============================================================================
+
+    const API_URL = window.location.origin;
+
+    const BuJo = {
+        // Estado global
+        state: {
+            currentView: 'dia',
+            currentDate: new Date(),
+            selectedDate: new Date(),
+            entries: [],
+            spiritualHabits: {},      // { '2026-01-05': { 'serviam': true, ... } }
+            studyHabits: {},          // { '2026-01-05': { 'latim': 45, 'japones': 60, ... } }
+            mortifications: {},       // { '2026-01-05': [{ text: 'item1', done: false }] }
+            habits: [],               // Hábitos personalizados por dimensão
+            projects: [],
+            futureLog: [],
+            monthlyGoals: [],
+            weeklyFocus: [],
+            calendarEvents: [],
+        },
+
+        // Símbolos do sistema clássico
+        symbols: {
+            task: '•',
+            taskDone: '✕',
+            taskMigrated: '→',
+            taskScheduled: '<',
+            event: '○',
+            note: '–',
+            important: '★',
+        },
+
+        // Hábitos espirituais diários (15 itens)
+        dailySpiritualHabits: [
+            { id: 'serviam', name: 'Sérviam' },
+            { id: 'preces', name: 'Preces' },
+            { id: 'oracao-manha', name: 'Oração da manhã' },
+            { id: 'santa-missa', name: 'Santa Missa' },
+            { id: 'leitura-espiritual', name: 'Leitura Espiritual' },
+            { id: 'leitura-nt', name: 'Leitura do NT' },
+            { id: 'angelus', name: 'Angelus' },
+            { id: 'visita-santissimo', name: 'Visita ao Santíssimo' },
+            { id: 'lembrai-vos', name: 'Lembrai-vos' },
+            { id: 'terco', name: 'Terço' },
+            { id: 'oracao-tarde', name: 'Oração da tarde' },
+            { id: 'contemplacao', name: 'Contemplação' },
+            { id: 'exame', name: 'Exame' },
+            { id: '2-horas', name: '2 horas' },
+            { id: '3-ave-marias', name: '3 Ave Marias' },
+        ],
+
+        // Hábitos de estudo (com tempo em minutos)
+        studyHabitsList: [
+            { id: 'latim', name: 'Latim (Gradus Primus)', dimension: 'linguas', target: 45 },
+            { id: 'japones', name: 'Japonês', dimension: 'linguas', target: 120 },
+            { id: 'estatistica', name: 'Estudo Estatística', dimension: 'academico', target: 180 },
+            { id: 'literatura', name: 'Leitura Literatura', dimension: 'literatura', target: 60 },
+            { id: 'tenis-mesa', name: 'Tênis de Mesa', dimension: 'fisico', target: 90 },
+        ],
+
+        // Rotina semanal (baseada no calendário a partir de 05/01/2026)
+        weeklySchedule: {
+            // Segunda-feira
+            1: [
+                { time: '05:45', event: 'Acordar' },
+                { time: '07:45', event: 'Café da manhã' },
+                { time: '08:15', event: 'Ida para IME (Terço)' },
+                { time: '09:00', event: 'Estudo de Latim', type: 'linguas' },
+                { time: '10:00', event: 'Aula Prob. IME', type: 'academico' },
+                { time: '12:00', event: 'Voltando (Leit. Espiritual)' },
+                { time: '13:30', event: 'Estudo Estatística', type: 'academico' },
+                { time: '15:00', event: 'Ida Tênis de Mesa' },
+                { time: '15:30', event: 'Tênis de Mesa', type: 'fisico' },
+                { time: '17:00', event: 'Voltando (audiobook)' },
+                { time: '17:45', event: 'Lanche' },
+                { time: '18:30', event: 'Oração' },
+                { time: '21:15', event: 'Revisão' },
+            ],
+            // Terça-feira (DIA DE TURNO)
+            2: [
+                { time: '05:45', event: 'Acordar' },
+                { time: '07:45', event: 'Café da manhã' },
+                { time: '08:15', event: 'Ida para IME (Terço)' },
+                { time: '09:00', event: 'Estudo de Latim', type: 'linguas' },
+                { time: '10:00', event: 'Aula Prob. IME', type: 'academico' },
+                { time: '12:00', event: 'Voltando (Leit. Espiritual)' },
+                { time: '13:30', event: 'Tempo da tarde', type: 'academico' },
+                { time: '17:30', event: 'Comentário do Evangelho' },
+                { time: '17:45', event: 'Lanche' },
+                { time: '18:00', event: 'Estudo Japonês', type: 'linguas' },
+                { time: '21:15', event: 'Revisão' },
+                { time: '★', event: 'DIA DE TURNO', special: true },
+            ],
+            // Quarta-feira (DIA DE GUARDA + DISCIPLINA)
+            3: [
+                { time: '05:45', event: 'Acordar' },
+                { time: '07:45', event: 'Café da manhã' },
+                { time: '08:15', event: 'Ida para IME (Terço)' },
+                { time: '09:00', event: 'Estudo de Latim', type: 'linguas' },
+                { time: '10:00', event: 'Aula Prob. IME', type: 'academico' },
+                { time: '12:00', event: 'Voltando (Leit. Espiritual)' },
+                { time: '13:45', event: 'Estudo Estatística', type: 'academico' },
+                { time: '17:30', event: 'Disciplina', special: true },
+                { time: '17:45', event: 'Lanche' },
+                { time: '18:00', event: 'Leitura Literatura', type: 'literatura' },
+                { time: '21:15', event: 'Revisão' },
+                { time: '★', event: 'DIA DE GUARDA', special: true },
+            ],
+            // Quinta-feira
+            4: [
+                { time: '05:45', event: 'Acordar' },
+                { time: '07:45', event: 'Café da manhã' },
+                { time: '08:15', event: 'Ida para IME (Terço)' },
+                { time: '09:00', event: 'Estudo de Latim', type: 'linguas' },
+                { time: '10:00', event: 'Aula Prob. IME', type: 'academico' },
+                { time: '12:00', event: 'Voltando (Leit. Espiritual)' },
+                { time: '13:45', event: 'Estudo Estatística', type: 'academico' },
+                { time: '17:45', event: 'Lanche' },
+                { time: '18:00', event: 'Estudo Japonês', type: 'linguas' },
+                { time: '21:15', event: 'Revisão' },
+            ],
+            // Sexta-feira
+            5: [
+                { time: '05:45', event: 'Acordar' },
+                { time: '07:45', event: 'Café da manhã' },
+                { time: '08:15', event: 'Ida para IME (Terço)' },
+                { time: '09:00', event: 'Estudo de Latim', type: 'linguas' },
+                { time: '10:00', event: 'Aula Prob. IME', type: 'academico' },
+                { time: '12:00', event: 'Voltando (Leit. Espiritual)' },
+                { time: '13:30', event: 'Estudo Estatística', type: 'academico' },
+                { time: '15:00', event: 'Ida Tênis de Mesa' },
+                { time: '15:30', event: 'Tênis de Mesa', type: 'fisico' },
+                { time: '17:00', event: 'Voltando (audiobook)' },
+                { time: '17:45', event: 'Lanche' },
+                { time: '18:00', event: 'Leitura Literatura', type: 'literatura' },
+            ],
+            // Sábado (NOSSA SENHORA + MORTIFICAÇÃO EXTRA)
+            6: [
+                { time: '09:30', event: 'Ida Tênis de Mesa' },
+                { time: '10:00', event: 'Tênis de Mesa', type: 'fisico' },
+                { time: '11:30', event: 'Voltando (audiobook)' },
+                { time: '14:00', event: 'Estudo Estatística', type: 'academico' },
+                { time: '18:00', event: 'Leitura Literatura', type: 'literatura' },
+                { time: '★', event: 'Oração a Nossa Senhora', special: true },
+                { time: '★', event: 'Mortificação Extra', special: true },
+            ],
+            // Domingo
+            0: [
+                { time: '10:00', event: 'Estudo de Latim', type: 'linguas' },
+                { time: '14:00', event: 'Estudo Estatística', type: 'academico' },
+                { time: '17:30', event: 'Estudo Japonês', type: 'linguas' },
+            ]
+        },
+
+        // Dimensões do plano de 5 anos
+        dimensions: [
+            { id: 'espiritual', name: 'Espiritual', color: '#dc2626' },
+            { id: 'linguas', name: 'Línguas', color: '#2563eb' },
+            { id: 'academico', name: 'Acadêmico', color: '#059669' },
+            { id: 'fisico', name: 'Físico', color: '#0891b2' },
+            { id: 'literatura', name: 'Literatura', color: '#7c3aed' },
+            { id: 'financeiro', name: 'Financeiro', color: '#d97706' },
+        ],
+
+        // ============================================================================
+        // INICIALIZAÇÃO
+        // ============================================================================
+
+        init() {
+            this.loadState();
+            this.bindEvents();
+            this.updateHeaderDate();
+            this.render();
+            this.loadCalendarEvents();
+        },
+
+        loadState() {
+            const saved = localStorage.getItem('bujo-pedro-2026');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                this.state = { ...this.state, ...parsed };
+                this.state.currentDate = new Date(parsed.currentDate || new Date());
+                this.state.selectedDate = new Date(parsed.selectedDate || new Date());
+            }
+        },
+
+        saveState() {
+            localStorage.setItem('bujo-pedro-2026', JSON.stringify(this.state));
+        },
+
+        // ============================================================================
+        // EVENTOS
+        // ============================================================================
+
+        bindEvents() {
+            // Navegação por tabs
+            document.getElementById('nav-tabs').addEventListener('click', (e) => {
+                if (e.target.classList.contains('nav-tab')) {
+                    this.setView(e.target.dataset.view);
+                }
+            });
+
+            // Fechar modal
+            document.getElementById('modal-overlay').addEventListener('click', (e) => {
+                if (e.target.id === 'modal-overlay') {
+                    this.closeModal();
+                }
+            });
+        },
+
+        setView(view) {
+            this.state.currentView = view;
+            
+            // Atualizar tabs ativas
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.view === view);
+            });
+
+            this.render();
+        },
+
+        // ============================================================================
+        // RENDERIZAÇÃO
+        // ============================================================================
+
+        render() {
+            const main = document.getElementById('main-content');
+            
+            switch (this.state.currentView) {
+                case 'dia':
+                    main.innerHTML = this.renderDayView();
+                    break;
+                case 'semana':
+                    main.innerHTML = this.renderWeekView();
+                    break;
+                case 'mes':
+                    main.innerHTML = this.renderMonthView();
+                    break;
+                case 'future':
+                    main.innerHTML = this.renderFutureLog();
+                    break;
+                case 'tracker':
+                    main.innerHTML = this.renderTracker();
+                    break;
+                case 'projetos':
+                    main.innerHTML = this.renderProjects();
+                    break;
+                case 'indice':
+                    main.innerHTML = this.renderIndex();
+                    break;
+            }
+
+            this.bindViewEvents();
+        },
+
+        bindViewEvents() {
+            // Adicionar entrada (diário)
+            const addBtn = document.getElementById('add-entry-btn');
+            if (addBtn) {
+                addBtn.addEventListener('click', () => this.addEntry());
+            }
+
+            const addInput = document.getElementById('add-entry-input');
+            if (addInput) {
+                addInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addEntry();
+                });
+            }
+
+            // Toggle de hábitos
+            document.querySelectorAll('.tracker-cell[data-habit]').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    this.toggleHabit(cell.dataset.habit, cell.dataset.date);
+                });
+            });
+
+            // Navegação de data
+            const prevBtn = document.getElementById('prev-date');
+            const nextBtn = document.getElementById('next-date');
+            if (prevBtn) prevBtn.addEventListener('click', () => this.navigateDate(-1));
+            if (nextBtn) nextBtn.addEventListener('click', () => this.navigateDate(1));
+
+            // Dias do calendário mensal
+            document.querySelectorAll('.month-calendar-day[data-date]').forEach(day => {
+                day.addEventListener('click', () => {
+                    this.state.selectedDate = new Date(day.dataset.date);
+                    this.setView('dia');
+                });
+            });
+
+            // Ciclar símbolos
+            document.querySelectorAll('.entry-symbol[data-entry-id]').forEach(sym => {
+                sym.addEventListener('click', () => {
+                    this.cycleEntrySymbol(sym.dataset.entryId);
+                });
+            });
+
+            // Deletar entrada
+            document.querySelectorAll('.entry-delete[data-entry-id]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.deleteEntry(btn.dataset.entryId);
+                });
+            });
+
+            // Adicionar projeto
+            const addProjectBtn = document.getElementById('add-project-btn');
+            if (addProjectBtn) {
+                addProjectBtn.addEventListener('click', () => this.showAddProjectModal());
+            }
+
+            // Adicionar ao future log
+            const addFutureBtn = document.getElementById('add-future-btn');
+            if (addFutureBtn) {
+                addFutureBtn.addEventListener('click', () => this.showAddFutureModal());
+            }
+
+            // Adicionar hábito
+            const addHabitBtn = document.getElementById('add-habit-btn');
+            if (addHabitBtn) {
+                addHabitBtn.addEventListener('click', () => this.showAddHabitModal());
+            }
+
+            // Navegação semanal
+            const prevWeek = document.getElementById('prev-week');
+            const nextWeek = document.getElementById('next-week');
+            if (prevWeek) prevWeek.addEventListener('click', () => this.navigateWeek(-1));
+            if (nextWeek) nextWeek.addEventListener('click', () => this.navigateWeek(1));
+
+            // Navegação mensal
+            const prevMonth = document.getElementById('prev-month');
+            const nextMonth = document.getElementById('next-month');
+            if (prevMonth) prevMonth.addEventListener('click', () => this.navigateMonth(-1));
+            if (nextMonth) nextMonth.addEventListener('click', () => this.navigateMonth(1));
+
+            // Adicionar evento ao calendário
+            const addEventBtn = document.getElementById('add-event-btn');
+            if (addEventBtn) {
+                addEventBtn.addEventListener('click', () => this.showAddEventModal());
+            }
+
+            // Editar foco semanal
+            const editWeeklyFocusBtn = document.getElementById('edit-weekly-focus-btn');
+            if (editWeeklyFocusBtn) {
+                editWeeklyFocusBtn.addEventListener('click', () => this.editWeeklyFocus());
+            }
+
+            // Editar metas mensais
+            const editMonthlyGoalsBtn = document.getElementById('edit-monthly-goals-btn');
+            if (editMonthlyGoalsBtn) {
+                editMonthlyGoalsBtn.addEventListener('click', () => this.editMonthlyGoals());
+            }
+
+            // Adicionar mortificação
+            const addMortBtn = document.getElementById('add-mort-btn');
+            if (addMortBtn) {
+                addMortBtn.addEventListener('click', () => this.showAddMortificationModal());
+            }
+
+            // Toggle hábitos espirituais
+            document.querySelectorAll('[data-spiritual-habit]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    this.toggleSpiritualHabit(checkbox.dataset.spiritualHabit, checkbox.dataset.date);
+                });
+            });
+
+            // Atualizar hábitos de estudo (input com minutos)
+            document.querySelectorAll('[data-study-habit]').forEach(input => {
+                input.addEventListener('change', () => {
+                    const minutes = parseInt(input.value) || 0;
+                    this.updateStudyHabit(input.dataset.studyHabit, input.dataset.date, minutes);
+                });
+            });
+
+            // Toggle mortificações
+            document.querySelectorAll('[data-mort-index]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    this.toggleMortification(checkbox.dataset.date, parseInt(checkbox.dataset.mortIndex));
+                });
+            });
+
+            // Deletar projeto
+            document.querySelectorAll('[data-delete-project]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.deleteProject(btn.dataset.deleteProject);
+                });
+            });
+
+            // Editar projeto
+            document.querySelectorAll('[data-edit-project]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.editProject(btn.dataset.editProject);
+                });
+            });
+
+            // Deletar entrada do future log
+            document.querySelectorAll('[data-delete-future]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.deleteFutureEntry(btn.dataset.deleteFuture);
+                });
+            });
+        },
+
+        updateHeaderDate() {
+            const el = document.getElementById('header-date');
+            const now = new Date();
+            el.textContent = now.toLocaleDateString('pt-BR', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            }).toUpperCase();
+        },
+
+        // ============================================================================
+        // VIEW: DIA
+        // ============================================================================
+
+        renderDayView() {
+            const date = this.state.selectedDate;
+            const dateStr = this.formatDateKey(date);
+            const dayEntries = this.state.entries.filter(e => e.date === dateStr);
+            const dayEvents = this.getEventsForDate(dateStr);
+
+            return `
+                <div class="card">
+                    <div class="card-title">
+                        <div class="flex gap-8" style="align-items: center;">
+                            <button class="btn btn-icon" id="prev-date">←</button>
+                            <span>${date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                            <button class="btn btn-icon" id="next-date">→</button>
+                        </div>
+                        ${this.isToday(date) ? '<span class="badge" style="background:#000;color:#fff;">HOJE</span>' : ''}
+                    </div>
+
+                    <!-- Legenda -->
+                    <div class="key-legend">
+                        <div class="key-item"><span class="key-symbol">${this.symbols.task}</span> tarefa</div>
+                        <div class="key-item"><span class="key-symbol">${this.symbols.event}</span> evento</div>
+                        <div class="key-item"><span class="key-symbol">${this.symbols.note}</span> nota</div>
+                        <div class="key-item"><span class="key-symbol">${this.symbols.important}</span> importante</div>
+                        <div class="key-item"><span class="key-symbol">${this.symbols.taskMigrated}</span> migrado</div>
+                        <div class="key-item"><span class="key-symbol">${this.symbols.taskDone}</span> feito</div>
+                    </div>
+
+                    <!-- Eventos do Google Calendar -->
+                    ${dayEvents.length > 0 ? `
+                        <div class="mb-16">
+                            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px;">
+                                Agenda (Google Calendar)
+                            </div>
+                            ${dayEvents.map(ev => `
+                                <div class="entry">
+                                    <span class="entry-symbol">${this.symbols.event}</span>
+                                    <div class="entry-content">
+                                        <div class="entry-text">${ev.summary}</div>
+                                        <div class="entry-meta">${ev.time || 'Dia todo'}${ev.location ? ' • ' + ev.location : ''}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <!-- Entradas do dia -->
+                    <div id="day-entries">
+                        ${dayEntries.length === 0 ? `
+                            <p style="color: var(--text-light); font-style: italic; text-align: center; padding: 20px 0;">
+                                Nenhuma entrada para este dia. Comece a registrar!
+                            </p>
+                        ` : dayEntries.map(entry => this.renderEntry(entry)).join('')}
+                    </div>
+
+                    <!-- Adicionar entrada -->
+                    <div class="add-entry">
+                        <select id="add-entry-type">
+                            <option value="task">${this.symbols.task} Tarefa</option>
+                            <option value="event">${this.symbols.event} Evento</option>
+                            <option value="note">${this.symbols.note} Nota</option>
+                        </select>
+                        <input type="text" id="add-entry-input" placeholder="Digite sua entrada...">
+                        <button class="btn btn-small" id="add-entry-btn">Add</button>
+                    </div>
+                </div>
+
+                <!-- Quick Tracker do Dia -->
+                <div class="card">
+                    <div class="card-title">Hábitos de Hoje</div>
+                    ${this.renderDayHabits(dateStr)}
+                </div>
+            `;
+        },
+
+        renderEntry(entry) {
+            const symbol = this.getEntrySymbol(entry);
+            const textClass = entry.status === 'done' ? 'completed' : 
+                             entry.status === 'migrated' ? 'migrated' : '';
+            
+            return `
+                <div class="entry">
+                    <span class="entry-symbol" data-entry-id="${entry.id}" title="Clique para mudar status">
+                        ${symbol}
+                    </span>
+                    <div class="entry-content">
+                        <div class="entry-text ${textClass}">${entry.text}</div>
+                        ${entry.dimension ? `<span class="badge badge-${entry.dimension}">${entry.dimension}</span>` : ''}
+                    </div>
+                    <div class="entry-actions">
+                        <button class="entry-delete" data-entry-id="${entry.id}" title="Deletar">×</button>
+                    </div>
+                </div>
+            `;
+        },
+
+        getEntrySymbol(entry) {
+            if (entry.type === 'note') return this.symbols.note;
+            if (entry.type === 'event') return this.symbols.event;
+            if (entry.important) return this.symbols.important;
+            
+            switch (entry.status) {
+                case 'done': return this.symbols.taskDone;
+                case 'migrated': return this.symbols.taskMigrated;
+                case 'scheduled': return this.symbols.taskScheduled;
+                default: return this.symbols.task;
+            }
+        },
+
+        renderDayHabits(dateStr) {
+            return `
+                <div style="display: grid; gap: 8px;">
+                    ${this.state.habits.map(habit => {
+                        const checked = habit.tracking[dateStr] || false;
+                        return `
+                            <div class="flex flex-between" style="align-items: center; padding: 4px 0; border-bottom: 1px dotted var(--border-light);">
+                                <span class="badge badge-${habit.dimension}" style="margin-right: 8px;">${habit.dimension.substring(0,3)}</span>
+                                <span style="flex: 1;">${habit.name}</span>
+                                <div class="tracker-cell ${checked ? 'checked' : ''}" 
+                                     data-habit="${habit.id}" 
+                                     data-date="${dateStr}"
+                                     style="width: 30px; height: 30px;">
+                                    ${checked ? '✓' : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        },
+
+        // ============================================================================
+        // VIEW: SEMANA
+        // ============================================================================
+
+        renderWeekView() {
+            const weekDays = this.getWeekDays(this.state.selectedDate);
+            const weekStart = weekDays[0];
+            const weekEnd = weekDays[6];
+
+            return `
+                <div class="card">
+                    <div class="card-title">
+                        <div class="flex gap-8" style="align-items: center;">
+                            <button class="btn btn-icon" id="prev-week">←</button>
+                            <span>Semana de ${weekStart.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} a ${weekEnd.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</span>
+                            <button class="btn btn-icon" id="next-week">→</button>
+                        </div>
+                    </div>
+
+                    <div class="week-grid">
+                        ${weekDays.map(day => {
+                            const dateStr = this.formatDateKey(day);
+                            const dayEntries = this.state.entries.filter(e => e.date === dateStr);
+                            const dayEvents = this.getEventsForDate(dateStr);
+                            const isToday = this.isToday(day);
+
+                            return `
+                                <div class="week-day">
+                                    <div class="week-day-header ${isToday ? 'today' : ''}">
+                                        <span>${day.toLocaleDateString('pt-BR', { weekday: 'short' })}</span>
+                                        <span>${day.getDate()}</span>
+                                    </div>
+                                    <div class="week-day-content">
+                                        ${dayEvents.map(ev => `
+                                            <div class="week-day-entry" style="font-size: 0.75rem;">
+                                                ${this.symbols.event} ${ev.time ? ev.time + ' ' : ''}${ev.summary}
+                                            </div>
+                                        `).join('')}
+                                        ${dayEntries.slice(0, 5).map(e => `
+                                            <div class="week-day-entry" style="font-size: 0.75rem;">
+                                                ${this.getEntrySymbol(e)} ${e.text.substring(0, 30)}${e.text.length > 30 ? '...' : ''}
+                                            </div>
+                                        `).join('')}
+                                        ${dayEntries.length > 5 ? `<div style="font-size: 0.7rem; color: var(--text-light);">+${dayEntries.length - 5} mais</div>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- Foco da Semana -->
+                <div class="card">
+                    <div class="card-title">
+                        Foco da Semana
+                        <button class="btn btn-small" onclick="BuJo.editWeeklyFocus()">Editar</button>
+                    </div>
+                    <div id="weekly-focus">
+                        ${this.renderWeeklyFocus()}
+                    </div>
+                </div>
+            `;
+        },
+
+        renderWeeklyFocus() {
+            const weekKey = this.getWeekKey(this.state.selectedDate);
+            const focus = this.state.weeklyFocus.find(f => f.week === weekKey) || { items: [] };
+
+            if (focus.items.length === 0) {
+                return `<p style="color: var(--text-light); font-style: italic;">Defina suas 3-5 prioridades para esta semana.</p>`;
+            }
+
+            return `
+                <ol style="padding-left: 20px;">
+                    ${focus.items.map(item => `<li style="margin-bottom: 4px;">${item}</li>`).join('')}
+                </ol>
+            `;
+        },
+
+        // ============================================================================
+        // VIEW: MÊS
+        // ============================================================================
+
+        renderMonthView() {
+            const date = this.state.selectedDate;
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startPadding = firstDay.getDay(); // 0 = domingo
+
+            const monthName = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            return `
+                <div class="card">
+                    <div class="card-title">
+                        <div class="flex gap-8" style="align-items: center;">
+                            <button class="btn btn-icon" id="prev-month">←</button>
+                            <span style="text-transform: capitalize;">${monthName}</span>
+                            <button class="btn btn-icon" id="next-month">→</button>
+                        </div>
+                        <button class="btn btn-small" id="add-event-btn">+ Evento</button>
+                    </div>
+
+                    <!-- Calendário -->
+                    <div class="month-calendar">
+                        ${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => 
+                            `<div class="month-calendar-header">${d}</div>`
+                        ).join('')}
+                        
+                        ${Array(startPadding).fill('').map(() => '<div class="month-calendar-day" style="background: #f9f9f9;"></div>').join('')}
+                        
+                        ${Array.from({ length: lastDay.getDate() }, (_, i) => {
+                            const dayDate = new Date(year, month, i + 1);
+                            const dateStr = this.formatDateKey(dayDate);
+                            const hasEntries = this.state.entries.some(e => e.date === dateStr);
+                            const hasEvents = this.getEventsForDate(dateStr).length > 0;
+                            const isToday = this.isToday(dayDate);
+
+                            return `
+                                <div class="month-calendar-day ${isToday ? 'today' : ''} ${hasEntries || hasEvents ? 'has-events' : ''}" 
+                                     data-date="${dateStr}">
+                                    <span class="day-number">${i + 1}</span>
+                                    ${hasEntries || hasEvents ? '<div class="day-dot"></div>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- Lista do Mês -->
+                <div class="card">
+                    <div class="card-title">
+                        Lista do Mês
+                        <button class="btn btn-small" onclick="BuJo.editMonthlyGoals()">Editar</button>
+                    </div>
+                    ${this.renderMonthlyGoals()}
+                </div>
+
+                <!-- Métricas do Mês (baseado no plano) -->
+                <div class="card">
+                    <div class="card-title">Métricas do Mês</div>
+                    ${this.renderMonthlyMetrics()}
+                </div>
+            `;
+        },
+
+        renderMonthlyGoals() {
+            const monthKey = this.getMonthKey(this.state.selectedDate);
+            const goals = this.state.monthlyGoals.find(g => g.month === monthKey);
+
+            if (!goals || goals.dimensions.length === 0) {
+                return `
+                    <p style="color: var(--text-light); font-style: italic;">
+                        Defina suas metas mensais por dimensão (6 frases).
+                    </p>
+                `;
+            }
+
+            return `
+                <div style="display: grid; gap: 8px;">
+                    ${goals.dimensions.map(d => `
+                        <div style="border-left: 3px solid var(--cor-${d.dimension}); padding-left: 8px;">
+                            <span class="badge badge-${d.dimension}">${d.dimension}</span>
+                            <p style="margin-top: 4px; font-size: 0.9rem;">${d.goal}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        },
+
+        renderMonthlyMetrics() {
+            const monthKey = this.getMonthKey(this.state.selectedDate);
+            const year = this.state.selectedDate.getFullYear();
+            const month = this.state.selectedDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Calcular métricas reais baseadas nos hábitos
+            const metrics = this.dimensions.map(dim => {
+                const dimHabits = this.state.habits.filter(h => h.dimension === dim.id);
+                let totalChecked = 0;
+                let totalPossible = 0;
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    dimHabits.forEach(habit => {
+                        totalPossible++;
+                        if (habit.tracking[dateStr]) totalChecked++;
+                    });
+                }
+
+                return {
+                    dimension: dim.id,
+                    name: dim.name,
+                    checked: totalChecked,
+                    possible: totalPossible,
+                    percent: totalPossible > 0 ? Math.round((totalChecked / totalPossible) * 100) : 0
+                };
+            });
+
+            return `
+                <div style="display: grid; gap: 8px;">
+                    ${metrics.map(m => `
+                        <div class="flex flex-between" style="align-items: center; padding: 4px 0; border-bottom: 1px dotted var(--border-light);">
+                            <span class="badge badge-${m.dimension}">${m.name}</span>
+                            <div style="flex: 1; margin: 0 12px; background: #eee; height: 8px; border-radius: 4px;">
+                                <div style="width: ${m.percent}%; background: var(--cor-${m.dimension}); height: 100%; border-radius: 4px;"></div>
+                            </div>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; min-width: 50px; text-align: right;">
+                                ${m.percent}%
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        },
+
+        // ============================================================================
+        // VIEW: FUTURE LOG
+        // ============================================================================
+
+        renderFutureLog() {
+            const now = new Date();
+            const months = [];
+            
+            // Próximos 12 meses
+            for (let i = 0; i < 12; i++) {
+                const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+                months.push({
+                    key: this.getMonthKey(date),
+                    name: date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                });
+            }
+
+            return `
+                <div class="card">
+                    <div class="card-title">
+                        Future Log
+                        <button class="btn btn-small" id="add-future-btn">+ Adicionar</button>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 16px;">
+                        Compromissos e eventos futuros que ainda não pertencem ao mês atual.
+                    </p>
+
+                    ${months.map(month => {
+                        const entries = this.state.futureLog.filter(e => e.month === month.key);
+                        return `
+                            <div class="future-month">
+                                <div class="future-month-title" style="text-transform: capitalize;">${month.name}</div>
+                                <div class="future-entries">
+                                    ${entries.length === 0 ? 
+                                        '<p style="color: var(--text-light); font-style: italic; font-size: 0.85rem;">Nenhuma entrada</p>' :
+                                        entries.map(e => `
+                                            <div class="entry">
+                                                <span class="entry-symbol">${e.day ? e.day : '–'}</span>
+                                                <div class="entry-content">
+                                                    <div class="entry-text">${e.text}</div>
+                                                    ${e.dimension ? `<span class="badge badge-${e.dimension}">${e.dimension}</span>` : ''}
+                                                </div>
+                                                <button class="entry-delete" onclick="BuJo.deleteFutureEntry('${e.id}')">×</button>
+                                            </div>
+                                        `).join('')
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        },
+
+        // ============================================================================
+        // VIEW: TRACKER
+        // ============================================================================
+
+        renderTracker() {
+            const weekDays = this.getWeekDays(this.state.selectedDate);
+            const weekLabels = weekDays.map(d => ({
+                label: d.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0, 3),
+                date: this.formatDateKey(d),
+                isToday: this.isToday(d)
+            }));
+
+            // Agrupar hábitos por dimensão
+            const habitsByDimension = {};
+            this.dimensions.forEach(dim => {
+                habitsByDimension[dim.id] = this.state.habits.filter(h => h.dimension === dim.id);
+            });
+
+            return `
+                <div class="card">
+                    <div class="card-title">
+                        <div class="flex gap-8" style="align-items: center;">
+                            <button class="btn btn-icon" id="prev-week">←</button>
+                            <span>Tracker Semanal</span>
+                            <button class="btn btn-icon" id="next-week">→</button>
+                        </div>
+                        <button class="btn btn-small" id="add-habit-btn">+ Hábito</button>
+                    </div>
+
+                    <div class="tracker-grid">
+                        <!-- Header -->
+                        <div class="tracker-row">
+                            <div class="tracker-header">Hábito</div>
+                            ${weekLabels.map(d => `
+                                <div class="tracker-header text-center" style="${d.isToday ? 'font-weight: bold; text-decoration: underline;' : ''}">
+                                    ${d.label}
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${this.dimensions.map(dim => {
+                            const dimHabits = habitsByDimension[dim.id];
+                            if (dimHabits.length === 0) return '';
+
+                            return `
+                                <!-- Dimensão: ${dim.name} -->
+                                <div style="grid-column: 1 / -1; padding: 8px 0 4px; border-top: 1px solid var(--border-light); margin-top: 8px;">
+                                    <span class="badge badge-${dim.id}">${dim.name}</span>
+                                </div>
+                                ${dimHabits.map(habit => `
+                                    <div class="tracker-row">
+                                        <div class="tracker-label">${habit.name}</div>
+                                        ${weekLabels.map(d => {
+                                            const checked = habit.tracking[d.date] || false;
+                                            return `
+                                                <div class="tracker-cell ${checked ? 'checked' : ''}"
+                                                     data-habit="${habit.id}"
+                                                     data-date="${d.date}">
+                                                    ${checked ? '✓' : ''}
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                `).join('')}
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- Resumo Semanal -->
+                <div class="card">
+                    <div class="card-title">Resumo da Semana</div>
+                    ${this.renderWeeklySummary(weekLabels)}
+                </div>
+            `;
+        },
+
+        renderWeeklySummary(weekLabels) {
+            const dates = weekLabels.map(d => d.date);
+            
+            const summary = this.dimensions.map(dim => {
+                const dimHabits = this.state.habits.filter(h => h.dimension === dim.id);
+                let checked = 0;
+                let total = dimHabits.length * 7;
+
+                dimHabits.forEach(habit => {
+                    dates.forEach(date => {
+                        if (habit.tracking[date]) checked++;
+                    });
+                });
+
+                return {
+                    dimension: dim.id,
+                    name: dim.name,
+                    checked,
+                    total,
+                    percent: total > 0 ? Math.round((checked / total) * 100) : 0
+                };
+            });
+
+            return `
+                <div style="display: grid; gap: 8px;">
+                    ${summary.map(s => `
+                        <div class="flex flex-between" style="align-items: center;">
+                            <span class="badge badge-${s.dimension}">${s.name}</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                                ${s.checked}/${s.total} (${s.percent}%)
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        },
+
+        // ============================================================================
+        // VIEW: PROJETOS
+        // ============================================================================
+
+        renderProjects() {
+            return `
+                <div class="card">
+                    <div class="card-title">
+                        Projetos Ativos
+                        <button class="btn btn-small" id="add-project-btn">+ Novo</button>
+                    </div>
+
+                    ${this.state.projects.length === 0 ? `
+                        <p style="color: var(--text-light); font-style: italic; text-align: center; padding: 20px 0;">
+                            Nenhum projeto cadastrado. Crie seu primeiro projeto!
+                        </p>
+                    ` : this.state.projects.map(project => `
+                        <div class="project-card" style="border-left-color: var(--cor-${project.dimension || 'academico'});">
+                            <div class="project-title">
+                                ${project.name}
+                                ${project.dimension ? `<span class="badge badge-${project.dimension}">${project.dimension}</span>` : ''}
+                            </div>
+                            <div class="project-meta">
+                                ${project.status || 'Em andamento'} • Criado em ${new Date(project.createdAt).toLocaleDateString('pt-BR')}
+                            </div>
+                            
+                            ${project.objective ? `
+                                <div class="project-section">
+                                    <div class="project-section-title">Objetivo</div>
+                                    <p>${project.objective}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${project.nextAction ? `
+                                <div class="project-section">
+                                    <div class="project-section-title">Próxima Ação</div>
+                                    <p><strong>${this.symbols.task}</strong> ${project.nextAction}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${project.tasks && project.tasks.length > 0 ? `
+                                <div class="project-section">
+                                    <div class="project-section-title">Tarefas</div>
+                                    ${project.tasks.map(t => `
+                                        <div style="font-size: 0.9rem;">
+                                            ${t.done ? this.symbols.taskDone : this.symbols.task} ${t.text}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+
+                            <div class="flex gap-8 mt-8">
+                                <button class="btn btn-small" onclick="BuJo.editProject('${project.id}')">Editar</button>
+                                <button class="btn btn-small" onclick="BuJo.deleteProject('${project.id}')">Excluir</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Projetos do Plano de 5 Anos -->
+                <div class="card">
+                    <div class="card-title">Projetos de Referência (Plano 2026)</div>
+                    <div style="font-size: 0.9rem; color: var(--text-light);">
+                        <p class="mb-8"><strong>Acadêmico:</strong> Mestrado IME-USP — Créditos + 1 entregável/mês</p>
+                        <p class="mb-8"><strong>Línguas:</strong> Gradus Primus (Latim) + Japonês N5→N4</p>
+                        <p class="mb-8"><strong>Literatura:</strong> Obra completa de Machado de Assis</p>
+                        <p class="mb-8"><strong>Físico:</strong> TM (Seg/Qua) + Musculação em casa</p>
+                        <p><strong>Financeiro:</strong> Acumular R$ 22k (50% da reserva)</p>
+                    </div>
+                </div>
+            `;
+        },
+
+        // ============================================================================
+        // VIEW: ÍNDICE
+        // ============================================================================
+
+        renderIndex() {
+            const collections = [
+                { name: 'Registro Diário', view: 'dia', description: 'Captura rápida do dia a dia' },
+                { name: 'Visão Semanal', view: 'semana', description: 'Organização do esforço' },
+                { name: 'Pacote Mensal', view: 'mes', description: 'Calendário e metas do mês' },
+                { name: 'Future Log', view: 'future', description: 'Compromissos futuros' },
+                { name: 'Tracker de Hábitos', view: 'tracker', description: 'Acompanhamento das 6 dimensões' },
+                { name: 'Projetos', view: 'projetos', description: 'Coisas com começo-meio-fim' },
+            ];
+
+            return `
+                <div class="card">
+                    <div class="card-title">Índice</div>
+                    
+                    <!-- Legenda Master -->
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f5f5f5; border: 1px solid var(--border-light);">
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 8px;">
+                            Legenda (Key)
+                        </div>
+                        <div class="key-legend" style="border: none; margin: 0; padding: 0;">
+                            <div class="key-item"><span class="key-symbol">${this.symbols.task}</span> tarefa</div>
+                            <div class="key-item"><span class="key-symbol">${this.symbols.taskDone}</span> feito</div>
+                            <div class="key-item"><span class="key-symbol">${this.symbols.taskMigrated}</span> migrado</div>
+                            <div class="key-item"><span class="key-symbol">${this.symbols.taskScheduled}</span> agendado</div>
+                            <div class="key-item"><span class="key-symbol">${this.symbols.event}</span> evento</div>
+                            <div class="key-item"><span class="key-symbol">${this.symbols.note}</span> nota</div>
+                            <div class="key-item"><span class="key-symbol">${this.symbols.important}</span> importante</div>
+                        </div>
+                    </div>
+
+                    <!-- Coleções -->
+                    ${collections.map(col => `
+                        <div class="index-item" onclick="BuJo.setView('${col.view}')">
+                            <div>
+                                <strong>${col.name}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-light);">${col.description}</div>
+                            </div>
+                            <span class="index-page">→</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Dimensões do Plano -->
+                <div class="card">
+                    <div class="card-title">Dimensões do Plano de 5 Anos</div>
+                    <div style="display: grid; gap: 8px;">
+                        ${this.dimensions.map(dim => `
+                            <div class="flex gap-8" style="align-items: center;">
+                                <span class="badge badge-${dim.id}" style="min-width: 80px;">${dim.name}</span>
+                                <span style="font-size: 0.85rem; color: var(--text-light);">
+                                    ${this.getDimensionDescription(dim.id)}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Estatísticas -->
+                <div class="card">
+                    <div class="card-title">Estatísticas</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                        <p>Total de entradas: ${this.state.entries.length}</p>
+                        <p>Projetos ativos: ${this.state.projects.length}</p>
+                        <p>Dias com plano registrado: ${Object.keys(this.state.spiritualHabits).length}</p>
+                        <p>Eventos no Future Log: ${this.state.futureLog.length}</p>
+                    </div>
+                </div>
+            `;
+        },
+
+        getDimensionDescription(dimId) {
+            const descriptions = {
+                espiritual: 'Plano de vida, oração, formação',
+                linguas: 'Latim (Gradus Primus) + Japonês',
+                academico: 'Mestrado IME-USP, estudo profundo',
+                fisico: 'Tênis de mesa + Musculação',
+                literatura: 'Machado de Assis, Dostoievski',
+                financeiro: 'Poupança, orçamento, investimentos'
+            };
+            return descriptions[dimId] || '';
+        },
+
+        // ============================================================================
+        // AÇÕES
+        // ============================================================================
+
+        addEntry() {
+            const input = document.getElementById('add-entry-input');
+            const typeSelect = document.getElementById('add-entry-type');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const entry = {
+                id: this.generateId(),
+                date: this.formatDateKey(this.state.selectedDate),
+                type: typeSelect.value,
+                text: text,
+                status: 'pending',
+                important: false,
+                dimension: null,
+                createdAt: new Date().toISOString()
+            };
+
+            this.state.entries.push(entry);
+            this.saveState();
+            
+            input.value = '';
+            this.render();
+        },
+
+        cycleEntrySymbol(entryId) {
+            const entry = this.state.entries.find(e => e.id === entryId);
+            if (!entry) return;
+
+            if (entry.type === 'task') {
+                // Ciclo: pending → done → migrated → pending
+                const statusCycle = ['pending', 'done', 'migrated'];
+                const currentIndex = statusCycle.indexOf(entry.status);
+                entry.status = statusCycle[(currentIndex + 1) % statusCycle.length];
+            } else if (entry.type === 'note' || entry.type === 'event') {
+                // Toggle importante
+                entry.important = !entry.important;
+            }
+
+            this.saveState();
+            this.render();
+        },
+
+        deleteEntry(entryId) {
+            this.state.entries = this.state.entries.filter(e => e.id !== entryId);
+            this.saveState();
+            this.render();
+        },
+
+        toggleSpiritualHabit(habitId, dateStr) {
+            if (!this.state.spiritualHabits[dateStr]) {
+                this.state.spiritualHabits[dateStr] = {};
+            }
+            this.state.spiritualHabits[dateStr][habitId] = !this.state.spiritualHabits[dateStr][habitId];
+            this.saveState();
+            this.render();
+        },
+
+        updateStudyHabit(habitId, dateStr, minutes) {
+            if (!this.state.studyHabits[dateStr]) {
+                this.state.studyHabits[dateStr] = {};
+            }
+            this.state.studyHabits[dateStr][habitId] = minutes;
+            this.saveState();
+        },
+
+        toggleMortification(dateStr, index) {
+            if (this.state.mortifications[dateStr] && this.state.mortifications[dateStr][index]) {
+                this.state.mortifications[dateStr][index].done = !this.state.mortifications[dateStr][index].done;
+                this.saveState();
+                this.render();
+            }
+        },
+
+        showAddMortificationModal() {
+            const dateStr = this.formatDateKey(this.state.selectedDate);
+            this.showModal(`
+                <div class="modal-title">Adicionar Mortificação</div>
+                <form id="mort-form">
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="mort-text" required placeholder="Ex: Jejum até o almoço">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Adicionar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('mort-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = document.getElementById('mort-text').value.trim();
+                if (text) {
+                    if (!this.state.mortifications[dateStr]) {
+                        this.state.mortifications[dateStr] = [];
+                    }
+                    this.state.mortifications[dateStr].push({ text, done: false });
+                    this.saveState();
+                    this.closeModal();
+                    this.render();
+                }
+            });
+        },
+
+        toggleHabit(habitId, dateStr) {
+            const habit = this.state.habits.find(h => h.id === habitId);
+            if (!habit) return;
+
+            habit.tracking[dateStr] = !habit.tracking[dateStr];
+            this.saveState();
+            this.render();
+        },
+
+        navigateDate(delta) {
+            this.state.selectedDate = new Date(
+                this.state.selectedDate.getTime() + delta * 24 * 60 * 60 * 1000
+            );
+            this.render();
+        },
+
+        navigateWeek(delta) {
+            this.state.selectedDate = new Date(
+                this.state.selectedDate.getTime() + delta * 7 * 24 * 60 * 60 * 1000
+            );
+            this.render();
+        },
+
+        navigateMonth(delta) {
+            const current = this.state.selectedDate;
+            this.state.selectedDate = new Date(
+                current.getFullYear(),
+                current.getMonth() + delta,
+                1
+            );
+            this.render();
+        },
+
+        // ============================================================================
+        // MODAIS
+        // ============================================================================
+
+        showModal(content) {
+            document.getElementById('modal-content').innerHTML = content;
+            document.getElementById('modal-overlay').classList.add('active');
+        },
+
+        closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        },
+
+        showAddProjectModal() {
+            this.showModal(`
+                <div class="modal-title">Novo Projeto</div>
+                <form id="project-form">
+                    <div class="form-group">
+                        <label>Nome do Projeto</label>
+                        <input type="text" id="project-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Dimensão</label>
+                        <select id="project-dimension">
+                            <option value="">Nenhuma</option>
+                            ${this.dimensions.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Objetivo</label>
+                        <textarea id="project-objective" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Próxima Ação</label>
+                        <input type="text" id="project-next-action">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Criar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('project-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.createProject();
+            });
+        },
+
+        createProject() {
+            const project = {
+                id: this.generateId(),
+                name: document.getElementById('project-name').value,
+                dimension: document.getElementById('project-dimension').value || null,
+                objective: document.getElementById('project-objective').value,
+                nextAction: document.getElementById('project-next-action').value,
+                tasks: [],
+                status: 'Em andamento',
+                createdAt: new Date().toISOString()
+            };
+
+            this.state.projects.push(project);
+            this.saveState();
+            this.closeModal();
+            this.render();
+        },
+
+        deleteProject(projectId) {
+            if (confirm('Tem certeza que deseja excluir este projeto?')) {
+                this.state.projects = this.state.projects.filter(p => p.id !== projectId);
+                this.saveState();
+                this.render();
+            }
+        },
+
+        editProject(projectId) {
+            const project = this.state.projects.find(p => p.id === projectId);
+            if (!project) return;
+
+            this.showModal(`
+                <div class="modal-title">Editar Projeto</div>
+                <form id="project-form">
+                    <div class="form-group">
+                        <label>Nome do Projeto</label>
+                        <input type="text" id="project-name" value="${project.name}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Dimensão</label>
+                        <select id="project-dimension">
+                            <option value="">Nenhuma</option>
+                            ${this.dimensions.map(d => `<option value="${d.id}" ${project.dimension === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Objetivo</label>
+                        <textarea id="project-objective" rows="2">${project.objective || ''}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Próxima Ação</label>
+                        <input type="text" id="project-next-action" value="${project.nextAction || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="project-status">
+                            <option value="Em andamento" ${project.status === 'Em andamento' ? 'selected' : ''}>Em andamento</option>
+                            <option value="Pausado" ${project.status === 'Pausado' ? 'selected' : ''}>Pausado</option>
+                            <option value="Concluído" ${project.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Salvar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('project-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                project.name = document.getElementById('project-name').value;
+                project.dimension = document.getElementById('project-dimension').value || null;
+                project.objective = document.getElementById('project-objective').value;
+                project.nextAction = document.getElementById('project-next-action').value;
+                project.status = document.getElementById('project-status').value;
+                this.saveState();
+                this.closeModal();
+                this.render();
+            });
+        },
+
+        showAddFutureModal() {
+            const now = new Date();
+            const months = [];
+            for (let i = 0; i < 12; i++) {
+                const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+                months.push({
+                    key: this.getMonthKey(date),
+                    name: date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                });
+            }
+
+            this.showModal(`
+                <div class="modal-title">Adicionar ao Future Log</div>
+                <form id="future-form">
+                    <div class="form-group">
+                        <label>Mês</label>
+                        <select id="future-month" required>
+                            ${months.map(m => `<option value="${m.key}">${m.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dia (opcional)</label>
+                        <input type="number" id="future-day" min="1" max="31" placeholder="Ex: 15">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="future-text" required placeholder="Ex: Consulta dentista">
+                    </div>
+                    <div class="form-group">
+                        <label>Dimensão (opcional)</label>
+                        <select id="future-dimension">
+                            <option value="">Nenhuma</option>
+                            ${this.dimensions.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Adicionar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('future-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addFutureEntry();
+            });
+        },
+
+        addFutureEntry() {
+            const entry = {
+                id: this.generateId(),
+                month: document.getElementById('future-month').value,
+                day: document.getElementById('future-day').value || null,
+                text: document.getElementById('future-text').value,
+                dimension: document.getElementById('future-dimension').value || null,
+                createdAt: new Date().toISOString()
+            };
+
+            this.state.futureLog.push(entry);
+            this.saveState();
+            this.closeModal();
+            this.render();
+        },
+
+        deleteFutureEntry(entryId) {
+            this.state.futureLog = this.state.futureLog.filter(e => e.id !== entryId);
+            this.saveState();
+            this.render();
+        },
+
+        showAddHabitModal() {
+            this.showModal(`
+                <div class="modal-title">Adicionar Hábito</div>
+                <form id="habit-form">
+                    <div class="form-group">
+                        <label>Nome do Hábito</label>
+                        <input type="text" id="habit-name" required placeholder="Ex: Anki 10min">
+                    </div>
+                    <div class="form-group">
+                        <label>Dimensão</label>
+                        <select id="habit-dimension" required>
+                            ${this.dimensions.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Adicionar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('habit-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addHabit();
+            });
+        },
+
+        addHabit() {
+            const habit = {
+                id: this.generateId(),
+                name: document.getElementById('habit-name').value,
+                dimension: document.getElementById('habit-dimension').value,
+                tracking: {}
+            };
+
+            this.state.habits.push(habit);
+            this.saveState();
+            this.closeModal();
+            this.render();
+        },
+
+        editWeeklyFocus() {
+            const weekKey = this.getWeekKey(this.state.selectedDate);
+            const focus = this.state.weeklyFocus.find(f => f.week === weekKey) || { items: ['', '', '', '', ''] };
+
+            this.showModal(`
+                <div class="modal-title">Foco da Semana</div>
+                <form id="focus-form">
+                    ${[1,2,3,4,5].map(i => `
+                        <div class="form-group">
+                            <label>Prioridade ${i}</label>
+                            <input type="text" id="focus-${i}" value="${focus.items[i-1] || ''}" placeholder="Ex: Fechar capítulo 5 do Gradus">
+                        </div>
+                    `).join('')}
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Salvar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('focus-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const items = [1,2,3,4,5].map(i => document.getElementById(`focus-${i}`).value).filter(Boolean);
+                
+                const existing = this.state.weeklyFocus.find(f => f.week === weekKey);
+                if (existing) {
+                    existing.items = items;
+                } else {
+                    this.state.weeklyFocus.push({ week: weekKey, items });
+                }
+                
+                this.saveState();
+                this.closeModal();
+                this.render();
+            });
+        },
+
+        editMonthlyGoals() {
+            const monthKey = this.getMonthKey(this.state.selectedDate);
+            const goals = this.state.monthlyGoals.find(g => g.month === monthKey) || { dimensions: [] };
+
+            const getGoal = (dimId) => {
+                const found = goals.dimensions.find(d => d.dimension === dimId);
+                return found ? found.goal : '';
+            };
+
+            this.showModal(`
+                <div class="modal-title">Metas do Mês</div>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
+                    Formato: "Vou entregar X até dia Y, fazendo Z por semana."
+                </p>
+                <form id="goals-form">
+                    ${this.dimensions.map(dim => `
+                        <div class="form-group">
+                            <label><span class="badge badge-${dim.id}">${dim.name}</span></label>
+                            <textarea id="goal-${dim.id}" rows="2" placeholder="Meta para ${dim.name}...">${getGoal(dim.id)}</textarea>
+                        </div>
+                    `).join('')}
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Salvar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('goals-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const dimensions = this.dimensions
+                    .map(dim => ({
+                        dimension: dim.id,
+                        goal: document.getElementById(`goal-${dim.id}`).value
+                    }))
+                    .filter(d => d.goal);
+
+                const existing = this.state.monthlyGoals.find(g => g.month === monthKey);
+                if (existing) {
+                    existing.dimensions = dimensions;
+                } else {
+                    this.state.monthlyGoals.push({ month: monthKey, dimensions });
+                }
+
+                this.saveState();
+                this.closeModal();
+                this.render();
+            });
+        },
+
+        showAddEventModal() {
+            this.showModal(`
+                <div class="modal-title">Adicionar Evento</div>
+                <form id="event-form">
+                    <div class="form-group">
+                        <label>Título</label>
+                        <input type="text" id="event-title" required placeholder="Ex: Reunião com orientador">
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="event-date" required value="${this.formatDateKey(this.state.selectedDate)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Horário (opcional)</label>
+                        <input type="time" id="event-time">
+                    </div>
+                    <div class="form-group">
+                        <label>Local (opcional)</label>
+                        <input type="text" id="event-location" placeholder="Ex: IME-USP Sala 123">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" onclick="BuJo.closeModal()">Cancelar</button>
+                        <button type="submit" class="btn">Criar</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('event-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.createCalendarEvent();
+            });
+        },
+
+        async createCalendarEvent() {
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value;
+            const location = document.getElementById('event-location').value;
+
+            // Criar evento local
+            const localEvent = {
+                id: this.generateId(),
+                summary: title,
+                date: date,
+                time: time || null,
+                location: location || null,
+                source: 'local'
+            };
+
+            // Tentar criar no Google Calendar
+            try {
+                const response = await fetch(`${API_URL}/api/calendar/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        summary: title,
+                        start: time ? `${date}T${time}:00` : date,
+                        end: time ? `${date}T${time}:00` : date,
+                        location: location
+                    })
+                });
+
+                if (response.ok) {
+                    const created = await response.json();
+                    if (created && created.id) {
+                        localEvent.googleId = created.id;
+                        localEvent.source = 'google';
+                    } else {
+                        console.error('Resposta da API não contém ID do evento criado');
+                    }
+                } else {
+                    console.error('Falha ao criar evento no Google Calendar. Status:', response.status);
+                }
+            } catch (err) {
+                console.error('Evento criado apenas localmente:', err);
+            }
+
+            this.state.calendarEvents.push(localEvent);
+            this.saveState();
+            this.closeModal();
+            this.render();
+        },
+
+        // ============================================================================
+        // GOOGLE CALENDAR
+        // ============================================================================
+
+        async loadCalendarEvents() {
+            try {
+                const response = await fetch(`${API_URL}/api/calendar/events?days=30`);
+                if (response.ok) {
+                    const events = await response.json();
+                    // Processar eventos do Google
+                    events.forEach(ev => {
+                        const dateStr = ev.start.date || ev.start.dateTime?.split('T')[0];
+                        const time = ev.start.dateTime ?
+                            new Date(ev.start.dateTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) :
+                            null;
+
+                        // Verificar se já existe
+                        const existing = this.state.calendarEvents.find(e => e.googleId === ev.id);
+                        if (!existing) {
+                            this.state.calendarEvents.push({
+                                id: ev.id,
+                                googleId: ev.id,
+                                summary: ev.summary,
+                                date: dateStr,
+                                time: time,
+                                location: ev.location || null,
+                                source: 'google'
+                            });
+                        }
+                    });
+                    this.saveState();
+                    this.render();
+                } else {
+                    console.error('Erro ao carregar eventos do Google Calendar. Status:', response.status);
+                }
+            } catch (err) {
+                console.error('Não foi possível carregar eventos do Google Calendar:', err);
+            }
+        },
+
+        getEventsForDate(dateStr) {
+            return this.state.calendarEvents.filter(ev => ev.date === dateStr);
+        },
+
+        // ============================================================================
+        // UTILITÁRIOS
+        // ============================================================================
+
+        generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        },
+
+        formatDateKey(date) {
+            const d = new Date(date);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        },
+
+        getMonthKey(date) {
+            const d = new Date(date);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        },
+
+        getWeekKey(date) {
+            const d = new Date(date);
+            const startOfYear = new Date(d.getFullYear(), 0, 1);
+            const weekNumber = Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+            return `${d.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
+        },
+
+        getWeekDays(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day; // Ajustar para domingo como início
+            
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+                weekDays.push(new Date(d.getFullYear(), d.getMonth(), diff + i));
+            }
+            return weekDays;
+        },
+
+        isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        },
+
+        isThirdSunday(date) {
+            if (date.getDay() !== 0) return false; // Não é domingo
+            const dayOfMonth = date.getDate();
+            return dayOfMonth >= 15 && dayOfMonth <= 21;
+        },
+
+        getSpecialHabitsForDay(dayOfWeek) {
+            // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
+            switch(dayOfWeek) {
+                case 2: // Terça
+                    return [{ id: 'turno', name: 'Dia de Turno' }];
+                case 3: // Quarta
+                    return [
+                        { id: 'guarda', name: 'Dia de Guarda' },
+                        { id: 'disciplina', name: 'Disciplina' }
+                    ];
+                case 6: // Sábado
+                    return [
+                        { id: 'oracao-nossa-senhora', name: 'Oração a Nossa Senhora' },
+                        { id: 'mortificacao-extra', name: 'Mortificação Extra' }
+                    ];
+                default:
+                    return [];
+            }
+        },
+
+        getDayName(dayOfWeek) {
+            const names = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            return names[dayOfWeek];
+        }
+    };
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => BuJo.init());
+    </script>
+</body>
+</html>
