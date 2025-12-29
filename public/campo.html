@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Campo Minado Kindle</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #000000;
+            --cell-size: 35px;
+            --font-main: "Amazon Ember", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding-top: 10px;
+        }
+
+        .header {
+            text-align: center;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+
+        .levels {
+            display: flex;
+            /* gap: 5px; -> REMOVIDO (não funciona no Kindle) */
+            margin-bottom: 20px;
+        }
+
+        .levels button {
+            margin-right: 5px;
+        }
+
+        .levels button:last-child {
+            margin-right: 0;
+        }
+
+        .levels button {
+            padding: 5px 10px;
+            font-size: 12px;
+            border: 1px solid #000;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 95%;
+            max-width: 400px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+
+        #board-container {
+            overflow: auto;
+            max-width: 100%;
+            padding: 5px;
+        }
+
+        #board {
+            display: grid;
+            /* gap: 2px; -> REMOVIDO (não funciona no Kindle) */
+            grid-gap: 2px; /* Alternativa mais compatível */
+            background-color: var(--border-color);
+            border: 2px solid var(--border-color);
+            margin: 0 auto;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .cell.hidden {
+            background-color: #e0e0e0;
+        }
+
+        .cell.revealed {
+            background-color: #ffffff;
+        }
+
+        .cell.flagged::after {
+            content: "F";
+        }
+
+        .cell.mine {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            /* gap: 10px; -> REMOVIDO (não funciona no Kindle) */
+            width: 95%;
+            max-width: 400px;
+            justify-content: center;
+        }
+
+        .controls button {
+            margin-right: 10px;
+        }
+
+        .controls button:last-child {
+            margin-right: 0;
+        }
+
+        button {
+            background-color: #ffffff;
+            border: 2px solid #000;
+            color: #000;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        button.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        #message {
+            margin-top: 10px;
+            font-weight: bold;
+            height: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Campo Minado</h1>
+    </div>
+
+    <div class="levels">
+        <button id="lvl-easy" onclick="changeLevel('easy')">FÁCIL</button>
+        <button id="lvl-medium" onclick="changeLevel('medium')">MÉDIO</button>
+        <button id="lvl-hard" onclick="changeLevel('hard')">DIFÍCIL</button>
+    </div>
+
+    <div class="stats">
+        <span>Minas: <span id="mine-count">10</span></span>
+        <span>Tempo: <span id="timer">0</span>s</span>
+    </div>
+
+    <div id="board-container">
+        <div id="board"></div>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="controls">
+        <button id="btn-dig" class="active" onclick="setMode('dig')">ESCAVAR</button>
+        <button id="btn-flag" onclick="setMode('flag')">MARCAR (F)</button>
+    </div>
+    
+    <div class="controls">
+        <button onclick="initGame()">REINICIAR</button>
+    </div>
+
+    <script>
+        const LEVELS = {
+            easy: { rows: 9, cols: 9, mines: 10, cellSize: '35px' },
+            medium: { rows: 12, cols: 12, mines: 20, cellSize: '30px' },
+            hard: { rows: 15, cols: 15, mines: 40, cellSize: '24px' }
+        };
+
+        let currentLevel = 'easy';
+        let rows, cols, minesCount;
+        let board = [];
+        let gameActive = true;
+        let mode = 'dig';
+        let timerInterval;
+        let timeElapsed = 0;
+        let minesRemaining = 0;
+        let firstClick = true;
+
+        const boardElement = document.getElementById('board');
+        const mineDisplay = document.getElementById('mine-count');
+        const timerDisplay = document.getElementById('timer');
+        const messageDisplay = document.getElementById('message');
+
+        function changeLevel(level) {
+            currentLevel = level;
+            // Atualizar UI dos botões de nível
+            document.querySelectorAll('.levels button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('lvl-' + level).classList.add('active');
+            initGame();
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.getElementById('btn-dig').classList.toggle('active', mode === 'dig');
+            document.getElementById('btn-flag').classList.toggle('active', mode === 'flag');
+        }
+
+        function initGame() {
+            const config = LEVELS[currentLevel];
+            rows = config.rows;
+            cols = config.cols;
+            minesCount = config.mines;
+            document.documentElement.style.setProperty('--cell-size', config.cellSize);
+
+            gameActive = true;
+            firstClick = true;
+            timeElapsed = 0;
+            minesRemaining = minesCount;
+            clearInterval(timerInterval);
+            
+            timerDisplay.innerText = "0";
+            mineDisplay.innerText = minesCount;
+            messageDisplay.innerText = "";
+            
+            // Ajustar grid CSS
+            boardElement.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
+            
+            createBoard();
+            render();
+        }
+
+        function createBoard() {
+            board = [];
+            for (let r = 0; r < rows; r++) {
+                board[r] = [];
+                for (let c = 0; c < cols; c++) {
+                    board[r][c] = {
+                        isMine: false,
+                        revealed: false,
+                        flagged: false,
+                        neighborCount: 0
+                    };
+                }
+            }
+        }
+
+        function placeMines(exR, exC) {
+            let placed = 0;
+            while (placed < minesCount) {
+                let r = Math.floor(Math.random() * rows);
+                let c = Math.floor(Math.random() * cols);
+                
+                // Área de segurança 3x3 no primeiro clique
+                const isSafeZone = Math.abs(r - exR) <= 1 && Math.abs(c - exC) <= 1;
+                
+                if (!board[r][c].isMine && !isSafeZone) {
+                    board[r][c].isMine = true;
+                    placed++;
+                }
+            }
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (!board[r][c].isMine) {
+                        board[r][c].neighborCount = countMinesAround(r, c);
+                    }
+                }
+            }
+        }
+
+        function countMinesAround(row, col) {
+            let count = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    let nr = row + dr;
+                    let nc = col + dc;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc].isMine) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        function handleCellClick(r, c) {
+            if (!gameActive || board[r][c].revealed) return;
+
+            if (mode === 'flag') {
+                toggleFlag(r, c);
+            } else {
+                if (board[r][c].flagged) return;
+
+                if (firstClick) {
+                    firstClick = false;
+                    placeMines(r, c);
+                    startTimer();
+                }
+
+                if (board[r][c].isMine) {
+                    revealAll();
+                    gameOver(false);
+                } else {
+                    revealCell(r, c);
+                    checkWin();
+                }
+            }
+            render();
+        }
+
+        function toggleFlag(r, c) {
+            board[r][c].flagged = !board[r][c].flagged;
+            minesRemaining += board[r][c].flagged ? -1 : 1;
+            mineDisplay.innerText = minesRemaining;
+        }
+
+        function revealCell(r, c) {
+            if (r < 0 || r >= rows || c < 0 || c >= cols || board[r][c].revealed || board[r][c].flagged) return;
+
+            board[r][c].revealed = true;
+
+            if (board[r][c].neighborCount === 0) {
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        revealCell(r + dr, c + dc);
+                    }
+                }
+            }
+        }
+
+        function revealAll() {
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (board[r][c].isMine) board[r][c].revealed = true;
+                }
+            }
+        }
+
+        function checkWin() {
+            let unrevealedSafe = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (!board[r][c].isMine && !board[r][c].revealed) unrevealedSafe++;
+                }
+            }
+            if (unrevealedSafe === 0) gameOver(true);
+        }
+
+        function gameOver(won) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            messageDisplay.innerText = won ? "VITÓRIA!" : "FIM DE JOGO!";
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                timerDisplay.innerText = timeElapsed;
+            }, 1000);
+        }
+
+        function render() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    
+                    const data = board[r][c];
+
+                    if (data.revealed) {
+                        cell.classList.add('revealed');
+                        if (data.isMine) {
+                            cell.classList.add('mine');
+                            cell.innerText = "X";
+                        } else if (data.neighborCount > 0) {
+                            cell.innerText = data.neighborCount;
+                        }
+                    } else {
+                        cell.classList.add('hidden');
+                        if (data.flagged) {
+                            cell.classList.add('flagged');
+                        }
+                    }
+
+                    cell.addEventListener('click', () => handleCellClick(r, c));
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Iniciar no fácil por padrão
+        changeLevel('easy');
+    </script>
+</body>
+</html>

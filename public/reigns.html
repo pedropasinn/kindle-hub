@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reigns - Kindle Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            background-color: #f4f1ea;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            user-select: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0,0,0,0.2);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .king-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .crown-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .king-name {
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .dynasty {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-btn {
+            padding: 8px;
+            border: 1px solid black;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-btn:hover {
+            background: black;
+            color: white;
+        }
+
+        .year-display {
+            text-align: right;
+        }
+
+        .year-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+        }
+
+        .year-number {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border: 2px solid black;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .stat-bar-container {
+            width: 48px;
+            height: 6px;
+            background: #ccc;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .stat-bar {
+            height: 100%;
+            background: black;
+            transition: width 0.3s;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Game Area */
+        .game-area {
+            flex: 1;
+        }
+
+        .card-container {
+            transition: opacity 0.15s;
+        }
+
+        .card-container.animating {
+            opacity: 0;
+        }
+
+        /* Character Header */
+        .character-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .character-icon {
+            width: 56px;
+            height: 56px;
+            border: 2px solid black;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 2px 2px 0 0 rgba(0,0,0,1);
+        }
+
+        .character-info .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+        }
+
+        .character-info .name {
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        /* Dialogue Box */
+        .dialogue-box {
+            background: white;
+            border: 2px solid black;
+            padding: 20px;
+            box-shadow: 4px 4px 0 0 rgba(0,0,0,1);
+            margin-bottom: 24px;
+        }
+
+        .dialogue-text {
+            font-size: 16px;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        /* Choice Buttons */
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .choice-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .choice-btn-inner {
+            padding: 12px 8px;
+            border: 2px solid black;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 2px 2px 0 0 rgba(0,0,0,1);
+            transition: all 0.1s;
+        }
+
+        .choice-btn:hover:not(:disabled) .choice-btn-inner {
+            background: black;
+            color: white;
+        }
+
+        .choice-btn:active:not(:disabled) .choice-btn-inner {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .choice-btn-inner span {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 1px;
+            font-family: Georgia, serif;
+        }
+
+        .choice-text {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+            min-height: 36px;
+        }
+
+        /* Game Over Screen */
+        .game-over {
+            background: white;
+            border: 2px solid black;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 6px 6px 0 0 rgba(0,0,0,1);
+        }
+
+        .skull-icon {
+            width: 64px;
+            height: 64px;
+            background: black;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+        }
+
+        .game-over h2 {
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .king-epithet {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .divider {
+            width: 48px;
+            height: 2px;
+            background: black;
+            margin: 0 auto 16px;
+        }
+
+        .death-message {
+            font-size: 14px;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .reign-duration {
+            background: #f0f0f0;
+            border: 1px solid rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .reign-duration strong {
+            font-size: 18px;
+        }
+
+        .game-over-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: black;
+            color: white;
+            border: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: Georgia, serif;
+            transition: all 0.1s;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: black;
+            border: 2px solid black;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: Georgia, serif;
+            transition: all 0.1s;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-secondary:active {
+            transform: translateY(2px);
+        }
+
+        /* Footer */
+        .footer {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 24px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #999;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 100;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal {
+            background: #f4f1ea;
+            border: 2px solid black;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 6px 6px 0 0 rgba(0,0,0,1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 2px solid black;
+        }
+
+        .modal-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .close-btn {
+            padding: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            background: black;
+            color: white;
+        }
+
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 32px 0;
+        }
+
+        .reign-card {
+            background: white;
+            border: 1px solid black;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .reign-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .reign-card h3 {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .reign-card .epithet {
+            font-size: 12px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .reign-years {
+            font-size: 12px;
+            font-weight: bold;
+            background: black;
+            color: white;
+            padding: 2px 8px;
+        }
+
+        .reign-card p {
+            font-size: 11px;
+            color: #444;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            padding: 16px;
+            border-top: 1px solid rgba(0,0,0,0.2);
+            background: #e8e8e8;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* Icons (simple text-based) */
+        .icon {
+            font-style: normal;
+        }
+
+        /* SVG Icons */
+        .svg-icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            fill: currentColor;
+            vertical-align: middle;
+        }
+
+        .crown-icon .svg-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .character-icon .svg-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        .stat-icon .svg-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .skull-icon .svg-icon {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Icon Definitions -->
+    <svg style="display: none;">
+        <defs>
+            <symbol id="icon-crown" viewBox="0 0 24 24">
+                <path d="M12 2L15 8L21 9L16.5 13L18 19L12 16L6 19L7.5 13L3 9L9 8L12 2Z"/>
+            </symbol>
+            <symbol id="icon-scroll" viewBox="0 0 24 24">
+                <path d="M6 2C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H7C8.1 22 9 21.1 9 20V19H15V20C15 21.1 15.9 22 17 22H18C19.1 22 20 21.1 20 20V4C20 2.9 19.1 2 18 2H17C15.9 2 15 2.9 15 4V5H9V4C9 2.9 8.1 2 7 2H6M9 7H15V9H9V7M9 11H15V13H9V11M9 15H15V17H9V15Z"/>
+            </symbol>
+            <symbol id="icon-church" viewBox="0 0 24 24">
+                <path d="M18 12V22H14V16H10V22H6V12H2L12 3L22 12H18M12 5.7L8 9.4V20H9V15C9 14.45 9.45 14 10 14H14C14.55 14 15 14.45 15 15V20H16V9.4L12 5.7M11 6H13V8H15V10H13V12H11V10H9V8H11V6Z"/>
+            </symbol>
+            <symbol id="icon-people" viewBox="0 0 24 24">
+                <path d="M16 17V19H2V17S2 13 9 13 16 17 16 17M12.5 7.5A3.5 3.5 0 1 0 9 11A3.5 3.5 0 0 0 12.5 7.5M15.94 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13M15 4A3.39 3.39 0 0 0 13.07 4.59A5 5 0 0 1 13.07 10.41A3.39 3.39 0 0 0 15 11A3.5 3.5 0 0 0 15 4Z"/>
+            </symbol>
+            <symbol id="icon-sword" viewBox="0 0 24 24">
+                <path d="M6.92 5L8 6.07L3.5 10.57L5.64 12.71L6.71 11.64L9.21 14.14L8.14 15.21L10.28 17.35L11.35 16.28L12.78 17.71L11.71 18.78L13.85 20.92L18.35 16.42L19.42 17.5L20.5 16.42L13.07 9L14.5 7.57L6.92 5M16.91 16.42L11.64 11.14L16.92 5.86L22.21 11.14L16.91 16.42Z"/>
+            </symbol>
+            <symbol id="icon-treasure" viewBox="0 0 24 24">
+                <path d="M12,2C10.89,2 10,2.9 10,4C10,4.54 10.23,5.03 10.59,5.38L9.66,9.03C8.29,9.09 7.12,10 6.69,11.27L3.5,11.27C2.67,11.27 2,11.94 2,12.77V20C2,20.83 2.67,21.5 3.5,21.5H20.5C21.33,21.5 22,20.83 22,20V12.77C22,11.94 21.33,11.27 20.5,11.27H17.31C16.88,10 15.71,9.09 14.34,9.03L13.41,5.38C13.77,5.03 14,4.54 14,4C14,2.9 13.11,2 12,2M12,4C12.55,4 13,4.45 13,5C13,5.55 12.55,6 12,6C11.45,6 11,5.55 11,5C11,4.45 11.45,4 12,4M9.79,10.5H14.21C15.17,10.5 15.97,11.21 16.16,12.14L16.5,13.77H7.5L7.84,12.14C8.03,11.21 8.83,10.5 9.79,10.5M20,19.5H4V13.27H6.5V15H8V13.27H16V15H17.5V13.27H20V19.5Z"/>
+            </symbol>
+            <symbol id="icon-skull" viewBox="0 0 24 24">
+                <path d="M12,2A9,9 0 0,0 3,11C3,14.03 4.53,16.82 7,18.47V22H9V19H11V22H13V19H15V22H17V18.46C19.47,16.81 21,14 21,11A9,9 0 0,0 12,2M8,11A2,2 0 0,1 10,13A2,2 0 0,1 8,15A2,2 0 0,1 6,13A2,2 0 0,1 8,11M16,11A2,2 0 0,1 18,13A2,2 0 0,1 16,15A2,2 0 0,1 14,13A2,2 0 0,1 16,11M12,14L13.5,17H10.5L12,14Z"/>
+            </symbol>
+            <symbol id="icon-refresh" viewBox="0 0 24 24">
+                <path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+            </symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24">
+                <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+            </symbol>
+            <symbol id="icon-shield" viewBox="0 0 24 24">
+                <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,3.18L19,6.3V11.22C19,12.92 18.5,14.65 17.65,16.17C16,18.94 13.26,20.74 12,21.23C10.74,20.74 8,18.94 6.35,16.17C5.5,14.65 5,12.92 5,11.22V6.3L12,3.18Z"/>
+            </symbol>
+            <symbol id="icon-wheat" viewBox="0 0 24 24">
+                <path d="M19.5,4L18,5.5L18.5,6.87L17.13,7.37L15.5,6.5L14,8L15.13,8.5L14.63,9.87L13.5,10.5L12,12L13.5,13.5L14.5,12.63L15.87,13.13L16.5,12L18,13.5L19.5,12L18.37,11.5L18.87,10.13L20,9.5L21.5,8L20.13,7.5L20.63,6.13L19.5,5.5V4M11.5,7.5L10.5,8.5L11.13,9.5L10.13,10L9,9.5L7.5,11L8.5,11.5L8,12.87L6.63,13.5L5,15L5.5,16.5L6.87,16L7.37,17.37L8.5,18L10,16.5L9.5,15.13L10.87,14.63L11.5,13.5L13,15L14.5,13.5L13.37,13L13.87,11.63L15,11L16.5,9.5L15.13,9L15.63,7.63L14.5,7L13,8.5L12.5,9.87L11.13,10.37L10.5,11.5L9,13L7.5,11.5L8.5,10.5L8,9.13L9.37,8.63L11.5,7.5M5.5,15L4,16.5L4.5,17.87L3.13,18.37L2,19.5L2.5,21L3.87,20.5L4.37,21.87L5.5,22.5L7,21L6.5,19.63L7.87,19.13L8.5,18L7,16.5L5.63,17L5.5,15Z"/>
+            </symbol>
+            <symbol id="icon-flask" viewBox="0 0 24 24">
+                <path d="M6,22A3,3 0 0,1 3,19C3,18.4 3.18,17.84 3.5,17.37L9,7.81V6A1,1 0 0,1 8,5V4A2,2 0 0,1 10,2H14A2,2 0 0,1 16,4V5A1,1 0 0,1 15,6V7.81L20.5,17.37C20.82,17.84 21,18.4 21,19A3,3 0 0,1 18,22H6M5,19A1,1 0 0,0 6,20H18A1,1 0 0,0 19,19C19,18.79 18.93,18.59 18.82,18.43L16.53,14.47L14,17L8.93,11.93L5.18,18.43C5.07,18.59 5,18.79 5,19Z"/>
+            </symbol>
+            <symbol id="icon-dagger" viewBox="0 0 24 24">
+                <path d="M18.84,7L16,4.16L7.16,13L4,9.83L6.83,7L5.77,5.94L2,9.71L5.29,13L1.5,16.79L3.21,18.5L7,14.71L10.29,18L14.06,14.23L13,13.17L10.17,16L18.84,7Z"/>
+            </symbol>
+            <symbol id="icon-hammer" viewBox="0 0 24 24">
+                <path d="M2,7L5,10L8,7V5L10,3H15V5L13,7V9L10,12L7,9H5L2,12V7M13.09,11.09L15.41,13.41L20.5,8.32V5.23L18.97,3.7L16.03,6.64L13,3.59L10.59,6L13.09,8.5V11.09M14.5,12.5L12,15L14,17L21,10V7.5L18.5,5L14.5,9V12.5M7,18A2,2 0 0,1 9,20A2,2 0 0,1 7,22A2,2 0 0,1 5,20A2,2 0 0,1 7,18M7,19.5A0.5,0.5 0 0,0 6.5,20A0.5,0.5 0 0,0 7,20.5A0.5,0.5 0 0,0 7.5,20A0.5,0.5 0 0,0 7,19.5Z"/>
+            </symbol>
+            <symbol id="icon-ring" viewBox="0 0 24 24">
+                <path d="M17,9V7C17,4.24 14.76,2 12,2C9.24,2 7,4.24 7,7V9C5.9,9 5,9.9 5,11V20C5,21.1 5.9,22 7,22H17C18.1,22 19,21.1 19,20V11C19,9.9 18.1,9 17,9M9,7C9,5.34 10.34,4 12,4C13.66,4 15,5.34 15,7V9H9V7Z"/>
+            </symbol>
+            <symbol id="icon-handshake" viewBox="0 0 24 24">
+                <path d="M11,6H9V4H15V6H13V18H15V20H9V18H11V6M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"/>
+            </symbol>
+            <symbol id="icon-book" viewBox="0 0 24 24">
+                <path d="M18 2H12V9L9.5 7.5L7 9V2H6C4.89 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V4C20 2.9 19.1 2 18 2Z"/>
+            </symbol>
+            <symbol id="icon-pray" viewBox="0 0 24 24">
+                <path d="M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6A2,2 0 0,1 10,4A2,2 0 0,1 12,2M10.5,7H13.5A2,2 0 0,1 15.5,9V14.5H14V22H10V14.5H8.5V9A2,2 0 0,1 10.5,7Z"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="king-info">
+                <span class="crown-icon">
+                    <svg class="svg-icon"><use href="#icon-crown"/></svg>
+                </span>
+                <div>
+                    <div class="king-name" id="kingName">Rei Afonso III</div>
+                    <div class="dynasty">Dinastia #<span id="dynastyNumber">1</span></div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="history-btn" onclick="showHistory()" title="Histórico">
+                    <svg class="svg-icon"><use href="#icon-scroll"/></svg>
+                </button>
+                <div class="year-display">
+                    <div class="year-label">Ano</div>
+                    <div class="year-number" id="yearDisplay">0</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-icon">
+                    <svg class="svg-icon"><use href="#icon-church"/></svg>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" id="churchBar" style="width: 50%"></div>
+                </div>
+                <div class="stat-label">Igreja</div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">
+                    <svg class="svg-icon"><use href="#icon-people"/></svg>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" id="peopleBar" style="width: 50%"></div>
+                </div>
+                <div class="stat-label">Povo</div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">
+                    <svg class="svg-icon"><use href="#icon-sword"/></svg>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" id="armyBar" style="width: 50%"></div>
+                </div>
+                <div class="stat-label">Exército</div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">
+                    <svg class="svg-icon"><use href="#icon-treasure"/></svg>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" id="treasuryBar" style="width: 50%"></div>
+                </div>
+                <div class="stat-label">Tesouro</div>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <main class="game-area" id="gameArea">
+            <!-- Card Container (shown during gameplay) -->
+            <div class="card-container" id="cardContainer">
+                <div class="character-header">
+                    <div class="character-icon" id="characterIcon">
+                        <svg class="svg-icon"><use href="#icon-church"/></svg>
+                    </div>
+                    <div class="character-info">
+                        <div class="label">Audiência com</div>
+                        <div class="name" id="characterName">Bispo</div>
+                    </div>
+                </div>
+
+                <div class="dialogue-box">
+                    <p class="dialogue-text" id="dialogueText">"Carregando..."</p>
+                </div>
+
+                <div class="choices">
+                    <button class="choice-btn" id="leftBtn" onclick="makeChoice('left')">
+                        <div class="choice-btn-inner">
+                            <span>◀ Recusar</span>
+                        </div>
+                        <p class="choice-text" id="leftText">Opção esquerda</p>
+                    </button>
+                    <button class="choice-btn" id="rightBtn" onclick="makeChoice('right')">
+                        <div class="choice-btn-inner">
+                            <span>Aceitar ▶</span>
+                        </div>
+                        <p class="choice-text" id="rightText">Opção direita</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen (hidden initially) -->
+            <div class="game-over" id="gameOverScreen" style="display: none;">
+                <div class="skull-icon">
+                    <svg class="svg-icon"><use href="#icon-skull"/></svg>
+                </div>
+                <h2>Fim do Reinado</h2>
+                <p class="king-epithet" id="kingEpithet">Afonso III, o Grande</p>
+                <div class="divider"></div>
+                <p class="death-message" id="deathMessage">Mensagem de morte...</p>
+                <div class="reign-duration">
+                    Reinou durante <strong id="reignYears">0</strong> <span id="yearWord">anos</span>
+                </div>
+                <div class="game-over-buttons">
+                    <button class="btn-primary" onclick="restartGame()">
+                        <svg class="svg-icon"><use href="#icon-refresh"/></svg> Nova Dinastia
+                    </button>
+                    <button class="btn-secondary" onclick="showHistory()">
+                        <svg class="svg-icon"><use href="#icon-scroll"/></svg> Ver Crônicas (<span id="historyCount">0</span>)
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>Decisão <span id="decisionNumber">1</span></span>
+            <span>Reigns • Kindle</span>
+        </footer>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay hidden" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><svg class="svg-icon"><use href="#icon-scroll"/></svg> Crônicas do Reino</h2>
+                <button class="close-btn" onclick="hideHistory()">
+                    <svg class="svg-icon"><use href="#icon-close"/></svg>
+                </button>
+            </div>
+            <div class="modal-content" id="historyContent">
+                <p class="empty-history">Nenhum rei governou antes de você.</p>
+            </div>
+            <div class="modal-footer">
+                <strong id="totalKings">0</strong> <span id="kingsWord">reis governaram</span> antes de você
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // GAME DATA
+        // ============================================
+        
+        const CHARACTERS = {
+            bispo: { icon: "icon-church", title: "Bispo" },
+            general: { icon: "icon-shield", title: "General" },
+            camponês: { icon: "icon-wheat", title: "Camponês" },
+            espião: { icon: "icon-dagger", title: "Espião" },
+            mercador: { icon: "icon-treasure", title: "Mercador" },
+            abadessa: { icon: "icon-church", title: "Abadessa" },
+            conselheiro: { icon: "icon-scroll", title: "Conselheiro" },
+            rainha: { icon: "icon-crown", title: "Rainha" },
+            embaixador: { icon: "icon-handshake", title: "Embaixador" },
+            alquimista: { icon: "icon-flask", title: "Alquimista" },
+            cavaleiro: { icon: "icon-shield", title: "Cavaleiro" },
+            monge: { icon: "icon-book", title: "Monge" },
+            ferreiro: { icon: "icon-hammer", title: "Ferreiro" },
+            mendigo: { icon: "icon-pray", title: "Mendigo" },
+            nobre: { icon: "icon-ring", title: "Nobre" }
+        };
+
+        const CARDS = [
+            // IGREJA (1-10)
+            { id: 1, character: "bispo", text: "A Igreja deseja construir uma nova catedral para abençoar o seu reinado. Aceita financiar a obra?", left: { text: "Não temos ouro para isso", church: -20, treasury: 5, people: 0, army: 0 }, right: { text: "Que seja feita a vontade de Deus", church: 25, treasury: -20, people: 5, army: 0 } },
+            { id: 2, character: "abadessa", text: "O povo está abandonando a fé verdadeira por superstições pagãs. Devemos proibir os rituais antigos?", left: { text: "Tolerância com os ignorantes", church: -20, people: 15, army: 0, treasury: 0 }, right: { text: "Só existe um Deus verdadeiro!", church: 20, people: -10, army: 5, treasury: 0 } },
+            { id: 3, character: "bispo", text: "Um herege está pregando doutrinas estranhas na praça. O povo o escuta com atenção.", left: { text: "Liberdade de pensamento", church: -25, people: 15, army: 0, treasury: 0 }, right: { text: "Prendam-no imediatamente", church: 20, people: -15, army: 5, treasury: 0 } },
+            { id: 4, character: "abadessa", text: "O mosteiro precisa de renovações urgentes. O telhado está caindo sobre as irmãs.", left: { text: "Que rezem por um milagre", church: -20, treasury: 5, people: -5, army: 0 }, right: { text: "Enviarei pedreiros e ouro", church: 20, treasury: -15, people: 5, army: 0 } },
+            { id: 5, character: "monge", text: "Descobrimos textos antigos que contradizem os ensinamentos oficiais. O que fazer com eles?", left: { text: "Queimem tudo", church: 15, people: -5, army: 0, treasury: 0 }, right: { text: "Guardem na biblioteca secreta", church: -15, people: 5, army: 0, treasury: -5 } },
+            { id: 6, character: "bispo", text: "O Papa solicita uma contribuição generosa para as Cruzadas no Oriente.", left: { text: "O reino precisa desse ouro", church: -25, treasury: 10, people: 0, army: 0 }, right: { text: "Pela glória de Deus", church: 25, treasury: -25, people: 0, army: 5 } },
+            { id: 7, character: "monge", text: "Os monges desenvolveram uma nova técnica de cultivo. Podemos ensiná-la aos camponeses.", left: { text: "Guardem o segredo", church: 5, people: -10, army: 0, treasury: 5 }, right: { text: "Compartilhem o conhecimento", church: 10, people: 15, army: 0, treasury: -5 } },
+            { id: 8, character: "abadessa", text: "Uma jovem nobre deseja se tornar freira, mas sua família quer que ela se case com um aliado.", left: { text: "O casamento é mais importante", church: -15, people: 0, army: 10, treasury: 5 }, right: { text: "Respeitem sua vocação", church: 20, people: 5, army: -10, treasury: 0 } },
+            { id: 9, character: "bispo", text: "A Igreja quer estabelecer um tribunal para julgar casos de bruxaria no reino.", left: { text: "Superstição demais", church: -20, people: 10, army: 0, treasury: 0 }, right: { text: "A fé deve ser protegida", church: 20, people: -15, army: 5, treasury: -5 } },
+            { id: 10, character: "monge", text: "Peregrinos estrangeiros trazem relíquias sagradas. Querem permissão para construir um santuário.", left: { text: "Não precisamos de estrangeiros", church: -10, people: -5, army: 5, treasury: 0 }, right: { text: "Sejam bem-vindos", church: 15, people: 10, army: -5, treasury: -10 } },
+
+            // POVO (11-20)
+            { id: 11, character: "camponês", text: "A colheita foi ruim este ano, Majestade. O povo implora que os impostos sejam reduzidos.", left: { text: "O reino precisa de ouro", people: -25, treasury: 20, church: -5, army: 0 }, right: { text: "Compreendo o sofrimento de vocês", people: 20, treasury: -15, church: 5, army: 0 } },
+            { id: 12, character: "camponês", text: "Uma praga de gafanhotos devora os campos! Precisamos de ajuda real urgente!", left: { text: "Rezem por chuva", church: 5, people: -20, treasury: 0, army: 0 }, right: { text: "Enviarei provisões do celeiro real", church: 0, people: 15, treasury: -20, army: 0 } },
+            { id: 13, character: "mendigo", text: "Os pobres da cidade estão morrendo de fome. Poderia abrir os celeiros reais?", left: { text: "Cada um cuida de si", people: -20, treasury: 5, church: -10, army: 0 }, right: { text: "Distribuam pão a todos", people: 20, treasury: -15, church: 10, army: 0 } },
+            { id: 14, character: "camponês", text: "Os senhores feudais estão abusando dos camponeses. Pedimos proteção real.", left: { text: "É assunto dos nobres", people: -15, treasury: 0, church: 0, army: 5 }, right: { text: "Vou intervir pessoalmente", people: 20, treasury: 0, church: 5, army: -10 } },
+            { id: 15, character: "mendigo", text: "Uma epidemia se espalha pelos bairros pobres. O povo pede médicos e remédios.", left: { text: "Que fiquem em quarentena", people: -20, treasury: 5, church: -5, army: 5 }, right: { text: "Enviem os melhores curandeiros", people: 15, treasury: -20, church: 5, army: 0 } },
+            { id: 16, character: "camponês", text: "Os jovens querem deixar o campo e ir para a cidade. Os mais velhos pedem que proíba.", left: { text: "Cada um escolhe seu caminho", people: 10, treasury: -5, church: 0, army: -5 }, right: { text: "Proibido abandonar a terra", people: -15, treasury: 10, church: 0, army: 5 } },
+            { id: 17, character: "mendigo", text: "Um grupo de órfãos pede abrigo no castelo. São muitas bocas para alimentar.", left: { text: "Não somos orfanato", people: -10, treasury: 5, church: -15, army: 0 }, right: { text: "Todas as crianças são bem-vindas", people: 15, treasury: -10, church: 15, army: 0 } },
+            { id: 18, character: "camponês", text: "As estradas estão cheias de bandidos. Não conseguimos levar produtos ao mercado.", left: { text: "Contratem guardas particulares", people: -10, treasury: 0, church: 0, army: 0 }, right: { text: "A guarda real vai patrulhar", people: 15, treasury: -5, church: 0, army: -10 } },
+            { id: 19, character: "mendigo", text: "Os loucos e doentes mentais vagam pelas ruas. O povo tem medo deles.", left: { text: "Expulsem-nos da cidade", people: 5, treasury: 0, church: -15, army: 5 }, right: { text: "Construam um asilo", people: 10, treasury: -15, church: 15, army: 0 } },
+            { id: 20, character: "camponês", text: "Os pescadores descobriram novas águas fartas em peixes, mas pertencem ao reino vizinho.", left: { text: "Respeitem as fronteiras", people: -10, treasury: 0, church: 0, army: 5 }, right: { text: "O mar é de todos", people: 15, treasury: 10, church: 0, army: -15 } },
+
+            // EXÉRCITO (21-30)
+            { id: 21, character: "general", text: "Os bárbaros estão atacando as fronteiras do norte. Devemos mobilizar o exército?", left: { text: "Deixem-nos em paz", army: -25, people: -15, church: 0, treasury: 10 }, right: { text: "Às armas!", army: 10, treasury: -15, people: 5, church: 0 } },
+            { id: 22, character: "general", text: "Os soldados estão descontentes com o soldo. Pedem um aumento ou ameaçam desertar.", left: { text: "Que desertem os covardes", army: -20, treasury: 10, people: 5, church: 0 }, right: { text: "Aumentem o soldo", army: 20, treasury: -15, people: 0, church: 0 } },
+            { id: 23, character: "cavaleiro", text: "Descobrimos uma passagem secreta nas montanhas. Podemos surpreender o inimigo.", left: { text: "Muito arriscado", army: -5, treasury: 0, people: 0, church: 0 }, right: { text: "Ataquem!", army: 15, treasury: -10, people: 5, church: 0 } },
+            { id: 24, character: "general", text: "Os veteranos de guerra estão envelhecendo. Precisamos recrutar jovens camponeses.", left: { text: "O campo precisa de braços", army: -15, treasury: 0, people: 10, church: 0 }, right: { text: "O exército vem primeiro", army: 20, treasury: -5, people: -15, church: 0 } },
+            { id: 25, character: "cavaleiro", text: "Meu cavalo de guerra morreu. Preciso de um novo corcel para servir ao reino.", left: { text: "Compre você mesmo", army: -10, treasury: 5, people: 0, church: 0 }, right: { text: "Terá o melhor dos estábulos reais", army: 10, treasury: -10, people: 0, church: 0 } },
+            { id: 26, character: "general", text: "Mercenários estrangeiros oferecem seus serviços. São caros, mas muito eficientes.", left: { text: "Não confio em estrangeiros", army: -5, treasury: 5, people: 5, church: 0 }, right: { text: "Contratem todos", army: 20, treasury: -25, people: -5, church: 0 } },
+            { id: 27, character: "cavaleiro", text: "Os escudeiros querem ser armados cavaleiros, mas não passaram por todas as provas.", left: { text: "Tradições existem por uma razão", army: 5, treasury: 0, people: 0, church: 10 }, right: { text: "Precisamos de cavaleiros agora", army: 15, treasury: -5, people: 0, church: -10 } },
+            { id: 28, character: "general", text: "O castelo fronteiriço precisa de reparos urgentes. Os muros estão rachados.", left: { text: "Que aguentem assim", army: -15, treasury: 5, people: -5, church: 0 }, right: { text: "Enviem pedreiros e materiais", army: 15, treasury: -20, people: 5, church: 0 } },
+            { id: 29, character: "cavaleiro", text: "Um torneio seria bom para o moral das tropas e para entreter o povo.", left: { text: "Não é hora de jogos", army: -5, treasury: 5, people: -10, church: 0 }, right: { text: "Que comecem os jogos!", army: 10, treasury: -15, people: 15, church: 0 } },
+            { id: 30, character: "general", text: "Capturamos um general inimigo. Podemos pedir resgate ou executá-lo publicamente.", left: { text: "Exijam muito ouro", army: 0, treasury: 25, people: 0, church: -5 }, right: { text: "Morte aos inimigos do reino", army: 15, treasury: 0, people: 5, church: -10 } },
+
+            // TESOURO (31-40)
+            { id: 31, character: "mercador", text: "Uma nova rota comercial para o Oriente pode ser aberta, mas exige escolta militar.", left: { text: "Muito arriscado", treasury: -5, army: 5, people: 0, church: 0 }, right: { text: "O lucro justifica o risco", treasury: 25, army: -15, people: 5, church: 0 } },
+            { id: 32, character: "mercador", text: "A guilda dos tecelões pede o monopólio do comércio de tecidos. Oferecem uma soma generosa.", left: { text: "O mercado deve ser livre", treasury: -5, people: 10, army: 0, church: 0 }, right: { text: "Aceito o acordo", treasury: 25, people: -15, army: 0, church: -5 } },
+            { id: 33, character: "conselheiro", text: "As estradas do reino estão em ruínas. Uma reforma custaria caro, mas facilitaria o comércio.", left: { text: "O tesouro não permite luxos", treasury: 5, people: -10, army: -5, church: 0 }, right: { text: "Invistam na infraestrutura", treasury: -25, people: 15, army: 5, church: 0 } },
+            { id: 34, character: "ferreiro", text: "Descobri uma nova liga de metal para espadas. Preciso de fundos para produzir em escala.", left: { text: "O que temos já serve", treasury: 5, army: -10, people: 0, church: 0 }, right: { text: "Invistam na inovação", treasury: -15, army: 20, people: 5, church: 0 } },
+            { id: 35, character: "mercador", text: "Piratas atacam nossos navios mercantes. Podemos pagar proteção ou combatê-los.", left: { text: "Paguem o que pedirem", treasury: -20, people: 5, army: 0, church: 0 }, right: { text: "A marinha vai caçá-los", treasury: -10, army: -15, people: 10, church: 0 } },
+            { id: 36, character: "conselheiro", text: "Os nobres propõem reduzir seus impostos em troca de lealdade garantida.", left: { text: "Todos pagam igualmente", treasury: 10, army: -10, people: 10, church: 0 }, right: { text: "Aceito a proposta", treasury: -15, army: 15, people: -10, church: 0 } },
+            { id: 37, character: "ferreiro", text: "Precisamos de mais minérios. Há rumores de minas ricas nas terras dos camponeses.", left: { text: "Deixem os camponeses em paz", treasury: -5, people: 10, army: 0, church: 0 }, right: { text: "O reino precisa de minérios", treasury: 20, people: -20, army: 5, church: 0 } },
+            { id: 38, character: "mercador", text: "Comerciantes estrangeiros querem se estabelecer na capital. Trariam riqueza, mas também competição.", left: { text: "Protejam nossos mercadores", treasury: -10, people: 10, army: 0, church: 5 }, right: { text: "Bem-vindos ao reino", treasury: 20, people: -10, army: 0, church: -5 } },
+            { id: 39, character: "conselheiro", text: "Podemos cunhar moedas com menos prata. Ninguém notaria a diferença.", left: { text: "Isso é desonesto", treasury: -5, people: 5, army: 0, church: 10 }, right: { text: "Façam isso discretamente", treasury: 25, people: -15, army: 0, church: -10 } },
+            { id: 40, character: "ferreiro", text: "As forjas precisam de mais carvão. Podemos derrubar a floresta sagrada ou importar.", left: { text: "Importem, não toquem na floresta", treasury: -15, people: 5, army: 0, church: 15 }, right: { text: "Cortem as árvores necessárias", treasury: 10, people: -10, army: 5, church: -20 } },
+
+            // POLÍTICA E INTRIGA (41-50)
+            { id: 41, character: "espião", text: "Descobrimos um traidor no conselho real. Como deseja proceder, Majestade?", left: { text: "Prisão perpétua nas masmorras", army: -5, people: 5, church: 5, treasury: -5 }, right: { text: "Execução pública na praça", army: 15, people: -10, church: -5, treasury: 0 } },
+            { id: 42, character: "conselheiro", text: "O reino vizinho propõe uma aliança matrimonial. O príncipe deles casaria com sua filha.", left: { text: "Minha filha não está à venda", people: 10, army: -10, church: 5, treasury: 0 }, right: { text: "Uma aliança sábia", people: -5, army: 15, church: -5, treasury: 10 } },
+            { id: 43, character: "rainha", text: "Os nobres murmuram sobre minha influência na corte. Talvez deva me retirar para o campo?", left: { text: "Permaneça ao meu lado", people: -10, army: -5, church: 0, treasury: 0 }, right: { text: "Talvez seja melhor assim", people: 10, army: 5, church: 5, treasury: -10 } },
+            { id: 44, character: "embaixador", text: "O Sultão do Sul oferece especiarias raras em troca de armas. É um negócio delicado...", left: { text: "Recusar o infiel", church: 15, treasury: -10, people: 0, army: 0 }, right: { text: "O comércio não conhece fronteiras", church: -15, treasury: 20, people: 5, army: -5 } },
+            { id: 45, character: "espião", text: "Seu irmão bastardo conspira para tomar o trono. Posso... resolver o problema discretamente.", left: { text: "Não derramarei sangue da família", army: -10, people: 10, church: 10, treasury: 0 }, right: { text: "Faça o que deve ser feito", army: 10, people: -15, church: -15, treasury: -10 } },
+            { id: 46, character: "rainha", text: "Estou grávida, meu senhor. O reino terá finalmente um herdeiro.", left: { text: "Rezemos para que seja homem", church: 10, people: 10, army: 5, treasury: -5 }, right: { text: "Que seja saudável, não importa o resto", church: -5, people: 15, army: 0, treasury: -10 } },
+            { id: 47, character: "embaixador", text: "O Imperador do Norte exige tributo anual ou ameaça guerra. É um ultimato.", left: { text: "Não nos curvaremos!", army: -20, treasury: 0, people: 15, church: 5 }, right: { text: "Paguemos... por enquanto", army: 5, treasury: -25, people: -10, church: 0 } },
+            { id: 48, character: "nobre", text: "Os lordes querem mais poder no conselho. Ameaçam se rebelar se forem ignorados.", left: { text: "Que se rebelem então", army: -15, treasury: 0, people: 10, church: 0 }, right: { text: "Negociemos um acordo", army: 10, treasury: -10, people: -5, church: 0 } },
+            { id: 49, character: "alquimista", text: "Descobri uma poção que cura a peste! Mas os ingredientes são... controversos.", left: { text: "Bruxaria! Afaste-se!", church: 15, people: -10, treasury: 0, army: 0 }, right: { text: "Se funciona, use-a", church: -20, people: 20, treasury: -10, army: 0 } },
+            { id: 50, character: "espião", text: "Temos informações de que haverá um atentado contra sua vida no banquete de amanhã.", left: { text: "Cancelem o banquete", army: 5, people: -15, church: 0, treasury: 0 }, right: { text: "Vamos preparar uma armadilha", army: 15, people: 5, church: 0, treasury: -10 } }
+        ];
+
+        const DEATH_MESSAGES = {
+            church_low: "A Igreja o excomungou. Você morreu no exílio, abandonado por Deus e pelos homens.",
+            church_high: "A Teocracia tomou o poder absoluto. O Papa agora governa, e você foi enviado para um mosteiro.",
+            people_low: "O povo se revoltou! A turba invadiu o castelo e sua cabeça rolou na praça.",
+            people_high: "O povo exigiu demais. A anarquia reina e o trono foi abolido.",
+            army_low: "Sem exército, o reino foi invadido. Os bárbaros fizeram você prisioneiro.",
+            army_high: "O General tomou o poder num golpe sangrento. Você foi executado por 'traição'.",
+            treasury_low: "O reino faliu completamente. Você foi vendido como escravo para pagar as dívidas.",
+            treasury_high: "Sua riqueza atraiu inveja. Você foi envenenado por um nobre ganancioso."
+        };
+
+        const KING_NAMES = [
+            "Afonso", "Henrique", "Pedro", "João", "Duarte", "Fernando", "Sancho", "Dinis",
+            "Manuel", "Sebastião", "Filipe", "Teodósio", "Lourenço", "Ricardo", "Eduardo",
+            "Guilherme", "Roberto", "Carlos", "Leopoldo", "Maximiliano", "Frederico", "Augusto"
+        ];
+
+        const EPITHETS = [
+            "o Bravo", "o Justo", "o Cruel", "o Piedoso", "o Sábio", "o Belo", "o Grande",
+            "o Conquistador", "o Pacificador", "o Terrível", "o Santo", "o Forte",
+            "o Destemido", "o Magnânimo", "o Severo", "o Clemente", "o Velho", "o Jovem"
+        ];
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+
+        let stats = { church: 50, people: 50, army: 50, treasury: 50 };
+        let years = 0;
+        let currentCardIndex = 0;
+        let usedCards = [];
+        let gameOver = null;
+        let isAnimating = false;
+        let kingName = "";
+        let pastReigns = [];
+        let dynastyNumber = 1;
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function generateKingName() {
+            const name = KING_NAMES[Math.floor(Math.random() * KING_NAMES.length)];
+            const numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+            const numeral = numerals[Math.floor(Math.random() * numerals.length)];
+            kingName = `${name} ${numeral}`;
+            document.getElementById('kingName').textContent = `Rei ${kingName}`;
+        }
+
+        function getEpithet(years, cause) {
+            if (years >= 20) return "o Grande";
+            if (years >= 15) return "o Sábio";
+            if (years >= 10) return "o Justo";
+            if (cause.includes("Igreja")) return "o Ímpio";
+            if (cause.includes("povo")) return "o Cruel";
+            if (cause.includes("exército") || cause.includes("invadido")) return "o Fraco";
+            if (cause.includes("ouro") || cause.includes("faliu")) return "o Perdulário";
+            return EPITHETS[Math.floor(Math.random() * EPITHETS.length)];
+        }
+
+        function getNextCard() {
+            let availableCards = CARDS.filter((_, idx) => !usedCards.includes(idx));
+            
+            if (availableCards.length === 0) {
+                usedCards = [];
+                availableCards = CARDS;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableCards.length);
+            const selectedCard = availableCards[randomIndex];
+            return CARDS.findIndex(c => c.id === selectedCard.id);
+        }
+
+        // ============================================
+        // UI UPDATE FUNCTIONS
+        // ============================================
+
+        function updateStats() {
+            document.getElementById('churchBar').style.width = stats.church + '%';
+            document.getElementById('peopleBar').style.width = stats.people + '%';
+            document.getElementById('armyBar').style.width = stats.army + '%';
+            document.getElementById('treasuryBar').style.width = stats.treasury + '%';
+        }
+
+        function updateYear() {
+            document.getElementById('yearDisplay').textContent = years;
+            document.getElementById('decisionNumber').textContent = years + 1;
+        }
+
+        function updateCard() {
+            const card = CARDS[currentCardIndex];
+            const character = CHARACTERS[card.character] || { icon: "icon-people", title: card.character };
+
+            document.getElementById('characterIcon').innerHTML = `<svg class="svg-icon"><use href="#${character.icon}"/></svg>`;
+            document.getElementById('characterName').textContent = character.title;
+            document.getElementById('dialogueText').textContent = `"${card.text}"`;
+            document.getElementById('leftText').textContent = card.left.text;
+            document.getElementById('rightText').textContent = card.right.text;
+        }
+
+        function checkGameOver() {
+            let cause = null;
+            
+            if (stats.church <= 0) cause = DEATH_MESSAGES.church_low;
+            else if (stats.church >= 100) cause = DEATH_MESSAGES.church_high;
+            else if (stats.people <= 0) cause = DEATH_MESSAGES.people_low;
+            else if (stats.people >= 100) cause = DEATH_MESSAGES.people_high;
+            else if (stats.army <= 0) cause = DEATH_MESSAGES.army_low;
+            else if (stats.army >= 100) cause = DEATH_MESSAGES.army_high;
+            else if (stats.treasury <= 0) cause = DEATH_MESSAGES.treasury_low;
+            else if (stats.treasury >= 100) cause = DEATH_MESSAGES.treasury_high;
+            
+            if (cause) {
+                gameOver = cause;
+                const epithet = getEpithet(years, cause);
+                
+                pastReigns.push({
+                    name: kingName,
+                    years: years,
+                    cause: cause,
+                    epithet: epithet
+                });
+                
+                showGameOver(epithet, cause);
+            }
+        }
+
+        function showGameOver(epithet, cause) {
+            document.getElementById('cardContainer').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'block';
+            
+            document.getElementById('kingEpithet').textContent = `${kingName}, ${epithet}`;
+            document.getElementById('deathMessage').textContent = cause;
+            document.getElementById('reignYears').textContent = years;
+            document.getElementById('yearWord').textContent = years === 1 ? 'ano' : 'anos';
+            document.getElementById('historyCount').textContent = pastReigns.length;
+        }
+
+        function updateHistoryModal() {
+            const content = document.getElementById('historyContent');
+            const totalKings = document.getElementById('totalKings');
+            const kingsWord = document.getElementById('kingsWord');
+            
+            totalKings.textContent = pastReigns.length;
+            kingsWord.textContent = pastReigns.length === 1 ? 'rei governou' : 'reis governaram';
+            
+            if (pastReigns.length === 0) {
+                content.innerHTML = '<p class="empty-history">Nenhum rei governou antes de você.</p>';
+            } else {
+                const html = pastReigns.slice().reverse().map(reign => `
+                    <div class="reign-card">
+                        <div class="reign-card-header">
+                            <div>
+                                <h3>${reign.name}</h3>
+                                <span class="epithet">${reign.epithet}</span>
+                            </div>
+                            <span class="reign-years">${reign.years} ${reign.years === 1 ? 'ano' : 'anos'}</span>
+                        </div>
+                        <p>${reign.cause}</p>
+                    </div>
+                `).join('');
+                content.innerHTML = html;
+            }
+        }
+
+        // ============================================
+        // GAME ACTIONS
+        // ============================================
+
+        function makeChoice(side) {
+            if (isAnimating || gameOver) return;
+            
+            isAnimating = true;
+            const card = CARDS[currentCardIndex];
+            const choice = side === 'left' ? card.left : card.right;
+            
+            // Animate out
+            document.getElementById('cardContainer').classList.add('animating');
+            
+            setTimeout(() => {
+                // Apply effects
+                stats.church = Math.min(100, Math.max(0, stats.church + (choice.church || 0)));
+                stats.people = Math.min(100, Math.max(0, stats.people + (choice.people || 0)));
+                stats.army = Math.min(100, Math.max(0, stats.army + (choice.army || 0)));
+                stats.treasury = Math.min(100, Math.max(0, stats.treasury + (choice.treasury || 0)));
+                
+                years++;
+                usedCards.push(currentCardIndex);
+                
+                updateStats();
+                updateYear();
+                checkGameOver();
+                
+                if (!gameOver) {
+                    currentCardIndex = getNextCard();
+                    updateCard();
+                    
+                    setTimeout(() => {
+                        document.getElementById('cardContainer').classList.remove('animating');
+                        isAnimating = false;
+                    }, 50);
+                }
+            }, 150);
+        }
+
+        function restartGame() {
+            stats = { church: 50, people: 50, army: 50, treasury: 50 };
+            years = 0;
+            usedCards = [];
+            gameOver = null;
+            isAnimating = false;
+            dynastyNumber++;
+            
+            generateKingName();
+            currentCardIndex = Math.floor(Math.random() * CARDS.length);
+            
+            document.getElementById('dynastyNumber').textContent = dynastyNumber;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('cardContainer').style.display = 'block';
+            document.getElementById('cardContainer').classList.remove('animating');
+            
+            updateStats();
+            updateYear();
+            updateCard();
+        }
+
+        function showHistory() {
+            updateHistoryModal();
+            document.getElementById('historyModal').classList.remove('hidden');
+        }
+
+        function hideHistory() {
+            document.getElementById('historyModal').classList.add('hidden');
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        function init() {
+            generateKingName();
+            currentCardIndex = Math.floor(Math.random() * CARDS.length);
+            updateStats();
+            updateYear();
+            updateCard();
+            
+            // Close modal on backdrop click
+            document.getElementById('historyModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideHistory();
+                }
+            });
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
