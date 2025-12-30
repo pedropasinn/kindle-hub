@@ -958,20 +958,18 @@ function renderWeekView() {
         else if (special) headerClass += ' special';
 
         html += '<div class="week-day">';
-        html += '<div class="' + headerClass + '" style="display:table;width:100%;">';
+        html += '<div class="' + headerClass + '" style="display:table;width:100%;padding:1.5px 4px;">';
         html += '<span style="display:table-cell;text-align:left;">' + BuJo.dayNamesShort[dow] + '</span>';
         html += '<span style="display:table-cell;text-align:right;font-weight:bold;">' + d.getDate() + '</span>';
         html += '</div>';
         html += '<div class="week-day-content">';
-        for (var j = 0; j < Math.min(schedule.length, 6); j++) {
+        // Mostrar TODOS os eventos do dia
+        for (var j = 0; j < schedule.length; j++) {
             var item = schedule[j];
             var timeStr = item.time !== '★' ? item.time + ' ' : '★ ';
-            html += '<div style="border-bottom:1px dotted #ccc;padding:2px 0;font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">';
-            html += '<span style="color:#666;">' + timeStr + '</span>' + item.event;
+            html += '<div style="border-bottom:1px dotted #ccc;padding:1px 0;">';
+            html += timeStr + item.event;
             html += '</div>';
-        }
-        if (schedule.length > 6) {
-            html += '<div style="color:#999;font-size:0.6rem;">+' + (schedule.length - 6) + ' mais</div>';
         }
         html += '</div>';
         html += '</div>';
