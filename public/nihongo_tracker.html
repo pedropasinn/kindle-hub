@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>日本語 Tracker - Pedro 2026</title>
+    <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #09090b;
+            --card: #ffffff;
+            --primary: #18181b;
+            --secondary: #f4f4f5;
+            --muted-foreground: #71717a;
+            --border: #e4e4e7;
+            --accent: #dc2626;
+            --accent-light: #fef2f2;
+            --success: #16a34a;
+            --success-light: #f0fdf4;
+            --radius: 0.75rem;
+            --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-size-base: 18px;
+            --font-size-sm: 16px;
+            --font-size-xs: 14px;
+            --font-size-lg: 20px;
+            --font-size-xl: 24px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background-color: var(--background); color: var(--foreground); font-family: var(--font-sans); font-size: var(--font-size-base); line-height: 1.5; }
+        .app-shell { display: flex; flex-direction: column; height: 100vh; }
+        .app-header { border-bottom: 1px solid var(--border); padding: 12px 1.25rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 50; flex-shrink: 0; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .app-title { font-size: var(--font-size-xl); font-weight: 700; }
+        .app-title .jp { color: var(--accent); }
+        .header-date { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        .btn-icon { background: transparent; border: 1px solid var(--border); border-radius: 0.5rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-icon:active { background: var(--secondary); transform: scale(0.96); }
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+        .nav-tab { font-size: var(--font-size-sm); text-transform: uppercase; padding: 8px 14px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; }
+        .nav-tab:active { transform: scale(0.96); }
+        .nav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .main { flex: 1; overflow-y: auto; padding: 1.25rem; padding-bottom: 3rem; max-width: 700px; margin: 0 auto; width: 100%; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .card-title { font-size: var(--font-size-lg); font-weight: 700; border-bottom: 1px solid var(--secondary); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { font-size: var(--font-size-sm); padding: 8px 16px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; }
+        .btn:active { transform: scale(0.96); background: var(--border); }
+        .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .lesson-card { background: var(--secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 14px; margin-bottom: 12px; cursor: pointer; }
+        .lesson-card:active { transform: scale(0.98); }
+        .lesson-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .lesson-title { font-weight: 600; font-size: var(--font-size-base); }
+        .lesson-date { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        .lesson-status { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: var(--font-size-xs); font-weight: 500; }
+        .lesson-status.pending { background: var(--secondary); color: var(--muted-foreground); border: 1px solid var(--border); }
+        .lesson-status.in-progress { background: #fef3c7; color: #92400e; }
+        .lesson-status.completed { background: var(--success-light); color: var(--success); }
+        .session-block { padding: 10px 0; border-bottom: 1px dotted var(--border); }
+        .session-block:last-child { border-bottom: none; }
+        .session-time { font-size: var(--font-size-xs); color: var(--muted-foreground); margin-bottom: 4px; }
+        .session-content { display: flex; align-items: center; gap: 10px; }
+        .session-text { flex: 1; }
+        .session-check { width: 32px; height: 32px; border: 2px solid var(--primary); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
+        .session-check.checked { background: var(--primary); color: #fff; }
+        .kana-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 14px; }
+        .kana-cell { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; background: #fff; }
+        .kana-cell.learned { background: var(--success-light); border-color: var(--success); }
+        .kana-cell.learning { background: #fef3c7; border-color: #f59e0b; }
+        .kana-cell .romaji { font-size: 0.6rem; color: var(--muted-foreground); }
+        .progress-section { margin-bottom: 20px; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: var(--font-size-sm); }
+        .progress-bar { height: 10px; background: var(--secondary); border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 5px; transition: width 0.3s; }
+        .progress-fill.accent { background: var(--accent); }
+        .tracker-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+        .tracker-table th, .tracker-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        .tracker-table th { background: var(--secondary); font-size: var(--font-size-xs); text-transform: uppercase; }
+        .tracker-table .label { text-align: left; font-weight: 500; }
+        .tracker-cell { cursor: pointer; min-width: 36px; height: 36px; }
+        .tracker-cell.checked { background: var(--primary); color: #fff; }
+        .tracker-cell.na { background: var(--secondary); color: var(--muted-foreground); }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
+        .stat-box { background: var(--secondary); border-radius: 0.5rem; padding: 14px; text-align: center; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-value.accent { color: var(--accent); }
+        .stat-label { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        .vocab-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dotted var(--border); }
+        .vocab-jp { font-size: 1.2rem; width: 100px; flex-shrink: 0; }
+        .vocab-reading { font-size: var(--font-size-sm); color: var(--muted-foreground); width: 80px; flex-shrink: 0; }
+        .vocab-meaning { flex: 1; }
+        .vocab-check { width: 28px; height: 28px; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .vocab-check.checked { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .month-calendar { display: table; width: 100%; border-collapse: collapse; }
+        .month-row { display: table-row; }
+        .month-cell { display: table-cell; border: 1px solid var(--border); width: 14.28%; height: 50px; text-align: center; vertical-align: top; padding: 4px; cursor: pointer; }
+        .month-cell.header { background: var(--secondary); font-size: var(--font-size-xs); font-weight: 600; height: auto; padding: 8px 4px; }
+        .month-cell.today { border: 3px solid var(--accent); font-weight: 700; background: var(--accent-light); }
+        .month-cell.has-lesson { background: #fef3c7; }
+        .month-cell.completed { background: var(--success-light); }
+        .month-cell.empty { background: #fafafa; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+        .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+        .modal { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; width: 90%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); max-height: 80vh; overflow-y: auto; }
+        .modal-title { font-weight: 700; font-size: var(--font-size-lg); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: var(--font-size-xs); text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 0.5rem; font-size: var(--font-size-base); }
+        .modal-actions { margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end; }
+        .summary-box { text-align: center; padding: 16px; }
+        .summary-percent { font-size: 2.5rem; font-weight: 700; }
+        .summary-bar { height: 10px; background: var(--secondary); margin-top: 10px; border-radius: 5px; overflow: hidden; }
+        .summary-fill { height: 100%; background: var(--primary); border-radius: 5px; }
+        .lesson-detail-header { background: var(--accent-light); border: 2px solid var(--accent); border-radius: 0.5rem; padding: 16px; margin-bottom: 16px; }
+        .lesson-detail-title { font-size: var(--font-size-xl); font-weight: 700; margin-bottom: 4px; }
+        .lesson-detail-subtitle { color: var(--muted-foreground); font-size: var(--font-size-sm); }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <header class="app-header">
+        <div class="header-top">
+            <div>
+                <div class="app-title"><span class="jp">日本語</span> TRACKER</div>
+                <div class="header-date" id="header-date"></div>
+            </div>
+            <button class="btn-icon" onclick="exportData()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+        </div>
+        <div class="nav-tabs" id="nav-tabs">
+            <span class="nav-tab active" data-view="hoje">Hoje</span>
+            <span class="nav-tab" data-view="semana">Semana</span>
+            <span class="nav-tab" data-view="mes">Mês</span>
+            <span class="nav-tab" data-view="kana">Kana</span>
+            <span class="nav-tab" data-view="kanji">Kanji</span>
+            <span class="nav-tab" data-view="vocab">Vocab</span>
+            <span class="nav-tab" data-view="licoes">Lições</span>
+        </div>
+    </header>
+    <div class="main" id="main-content"></div>
+</div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+
+<script>
+var JpTracker = {
+    state: {
+        currentView: 'hoje',
+        selectedDate: new Date(),
+        sessions: {},
+        hiragana: {},
+        katakana: {},
+        kanji: {},
+        vocabulary: {},
+        lessons: {},
+        progress: { hiraganaBasic: 0, katakanaBasic: 0, kanjiCount: 0, vocabCount: 0 }
+    },
+    schedule: {
+        '2026-01-06': { lesson: 'Semana 1 - Dia 1', title: 'Introdução e Hiragana あ行', genki: 'Introduction pp.12-27', rw: 'あ行', mukai: 'Cap 1-2' },
+        '2026-01-07': { lesson: 'Semana 1 - Dia 2', title: 'Hiragana か行', genki: 'Continuação', rw: 'か行', mukai: 'Fonética' },
+        '2026-01-08': { lesson: 'Semana 1 - Dia 3', title: 'Hiragana さ行 + Consolidação', genki: 'Culture Notes', rw: 'さ行', mukai: 'Greetings' },
+        '2026-01-13': { lesson: 'Semana 2 - Dia 1', title: 'Hiragana た行 + な行', genki: 'Preview L1', rw: 'た/な行', mukai: 'Nomes' },
+        '2026-01-14': { lesson: 'Semana 2 - Dia 2', title: 'Hiragana は行 + ま行', genki: 'Greetings p.30', rw: 'は/ま行', mukai: '3.1.2' },
+        '2026-01-15': { lesson: 'Semana 2 - Dia 3', title: 'Hiragana Completo!', genki: 'Numbers p.35', rw: 'や/ら/わ/ん', mukai: 'Números' },
+        '2026-01-20': { lesson: 'Semana 3 - Dia 1', title: 'Genki L1: XはYです', genki: 'L1 pp.36-39', rw: 'Revisão', mukai: 'は particle' },
+        '2026-01-21': { lesson: 'Semana 3 - Dia 2', title: 'Genki L1: Perguntas + の', genki: 'L1 pp.40-42', rw: 'Prática', mukai: 'の particle' },
+        '2026-01-22': { lesson: 'Semana 3 - Dia 3', title: 'Genki L1: Workbook', genki: 'Workbook L1', rw: 'Names p.45', mukai: 'Conversação' },
+        '2026-01-27': { lesson: 'Semana 4 - Dia 1', title: 'Hiragana Dakuten', genki: 'Revisão L1', rw: 'が/ざ/だ/ば行', mukai: 'Fonologia' },
+        '2026-01-28': { lesson: 'Semana 4 - Dia 2', title: 'Hiragana Combinações', genki: 'Preview L2', rw: 'ぱ行 + 拗音', mukai: 'Sons' },
+        '2026-01-29': { lesson: 'Semana 4 - Dia 3', title: 'Katakana Início', genki: 'L2 pp.56-57', rw: 'ア/カ行', mukai: 'Revisão' },
+        '2026-02-03': { lesson: 'Semana 5 - Dia 1', title: 'Genki L2: これ/その', genki: 'L2 pp.58-60', rw: 'サ/タ/ナ行', mukai: 'を particle' },
+        '2026-02-04': { lesson: 'Semana 5 - Dia 2', title: 'Genki L2: ここ/だれの', genki: 'L2 pp.61-62', rw: 'ハ/マ/ヤ行', mukai: 'Currency' },
+        '2026-02-05': { lesson: 'Semana 5 - Dia 3', title: 'Katakana Completo!', genki: 'L2 pp.63-65', rw: 'ラ/ワ/ン', mukai: 'Workbook' },
+        '2026-02-10': { lesson: 'Semana 6 - Dia 1', title: 'Katakana Variações', genki: 'Revisão L2', rw: 'Dakuten', mukai: 'Verbos intro' },
+        '2026-02-11': { lesson: 'Semana 6 - Dia 2', title: 'Kanji Números', genki: 'Workbook L2', rw: '一〜十', mukai: '建国記念日' },
+        '2026-02-12': { lesson: 'Semana 6 - Dia 3', title: 'Genki L3 Preview', genki: 'L3 pp.82-83', rw: '百千万円時', mukai: 'Classroom' },
+        '2026-02-17': { lesson: 'Semana 7 - Dia 1', title: 'Verbos ます形', genki: 'L3 pp.84-85', rw: 'Prática', mukai: '3.2.3.1' },
+        '2026-02-18': { lesson: 'Semana 7 - Dia 2', title: 'Partículas を/で/に/へ', genki: 'L3 pp.86-88', rw: 'Kanji', mukai: 'Partículas' },
+        '2026-02-19': { lesson: 'Semana 7 - Dia 3', title: 'Time/Frequency', genki: 'L3 pp.89-92', rw: '日月火水木金土', mukai: 'Houses' },
+        '2026-02-24': { lesson: 'Semana 8 - Dia 1', title: 'Consolidação L3', genki: 'L3 p.93', rw: 'Workbook', mukai: 'Revisão' },
+        '2026-02-25': { lesson: 'Semana 8 - Dia 2', title: 'Revisão Geral', genki: 'Revisão L1-3', rw: 'Todos kanji', mukai: 'Todas partículas' },
+        '2026-02-26': { lesson: 'Semana 8 - Dia 3', title: 'Avaliação Final', genki: 'Preview L4', rw: 'Teste', mukai: 'Planejamento' }
+    },
+    sessionStructure: [
+        { time: '18:00-18:25', name: 'Revisão/Anki', id: 'anki' },
+        { time: '18:25-19:10', name: 'Conteúdo Novo (Genki)', id: 'genki' },
+        { time: '19:15-19:45', name: 'Prática Escrita', id: 'escrita' },
+        { time: '19:45-20:00', name: 'Leitura Mukai/Suzuki', id: 'mukai' }
+    ],
+    hiraganaData: {
+        basic: [['あ','い','う','え','お'],['か','き','く','け','こ'],['さ','し','す','せ','そ'],['た','ち','つ','て','と'],['な','に','ぬ','ね','の'],['は','ひ','ふ','へ','ほ'],['ま','み','む','め','も'],['や','','ゆ','','よ'],['ら','り','る','れ','ろ'],['わ','','','','を'],['ん','','','','']],
+        romaji: [['a','i','u','e','o'],['ka','ki','ku','ke','ko'],['sa','shi','su','se','so'],['ta','chi','tsu','te','to'],['na','ni','nu','ne','no'],['ha','hi','fu','he','ho'],['ma','mi','mu','me','mo'],['ya','','yu','','yo'],['ra','ri','ru','re','ro'],['wa','','','','wo'],['n','','','','']]
+    },
+    katakanaData: {
+        basic: [['ア','イ','ウ','エ','オ'],['カ','キ','ク','ケ','コ'],['サ','シ','ス','セ','ソ'],['タ','チ','ツ','テ','ト'],['ナ','ニ','ヌ','ネ','ノ'],['ハ','ヒ','フ','ヘ','ホ'],['マ','ミ','ム','メ','モ'],['ヤ','','ユ','','ヨ'],['ラ','リ','ル','レ','ロ'],['ワ','','','','ヲ'],['ン','','','','']]
+    },
+    kanjiData: [
+        { kanji: '一', reading: 'いち', meaning: 'um' },{ kanji: '二', reading: 'に', meaning: 'dois' },{ kanji: '三', reading: 'さん', meaning: 'três' },{ kanji: '四', reading: 'よん', meaning: 'quatro' },{ kanji: '五', reading: 'ご', meaning: 'cinco' },{ kanji: '六', reading: 'ろく', meaning: 'seis' },{ kanji: '七', reading: 'なな', meaning: 'sete' },{ kanji: '八', reading: 'はち', meaning: 'oito' },{ kanji: '九', reading: 'きゅう', meaning: 'nove' },{ kanji: '十', reading: 'じゅう', meaning: 'dez' },{ kanji: '百', reading: 'ひゃく', meaning: 'cem' },{ kanji: '千', reading: 'せん', meaning: 'mil' },{ kanji: '万', reading: 'まん', meaning: 'dez mil' },{ kanji: '円', reading: 'えん', meaning: 'iene' },{ kanji: '日', reading: 'にち', meaning: 'dia' },{ kanji: '月', reading: 'げつ', meaning: 'mês' },{ kanji: '火', reading: 'か', meaning: 'fogo' },{ kanji: '水', reading: 'すい', meaning: 'água' },{ kanji: '木', reading: 'もく', meaning: 'árvore' },{ kanji: '金', reading: 'きん', meaning: 'ouro' },{ kanji: '土', reading: 'ど', meaning: 'terra' },{ kanji: '本', reading: 'ほん', meaning: 'livro' },{ kanji: '人', reading: 'じん', meaning: 'pessoa' },{ kanji: '時', reading: 'じ', meaning: 'hora' }
+    ],
+    dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+};
+
+function formatDateKey(date) { var d = new Date(date); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function getWeekDays(date) { var d = new Date(date), day = d.getDay(), diff = d.getDate() - day, days = []; for (var i = 0; i < 7; i++) days.push(new Date(d.getFullYear(), d.getMonth(), diff + i)); return days; }
+function isToday(date) { var today = new Date(); return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear(); }
+function isStudyDay(date) { var dow = date.getDay(); return dow === 2 || dow === 3 || dow === 4; }
+function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+
+function saveState() { try { localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state)); } catch(e){} }
+function loadState() { try { var saved = localStorage.getItem('jp-tracker-v1'); if (saved) { var p = JSON.parse(saved); JpTracker.state.sessions = p.sessions || {}; JpTracker.state.hiragana = p.hiragana || {}; JpTracker.state.katakana = p.katakana || {}; JpTracker.state.kanji = p.kanji || {}; JpTracker.state.vocabulary = p.vocabulary || {}; JpTracker.state.progress = p.progress || JpTracker.state.progress; if (p.selectedDate) JpTracker.state.selectedDate = new Date(p.selectedDate); } } catch(e){} }
+
+function init() { loadState(); updateHeaderDate(); bindNavEvents(); render(); }
+function updateHeaderDate() { document.getElementById('header-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+function bindNavEvents() { document.getElementById('nav-tabs').onclick = function(e) { if (e.target.className.indexOf('nav-tab') !== -1) setView(e.target.getAttribute('data-view')); }; document.getElementById('modal-overlay').onclick = function(e) { if (e.target.id === 'modal-overlay') closeModal(); }; }
+function setView(view) { JpTracker.state.currentView = view; document.querySelectorAll('.nav-tab').forEach(function(tab) { tab.className = tab.getAttribute('data-view') === view ? 'nav-tab active' : 'nav-tab'; }); render(); }
+function render() { var main = document.getElementById('main-content'); var view = JpTracker.state.currentView; if (view === 'hoje') main.innerHTML = renderHojeView(); else if (view === 'semana') main.innerHTML = renderSemanaView(); else if (view === 'mes') main.innerHTML = renderMesView(); else if (view === 'kana') main.innerHTML = renderKanaView(); else if (view === 'kanji') main.innerHTML = renderKanjiView(); else if (view === 'vocab') main.innerHTML = renderVocabView(); else if (view === 'licoes') main.innerHTML = renderLicoesView(); bindViewEvents(); }
+
+function bindViewEvents() {
+    var prevDate = document.getElementById('prev-date'), nextDate = document.getElementById('next-date');
+    var prevWeek = document.getElementById('prev-week'), nextWeek = document.getElementById('next-week');
+    var prevMonth = document.getElementById('prev-month'), nextMonth = document.getElementById('next-month');
+    if (prevDate) prevDate.onclick = function() { navigateDate(-1); };
+    if (nextDate) nextDate.onclick = function() { navigateDate(1); };
+    if (prevWeek) prevWeek.onclick = function() { navigateWeek(-1); };
+    if (nextWeek) nextWeek.onclick = function() { navigateWeek(1); };
+    if (prevMonth) prevMonth.onclick = function() { navigateMonth(-1); };
+    if (nextMonth) nextMonth.onclick = function() { navigateMonth(1); };
+    document.querySelectorAll('.session-check').forEach(function(el) { el.onclick = function() { toggleSession(el.getAttribute('data-date'), el.getAttribute('data-session')); }; });
+    document.querySelectorAll('.kana-cell').forEach(function(el) { el.onclick = function() { toggleKana(el.getAttribute('data-type'), el.getAttribute('data-char')); }; });
+    document.querySelectorAll('.kanji-check').forEach(function(el) { el.onclick = function() { toggleKanji(el.getAttribute('data-kanji')); }; });
+    document.querySelectorAll('.vocab-check').forEach(function(el) { el.onclick = function() { toggleVocab(el.getAttribute('data-word')); }; });
+    document.querySelectorAll('.month-cell[data-date]').forEach(function(el) { el.onclick = function() { selectDay(el.getAttribute('data-date')); }; });
+}
+
+function navigateDate(dir) { JpTracker.state.selectedDate.setDate(JpTracker.state.selectedDate.getDate() + dir); saveState(); render(); }
+function navigateWeek(dir) { JpTracker.state.selectedDate.setDate(JpTracker.state.selectedDate.getDate() + (dir * 7)); saveState(); render(); }
+function navigateMonth(dir) { JpTracker.state.selectedDate.setMonth(JpTracker.state.selectedDate.getMonth() + dir); saveState(); render(); }
+function selectDay(dateStr) { JpTracker.state.selectedDate = new Date(dateStr + 'T12:00:00'); saveState(); setView('hoje'); }
+
+function toggleSession(dateStr, sessionId) { if (!JpTracker.state.sessions[dateStr]) JpTracker.state.sessions[dateStr] = {}; JpTracker.state.sessions[dateStr][sessionId] = !JpTracker.state.sessions[dateStr][sessionId]; saveState(); render(); }
+function toggleKana(type, char) { if (!char) return; var store = type === 'hiragana' ? JpTracker.state.hiragana : JpTracker.state.katakana; if (!store[char]) store[char] = 'learning'; else if (store[char] === 'learning') store[char] = 'learned'; else store[char] = null; updateProgress(); saveState(); render(); }
+function toggleKanji(kanji) { JpTracker.state.kanji[kanji] = !JpTracker.state.kanji[kanji]; updateProgress(); saveState(); render(); }
+function toggleVocab(word) { JpTracker.state.vocabulary[word] = !JpTracker.state.vocabulary[word]; updateProgress(); saveState(); render(); }
+
+function updateProgress() { var hCount = 0, kCount = 0, kanjiCount = 0, vocabCount = 0; for (var k in JpTracker.state.hiragana) if (JpTracker.state.hiragana[k] === 'learned') hCount++; for (var k in JpTracker.state.katakana) if (JpTracker.state.katakana[k] === 'learned') kCount++; for (var k in JpTracker.state.kanji) if (JpTracker.state.kanji[k]) kanjiCount++; for (var k in JpTracker.state.vocabulary) if (JpTracker.state.vocabulary[k]) vocabCount++; JpTracker.state.progress.hiraganaBasic = hCount; JpTracker.state.progress.katakanaBasic = kCount; JpTracker.state.progress.kanjiCount = kanjiCount; JpTracker.state.progress.vocabCount = vocabCount; }
+
+function getNextStudyDay(date) { var d = new Date(date); for (var i = 1; i <= 7; i++) { d.setDate(d.getDate() + 1); if (isStudyDay(d)) return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric' }); } return ''; }
+
+function renderHojeView() {
+    var date = JpTracker.state.selectedDate, dateStr = formatDateKey(date), schedule = JpTracker.schedule[dateStr], sessions = JpTracker.state.sessions[dateStr] || {};
+    var todayBadge = isToday(date) ? ' <span style="background:var(--accent);color:#fff;padding:4px 10px;font-size:0.8rem;border-radius:4px;margin-left:8px;">HOJE</span>' : '';
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-date">←</span><span style="flex:1;text-align:center;text-transform:capitalize;">' + formatDateDisplay(date) + todayBadge + '</span><span class="btn" id="next-date">→</span></div>';
+    if (!isStudyDay(date)) { html += '<div style="text-align:center;padding:30px;color:var(--muted-foreground);"><div style="font-size:2rem;margin-bottom:10px;">📚</div><div>Dia de descanso</div><div style="font-size:0.9rem;margin-top:8px;">Próxima aula: ' + getNextStudyDay(date) + '</div></div></div>'; return html; }
+    if (schedule) { html += '<div class="lesson-detail-header"><div class="lesson-detail-title">' + schedule.title + '</div><div class="lesson-detail-subtitle">' + schedule.lesson + '</div></div>'; }
+    html += '</div>';
+    html += '<div class="card"><div class="card-title">Sessões de Estudo (18h-20h)</div>';
+    JpTracker.sessionStructure.forEach(function(session) { var checked = sessions[session.id] || false; var detail = ''; if (schedule) { if (session.id === 'genki') detail = schedule.genki; else if (session.id === 'escrita') detail = 'R/W: ' + schedule.rw; else if (session.id === 'mukai') detail = schedule.mukai; } html += '<div class="session-block"><div class="session-time">' + session.time + '</div><div class="session-content"><div class="session-text"><strong>' + session.name + '</strong>'; if (detail) html += '<br><span style="font-size:0.9rem;color:var(--muted-foreground);">' + detail + '</span>'; html += '</div><span class="session-check' + (checked ? ' checked' : '') + '" data-date="' + dateStr + '" data-session="' + session.id + '">' + (checked ? '✓' : '') + '</span></div></div>'; });
+    var completedSessions = Object.values(sessions).filter(function(v) { return v; }).length; var percent = Math.round((completedSessions / 4) * 100);
+    html += '<div style="margin-top:14px;"><div class="progress-label"><span>Progresso do dia</span><span>' + percent + '%</span></div><div class="progress-bar"><div class="progress-fill accent" style="width:' + percent + '%;"></div></div></div></div>';
+    html += '<div class="card"><div class="card-title">Progresso Geral</div><div class="stats-grid"><div class="stat-box"><div class="stat-value">' + JpTracker.state.progress.hiraganaBasic + '/46</div><div class="stat-label">Hiragana</div></div><div class="stat-box"><div class="stat-value">' + JpTracker.state.progress.katakanaBasic + '/46</div><div class="stat-label">Katakana</div></div><div class="stat-box"><div class="stat-value">' + JpTracker.state.progress.kanjiCount + '/24</div><div class="stat-label">Kanji</div></div><div class="stat-box"><div class="stat-value accent">' + JpTracker.state.progress.vocabCount + '</div><div class="stat-label">Vocabulário</div></div></div></div>';
+    return html;
+}
+
+function renderSemanaView() {
+    var weekDays = getWeekDays(JpTracker.state.selectedDate);
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week">←</span><span style="flex:1;text-align:center;">Semana de Estudo</span><span class="btn" id="next-week">→</span></div>';
+    html += '<div style="overflow-x:auto;"><table class="tracker-table"><tr><th class="label">Sessão</th>';
+    weekDays.forEach(function(d) { var style = isToday(d) ? ' style="background:var(--accent);color:#fff;"' : ''; html += '<th' + style + '>' + JpTracker.dayNamesShort[d.getDay()] + '<br>' + d.getDate() + '</th>'; });
+    html += '</tr>';
+    JpTracker.sessionStructure.forEach(function(session) { html += '<tr><td class="label">' + session.name.split(' ')[0] + '</td>'; weekDays.forEach(function(d) { var dateStr = formatDateKey(d); if (!isStudyDay(d)) { html += '<td class="tracker-cell na">–</td>'; } else { var sessions = JpTracker.state.sessions[dateStr] || {}; var checked = sessions[session.id] || false; html += '<td class="tracker-cell session-check' + (checked ? ' checked' : '') + '" data-date="' + dateStr + '" data-session="' + session.id + '">' + (checked ? '✓' : '') + '</td>'; } }); html += '</tr>'; });
+    html += '</table></div></div>';
+    var totalSessions = 0, completedSessions = 0; weekDays.forEach(function(d) { if (isStudyDay(d)) { totalSessions += 4; var sessions = JpTracker.state.sessions[formatDateKey(d)] || {}; completedSessions += Object.values(sessions).filter(function(v) { return v; }).length; } }); var percent = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+    html += '<div class="card"><div class="card-title">Resumo da Semana</div><div class="summary-box"><div class="summary-percent">' + percent + '%</div><div style="font-size:1rem;color:var(--muted-foreground);margin-top:4px;">' + completedSessions + ' de ' + totalSessions + ' sessões</div><div class="summary-bar"><div class="summary-fill" style="width:' + percent + '%;"></div></div></div></div>';
+    return html;
+}
+
+function renderMesView() {
+    var date = JpTracker.state.selectedDate, year = date.getFullYear(), month = date.getMonth();
+    var firstDay = new Date(year, month, 1), lastDay = new Date(year, month + 1, 0), startPadding = firstDay.getDay();
+    var monthName = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-month">←</span><span style="flex:1;text-align:center;text-transform:capitalize;">' + monthName + '</span><span class="btn" id="next-month">→</span></div>';
+    html += '<div class="month-calendar"><div class="month-row">'; JpTracker.dayNamesShort.forEach(function(d) { html += '<div class="month-cell header">' + d + '</div>'; }); html += '</div>';
+    var dayCount = 0, totalCells = startPadding + lastDay.getDate(), rows = Math.ceil(totalCells / 7);
+    for (var r = 0; r < rows; r++) { html += '<div class="month-row">'; for (var c = 0; c < 7; c++) { var cellIndex = r * 7 + c; if (cellIndex < startPadding || dayCount >= lastDay.getDate()) { html += '<div class="month-cell empty"></div>'; } else { dayCount++; var dayDate = new Date(year, month, dayCount); var dateStr = formatDateKey(dayDate); var isTodayCell = isToday(dayDate); var hasLesson = JpTracker.schedule[dateStr]; var sessions = JpTracker.state.sessions[dateStr] || {}; var sessionCount = Object.values(sessions).filter(function(v) { return v; }).length; var isComplete = sessionCount === 4; var cellClass = 'month-cell'; if (isTodayCell) cellClass += ' today'; else if (isComplete && hasLesson) cellClass += ' completed'; else if (hasLesson) cellClass += ' has-lesson'; html += '<div class="' + cellClass + '" data-date="' + dateStr + '"><strong>' + dayCount + '</strong>'; if (hasLesson && sessionCount > 0) html += '<div style="font-size:0.6rem;">' + sessionCount + '/4</div>'; html += '</div>'; } } html += '</div>'; }
+    html += '</div><div style="margin-top:14px;font-size:0.85rem;display:flex;gap:12px;flex-wrap:wrap;"><span>🟡 Aula</span><span>🟢 Completa</span><span>🔴 Hoje</span></div></div>';
+    return html;
+}
+
+function renderKanaView() {
+    var html = '<div class="card"><div class="card-title">Hiragana ひらがな</div><p style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:14px;">Toque: ⬜→🟡 Aprendendo→🟢 Dominado</p><div class="kana-grid">';
+    for (var i = 0; i < JpTracker.hiraganaData.basic.length; i++) { for (var j = 0; j < 5; j++) { var char = JpTracker.hiraganaData.basic[i][j]; var romaji = JpTracker.hiraganaData.romaji[i][j]; var status = JpTracker.state.hiragana[char] || ''; var cellClass = 'kana-cell'; if (status === 'learned') cellClass += ' learned'; else if (status === 'learning') cellClass += ' learning'; html += '<div class="' + cellClass + '" data-type="hiragana" data-char="' + char + '">' + (char ? char : '') + (romaji ? '<span class="romaji">' + romaji + '</span>' : '') + '</div>'; } }
+    html += '</div>'; var hLearned = Object.values(JpTracker.state.hiragana).filter(function(v) { return v === 'learned'; }).length; html += '<div class="progress-section"><div class="progress-label"><span>Dominados</span><span>' + hLearned + '/46</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + (hLearned/46*100) + '%;"></div></div></div></div>';
+    html += '<div class="card"><div class="card-title">Katakana カタカナ</div><div class="kana-grid">';
+    for (var i = 0; i < JpTracker.katakanaData.basic.length; i++) { for (var j = 0; j < 5; j++) { var char = JpTracker.katakanaData.basic[i][j]; var romaji = JpTracker.hiraganaData.romaji[i][j]; var status = JpTracker.state.katakana[char] || ''; var cellClass = 'kana-cell'; if (status === 'learned') cellClass += ' learned'; else if (status === 'learning') cellClass += ' learning'; html += '<div class="' + cellClass + '" data-type="katakana" data-char="' + char + '">' + (char ? char : '') + (romaji ? '<span class="romaji">' + romaji + '</span>' : '') + '</div>'; } }
+    html += '</div>'; var kLearned = Object.values(JpTracker.state.katakana).filter(function(v) { return v === 'learned'; }).length; html += '<div class="progress-section"><div class="progress-label"><span>Dominados</span><span>' + kLearned + '/46</span></div><div class="progress-bar"><div class="progress-fill accent" style="width:' + (kLearned/46*100) + '%;"></div></div></div></div>';
+    return html;
+}
+
+function renderKanjiView() {
+    var html = '<div class="card"><div class="card-title">Kanji 漢字</div><p style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:14px;">Primeiros 24 kanji — Jan/Fev 2026</p>';
+    JpTracker.kanjiData.forEach(function(k) { var checked = JpTracker.state.kanji[k.kanji] || false; html += '<div class="vocab-item"><div class="vocab-jp" style="font-size:1.8rem;">' + k.kanji + '</div><div class="vocab-reading">' + k.reading + '</div><div class="vocab-meaning">' + k.meaning + '</div><span class="vocab-check kanji-check' + (checked ? ' checked' : '') + '" data-kanji="' + k.kanji + '">' + (checked ? '✓' : '') + '</span></div>'; });
+    var kanjiLearned = Object.values(JpTracker.state.kanji).filter(function(v) { return v; }).length; html += '<div class="progress-section" style="margin-top:14px;"><div class="progress-label"><span>Dominados</span><span>' + kanjiLearned + '/24</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + (kanjiLearned/24*100) + '%;"></div></div></div></div>';
+    return html;
+}
+
+function renderVocabView() {
+    var defaultVocab = [{jp:'わたし',reading:'watashi',meaning:'eu'},{jp:'がくせい',reading:'gakusei',meaning:'estudante'},{jp:'せんせい',reading:'sensei',meaning:'professor'},{jp:'だいがく',reading:'daigaku',meaning:'universidade'},{jp:'でんわ',reading:'denwa',meaning:'telefone'},{jp:'ともだち',reading:'tomodachi',meaning:'amigo'},{jp:'にほんご',reading:'nihongo',meaning:'japonês'},{jp:'なまえ',reading:'namae',meaning:'nome'},{jp:'これ',reading:'kore',meaning:'isto'},{jp:'それ',reading:'sore',meaning:'isso'},{jp:'あれ',reading:'are',meaning:'aquilo'},{jp:'ここ',reading:'koko',meaning:'aqui'},{jp:'そこ',reading:'soko',meaning:'aí'},{jp:'あそこ',reading:'asoko',meaning:'ali'},{jp:'いくら',reading:'ikura',meaning:'quanto'},{jp:'たべます',reading:'tabemasu',meaning:'comer'},{jp:'のみます',reading:'nomimasu',meaning:'beber'},{jp:'いきます',reading:'ikimasu',meaning:'ir'},{jp:'きます',reading:'kimasu',meaning:'vir'},{jp:'みます',reading:'mimasu',meaning:'ver'}];
+    var html = '<div class="card"><div class="card-title">Vocabulário 語彙</div><p style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:14px;">Palavras das lições do Genki</p>';
+    defaultVocab.forEach(function(v) { var checked = JpTracker.state.vocabulary[v.jp] || false; html += '<div class="vocab-item"><div class="vocab-jp">' + v.jp + '</div><div class="vocab-reading">' + v.reading + '</div><div class="vocab-meaning">' + v.meaning + '</div><span class="vocab-check' + (checked ? ' checked' : '') + '" data-word="' + v.jp + '">' + (checked ? '✓' : '') + '</span></div>'; });
+    var vocabLearned = Object.values(JpTracker.state.vocabulary).filter(function(v) { return v; }).length; html += '<div class="progress-section" style="margin-top:14px;"><div class="progress-label"><span>Dominados</span><span>' + vocabLearned + '/' + defaultVocab.length + '</span></div><div class="progress-bar"><div class="progress-fill accent" style="width:' + (vocabLearned/defaultVocab.length*100) + '%;"></div></div></div></div>';
+    return html;
+}
+
+function renderLicoesView() {
+    var html = '<div class="card"><div class="card-title">Cronograma de Lições</div><p style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:14px;">Janeiro — Fevereiro 2026</p>';
+    var sortedDates = Object.keys(JpTracker.schedule).sort(); var currentMonth = '';
+    sortedDates.forEach(function(dateStr) { var schedule = JpTracker.schedule[dateStr]; var date = new Date(dateStr + 'T12:00:00'); var monthKey = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); if (monthKey !== currentMonth) { if (currentMonth) html += '</div>'; html += '<div style="font-weight:700;font-size:1.1rem;margin:16px 0 10px;text-transform:capitalize;border-bottom:2px solid var(--primary);padding-bottom:6px;">' + monthKey + '</div>'; currentMonth = monthKey; } var sessions = JpTracker.state.sessions[dateStr] || {}; var sessionCount = Object.values(sessions).filter(function(v) { return v; }).length; var status = sessionCount === 0 ? 'pending' : sessionCount === 4 ? 'completed' : 'in-progress'; var statusText = status === 'pending' ? 'Pendente' : status === 'completed' ? 'Completa' : 'Em andamento'; html += '<div class="lesson-card" onclick="selectDay(\'' + dateStr + '\')"><div class="lesson-header"><span class="lesson-title">' + schedule.title + '</span><span class="lesson-status ' + status + '">' + statusText + '</span></div><div class="lesson-date">' + date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' }) + '</div><div style="font-size:0.85rem;color:var(--muted-foreground);margin-top:6px;">Genki: ' + schedule.genki + ' | R/W: ' + schedule.rw + '</div></div>'; });
+    html += '</div></div>'; return html;
+}
+
+function closeModal() { document.getElementById('modal-overlay').className = 'modal-overlay'; }
+function exportData() { var data = JSON.stringify(JpTracker.state, null, 2); var blob = new Blob([data], { type: 'application/json' }); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'nihongo-tracker-' + formatDateKey(new Date()) + '.json'; a.click(); }
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+</script>
+</body>
+</html>
