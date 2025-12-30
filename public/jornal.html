@@ -520,13 +520,30 @@ function bindViewEvents() {
     if (addProjectBtn) addProjectBtn.onclick = showAddProjectModal;
     if (addFutureBtn) addFutureBtn.onclick = showAddFutureModal;
 
-    // Calendário mensal
+    // Calendário mensal - clique único mostra eventos, duplo clique vai para o dia
     var monthCells = document.querySelectorAll('.month-cell[data-date]');
     for (var i = 0; i < monthCells.length; i++) {
         (function(el) {
+            var clickTimer = null;
+            var clickCount = 0;
+            
             el.onclick = function() {
-                BuJo.state.selectedDate = new Date(el.getAttribute('data-date') + 'T12:00:00');
-                setView('dia');
+                clickCount++;
+                var dateStr = el.getAttribute('data-date');
+                
+                if (clickCount === 1) {
+                    clickTimer = setTimeout(function() {
+                        // Clique único - mostrar eventos
+                        showDayEvents(dateStr);
+                        clickCount = 0;
+                    }, 300);
+                } else if (clickCount === 2) {
+                    // Duplo clique - ir para o dia
+                    clearTimeout(clickTimer);
+                    clickCount = 0;
+                    BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00');
+                    setView('dia');
+                }
             };
         })(monthCells[i]);
     }
@@ -591,21 +608,17 @@ function renderDayView() {
     html += '</div>';
     html += '</div>';
 
-    // Plano de Vida do Dia
-    html += '<div class="card">';
-    html += '<div class="card-title">Plano de Vida</div>';
-    html += renderDaySpiritualHabits(dateStr, dayOfWeek, thirdSunday);
-    html += '</div>';
-
-    // Mortificações
-    html += '<div class="card">';
-    html += '<div class="card-title">Mortificações <span class="btn" id="add-mort-btn" style="float:right;">+ Add</span></div>';
-    html += renderMortifications(dateStr);
-    html += '</div>';
-
-    // Registro Rápido
+    // Registro Rápido (MOVIDO PARA CIMA)
     html += '<div class="card">';
     html += '<div class="card-title">Registro</div>';
+    // Legenda logo abaixo do título
+    html += '<div style="font-size:0.75rem;color:#666;padding:4px 0 8px;border-bottom:1px dotted #ccc;margin-bottom:8px;">';
+    html += BuJo.symbols.task + ' tarefa &nbsp; ';
+    html += BuJo.symbols.taskDone + ' feito &nbsp; ';
+    html += BuJo.symbols.taskMigrated + ' migrado &nbsp; ';
+    html += BuJo.symbols.event + ' evento &nbsp; ';
+    html += BuJo.symbols.note + ' nota';
+    html += '</div>';
     if (dayEntries.length === 0) {
         html += '<p style="color:#999;font-style:italic;">Nenhuma entrada...</p>';
     } else {
@@ -624,6 +637,18 @@ function renderDayView() {
     html += '</div>';
     html += '</div>';
 
+    // Plano de Vida do Dia (MOVIDO PARA BAIXO)
+    html += '<div class="card">';
+    html += '<div class="card-title">Plano de Vida</div>';
+    html += renderDaySpiritualHabits(dateStr, dayOfWeek, thirdSunday);
+    html += '</div>';
+
+    // Mortificações
+    html += '<div class="card">';
+    html += '<div class="card-title">Mortificações <span class="btn" id="add-mort-btn" style="float:right;">+ Add</span></div>';
+    html += renderMortifications(dateStr);
+    html += '</div>';
+
     return html;
 }
 
@@ -632,17 +657,40 @@ function renderDaySpiritualHabits(dateStr, dayOfWeek, thirdSunday) {
     var specialHabits = BuJo.weeklySpecialHabits[dayOfWeek] || [];
     var html = '';
 
-    // Hábitos diários
-    for (var i = 0; i < BuJo.dailySpiritualHabits.length; i++) {
-        var habit = BuJo.dailySpiritualHabits[i];
-        var checked = dayHabits[habit.id] || false;
-        html += '<div class="habit-row">';
-        html += '<span class="habit-name">' + habit.name + '</span>';
-        html += '<span class="habit-check spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + habit.id + '" data-date="' + dateStr + '">';
-        html += checked ? '✓' : '';
-        html += '</span>';
-        html += '</div>';
+    // Hábitos diários em 2 colunas
+    html += '<table style="width:100%;border-collapse:collapse;">';
+    var habitsCount = BuJo.dailySpiritualHabits.length;
+    var halfCount = Math.ceil(habitsCount / 2);
+    
+    for (var i = 0; i < halfCount; i++) {
+        html += '<tr>';
+        
+        // Coluna 1
+        var habit1 = BuJo.dailySpiritualHabits[i];
+        var checked1 = dayHabits[habit1.id] || false;
+        html += '<td style="padding:3px 4px;border-bottom:1px dotted #ccc;width:45%;">' + habit1.name + '</td>';
+        html += '<td style="padding:3px;border-bottom:1px dotted #ccc;width:5%;text-align:center;">';
+        html += '<span class="habit-check spiritual-check' + (checked1 ? ' checked' : '') + '" data-habit="' + habit1.id + '" data-date="' + dateStr + '" style="display:inline-block;width:24px;height:24px;line-height:24px;">';
+        html += checked1 ? '✓' : '';
+        html += '</span></td>';
+        
+        // Coluna 2
+        var idx2 = i + halfCount;
+        if (idx2 < habitsCount) {
+            var habit2 = BuJo.dailySpiritualHabits[idx2];
+            var checked2 = dayHabits[habit2.id] || false;
+            html += '<td style="padding:3px 4px;border-bottom:1px dotted #ccc;border-left:1px solid #ccc;width:45%;">' + habit2.name + '</td>';
+            html += '<td style="padding:3px;border-bottom:1px dotted #ccc;width:5%;text-align:center;">';
+            html += '<span class="habit-check spiritual-check' + (checked2 ? ' checked' : '') + '" data-habit="' + habit2.id + '" data-date="' + dateStr + '" style="display:inline-block;width:24px;height:24px;line-height:24px;">';
+            html += checked2 ? '✓' : '';
+            html += '</span></td>';
+        } else {
+            html += '<td style="border-bottom:1px dotted #ccc;"></td><td style="border-bottom:1px dotted #ccc;"></td>';
+        }
+        
+        html += '</tr>';
     }
+    html += '</table>';
 
     // Hábitos especiais
     if (specialHabits.length > 0) {
@@ -910,16 +958,20 @@ function renderWeekView() {
         else if (special) headerClass += ' special';
 
         html += '<div class="week-day">';
-        html += '<div class="' + headerClass + '">';
-        html += '<span>' + BuJo.dayNamesShort[dow] + '</span>';
-        html += '<span>' + d.getDate() + '</span>';
+        html += '<div class="' + headerClass + '" style="display:table;width:100%;">';
+        html += '<span style="display:table-cell;text-align:left;">' + BuJo.dayNamesShort[dow] + '</span>';
+        html += '<span style="display:table-cell;text-align:right;font-weight:bold;">' + d.getDate() + '</span>';
         html += '</div>';
         html += '<div class="week-day-content">';
-        for (var j = 0; j < Math.min(schedule.length, 4); j++) {
-            html += '<div style="border-bottom:1px dotted #ccc;padding:1px 0;">' + schedule[j].time + ' ' + schedule[j].event + '</div>';
+        for (var j = 0; j < Math.min(schedule.length, 6); j++) {
+            var item = schedule[j];
+            var timeStr = item.time !== '★' ? item.time + ' ' : '★ ';
+            html += '<div style="border-bottom:1px dotted #ccc;padding:2px 0;font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">';
+            html += '<span style="color:#666;">' + timeStr + '</span>' + item.event;
+            html += '</div>';
         }
-        if (schedule.length > 4) {
-            html += '<div style="color:#999;">+' + (schedule.length - 4) + '</div>';
+        if (schedule.length > 6) {
+            html += '<div style="color:#999;font-size:0.6rem;">+' + (schedule.length - 6) + ' mais</div>';
         }
         html += '</div>';
         html += '</div>';
@@ -949,6 +1001,7 @@ function renderMonthView() {
     html += '</div>';
 
     html += '<p style="font-size:0.7rem;color:#666;margin-bottom:6px;">★ Ter:Turno | Qua:Guarda | Sáb:N.Sra | 3ºDom:Athan.</p>';
+    html += '<p style="font-size:0.65rem;color:#999;margin-bottom:8px;">Clique: ver eventos | Duplo clique: ir para o dia</p>';
 
     html += '<div class="month-calendar">';
 
@@ -983,8 +1036,8 @@ function renderMonthView() {
                 if (today) cellClass += ' today';
                 if (special) cellClass += ' special';
 
-                html += '<div class="' + cellClass + '" data-date="' + dateStr + '">';
-                html += dayCount;
+                html += '<div class="' + cellClass + '" data-date="' + dateStr + '" data-day="' + dayCount + '">';
+                html += '<strong>' + dayCount + '</strong>';
                 if (hasHabits) html += '<div style="width:4px;height:4px;background:#000;border-radius:50%;margin:2px auto 0;"></div>';
                 html += '</div>';
             }
@@ -994,7 +1047,65 @@ function renderMonthView() {
     html += '</div>';
     html += '</div>';
 
+    // Painel de eventos do dia selecionado
+    html += '<div class="card" id="day-events-panel">';
+    html += '<div class="card-title">Eventos do Dia</div>';
+    html += '<p style="color:#999;font-style:italic;font-size:0.85rem;">Clique em um dia para ver os eventos.</p>';
+    html += '</div>';
+
     return html;
+}
+
+function showDayEvents(dateStr) {
+    var panel = document.getElementById('day-events-panel');
+    if (!panel) return;
+
+    var date = new Date(dateStr + 'T12:00:00');
+    var dow = date.getDay();
+    var schedule = BuJo.weeklySchedule[dow] || [];
+    var specialHabits = BuJo.weeklySpecialHabits[dow] || [];
+    var thirdSunday = isThirdSunday(date);
+
+    var dateLabel = date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    var html = '<div class="card-title">' + dateLabel + '</div>';
+
+    // Indicador de dia especial
+    if (specialHabits.length > 0 || thirdSunday) {
+        html += '<div style="background:#f5f5f5;padding:4px 8px;margin-bottom:8px;font-size:0.8rem;">';
+        html += '<strong>★ </strong>';
+        var specials = [];
+        for (var i = 0; i < specialHabits.length; i++) {
+            specials.push(specialHabits[i].name);
+        }
+        if (thirdSunday) specials.push('Sýmbolum Athanasiánum');
+        html += specials.join(' • ');
+        html += '</div>';
+    }
+
+    // Eventos do dia
+    if (schedule.length === 0) {
+        html += '<p style="color:#999;font-style:italic;font-size:0.85rem;">Nenhum evento agendado.</p>';
+    } else {
+        for (var i = 0; i < schedule.length; i++) {
+            var item = schedule[i];
+            html += '<div class="schedule-item">';
+            html += '<span class="schedule-time">' + item.time + '</span>';
+            html += '<span class="schedule-event' + (item.special ? ' special' : '') + '">' + item.event + '</span>';
+            html += '</div>';
+        }
+    }
+
+    html += '<div style="margin-top:12px;text-align:center;">';
+    html += '<span class="btn" onclick="goToDay(\'' + dateStr + '\')">Ir para este dia →</span>';
+    html += '</div>';
+
+    panel.innerHTML = html;
+}
+
+function goToDay(dateStr) {
+    BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00');
+    setView('dia');
 }
 
 // ========== VIEW: FUTURE LOG ==========
