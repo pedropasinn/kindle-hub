@@ -2,225 +2,141 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Bullet Journal - Pedro 2026</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: Georgia, serif;
-            font-size: 14px;
-            line-height: 1.5;
-            background: #fff;
-            color: #000;
+        :root {
+            --background: #ffffff;
+            --foreground: #09090b;
+            --card: #ffffff;
+            --primary: #18181b;
+            --secondary: #f4f4f5;
+            --muted-foreground: #71717a;
+            --border: #e4e4e7;
+            --radius: 0.75rem;
+            --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-size-base: 18px;
+            --font-size-sm: 16px;
+            --font-size-xs: 14px;
+            --font-size-lg: 20px;
+            --font-size-xl: 24px;
         }
-        .header {
-            border-bottom: 2px solid #000;
-            padding: 8px 12px;
-            background: #fff;
-        }
-        .header h1 { font-size: 1.1rem; margin-bottom: 4px; }
-        .header-date { font-size: 0.7rem; color: #666; }
-        .nav-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            /* gap: 4px; -> REMOVIDO */
-            margin-top: 8px;
-        }
-        .nav-tabs > * {
-            margin-right: 4px;
-            margin-bottom: 4px;
-        }
-        .nav-tabs > *:last-child {
-            margin-right: 0;
-        }
-        .nav-tab {
-            font-size: 0.83rem;
-            text-transform: uppercase;
-            padding: 4px 8px;
-            border: 1px solid #ccc;
-            background: #fff;
-            cursor: pointer;
-        }
-        .nav-tab.active { background: #000; color: #fff; border-color: #000; }
-        .main { padding: 12px; max-width: 600px; margin: 0 auto; }
-        .card { border: 1px solid #000; padding: 12px; margin-bottom: 12px; }
-        .card-title {
-            font-size: 1rem;
-            font-weight: bold;
-            border-bottom: 1px solid #000;
-            padding-bottom: 6px;
-            margin-bottom: 10px;
-        }
-        .btn {
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border: 1px solid #000;
-            background: #fff;
-            cursor: pointer;
-        }
-        .special-day {
-            background: #f5f5f5;
-            border: 1px solid #999;
-            padding: 6px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-        }
-        .schedule-item {
-            display: table;
-            width: 100%;
-            padding: 3px 0;
-            border-bottom: 1px dotted #ccc;
-            font-size: 0.85rem;
-        }
-        .schedule-time {
-            display: table-cell;
-            width: 50px;
-            font-size: 0.75rem;
-            color: #666;
-        }
-        .schedule-event { display: table-cell; }
-        .schedule-event.special { font-weight: bold; }
-        .habit-row {
-            display: table;
-            width: 100%;
-            padding: 4px 0;
-            border-bottom: 1px dotted #ccc;
-        }
-        .habit-name { display: table-cell; vertical-align: middle; }
-        .habit-check {
-            display: table-cell;
-            width: 28px;
-            height: 28px;
-            border: 2px solid #000;
-            text-align: center;
-            vertical-align: middle;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .habit-check.checked { background: #000; color: #fff; }
-        .tracker-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        .tracker-table th, .tracker-table td {
-            border: 1px solid #ccc;
-            padding: 4px;
-            text-align: center;
-        }
-        .tracker-table th { background: #f5f5f5; font-size: 0.65rem; text-transform: uppercase; }
-        .tracker-table .label { text-align: left; font-weight: normal; }
-        .tracker-cell { cursor: pointer; min-width: 24px; }
-        .tracker-cell.checked { background: #000; color: #fff; }
-        .tracker-cell.na { background: #eee; color: #999; }
-        .week-grid { display: table; width: 100%; border-collapse: collapse; }
-        .week-day { display: table-cell; border: 1px solid #ccc; vertical-align: top; width: 14.28%; }
-        .week-day-header {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            padding: 4px;
-            border-bottom: 1px solid #ccc;
-            background: #f5f5f5;
-        }
-        .week-day-header.today { background: #000; color: #fff; }
-        .week-day-header.special { background: #666; color: #fff; }
-        .week-day-content { padding: 4px; font-size: 0.7rem; min-height: 80px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background-color: var(--background); color: var(--foreground); font-family: var(--font-sans); font-size: var(--font-size-base); line-height: 1.5; }
+        .app-shell { display: flex; flex-direction: column; height: 100vh; }
+        .app-header { border-bottom: 1px solid var(--border); padding: 12px 1.25rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 50; flex-shrink: 0; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .app-title { font-size: var(--font-size-xl); font-weight: 700; }
+        .header-date { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        .btn-icon { background: transparent; border: 1px solid var(--border); border-radius: 0.5rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-icon:active { background: var(--secondary); transform: scale(0.96); }
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+        .nav-tab { font-size: var(--font-size-sm); text-transform: uppercase; padding: 8px 14px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; }
+        .nav-tab:active { transform: scale(0.96); }
+        .nav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .main { flex: 1; overflow-y: auto; padding: 1.25rem; padding-bottom: 3rem; max-width: 700px; margin: 0 auto; width: 100%; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .card-title { font-size: var(--font-size-lg); font-weight: 700; border-bottom: 1px solid var(--secondary); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { font-size: var(--font-size-sm); padding: 8px 16px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; }
+        .btn:active { transform: scale(0.96); background: var(--border); }
+        .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .special-day { background: var(--secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 10px 14px; margin-bottom: 14px; font-size: var(--font-size-sm); }
+        .schedule-item { display: flex; padding: 8px 0; border-bottom: 1px dotted var(--border); }
+        .schedule-time { width: 70px; font-size: var(--font-size-sm); color: var(--muted-foreground); flex-shrink: 0; }
+        .schedule-event { flex: 1; }
+        .schedule-event.special { font-weight: 600; }
+        .habit-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dotted var(--border); }
+        .habit-name { flex: 1; }
+        .habit-check { width: 36px; height: 36px; border: 2px solid var(--primary); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .habit-check.checked { background: var(--primary); color: #fff; }
+        .tracker-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+        .tracker-table th, .tracker-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        .tracker-table th { background: var(--secondary); font-size: var(--font-size-xs); text-transform: uppercase; }
+        .tracker-table .label { text-align: left; font-weight: 500; }
+        .tracker-cell { cursor: pointer; min-width: 36px; height: 36px; }
+        .tracker-cell.checked { background: var(--primary); color: #fff; }
+        .tracker-cell.na { background: var(--secondary); color: var(--muted-foreground); }
         .month-calendar { display: table; width: 100%; border-collapse: collapse; }
         .month-row { display: table-row; }
-        .month-cell {
-            display: table-cell;
-            border: 1px solid #ccc;
-            width: 14.28%;
-            height: 40px;
-            text-align: center;
-            vertical-align: top;
-            padding: 2px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        .month-cell.header { background: #f5f5f5; font-size: 0.65rem; font-weight: bold; height: auto; }
-        .month-cell.today { border: 2px solid #000; font-weight: bold; }
-        .month-cell.special { background: #eee; }
+        .month-cell { display: table-cell; border: 1px solid var(--border); width: 14.28%; height: 50px; text-align: center; vertical-align: top; padding: 4px; cursor: pointer; }
+        .month-cell.header { background: var(--secondary); font-size: var(--font-size-xs); font-weight: 600; height: auto; padding: 8px 4px; }
+        .month-cell.today { border: 3px solid var(--primary); font-weight: 700; background: var(--secondary); }
+        .month-cell.selected { background: var(--primary); color: #fff; }
+        .month-cell.special { background: #f5f5f5; }
         .month-cell.empty { background: #fafafa; }
-        .entry { padding: 4px 0; border-bottom: 1px dotted #ccc; }
-        .entry-symbol { display: inline-block; width: 20px; cursor: pointer; }
-        .entry-text { display: inline; }
-        .entry-text.done { text-decoration: line-through; color: #999; }
-        .add-entry { margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; }
-        .add-entry input { width: 60%; padding: 6px; border: 1px solid #ccc; font-size: 0.9rem; }
-        .add-entry select { padding: 6px; border: 1px solid #ccc; }
-        .index-item { padding: 8px 0; border-bottom: 1px dotted #ccc; cursor: pointer; }
-        .summary-box { text-align: center; padding: 12px; }
-        .summary-percent { font-size: 2rem; font-weight: bold; }
-        .summary-bar { height: 8px; background: #eee; margin-top: 8px; }
-        .summary-fill { height: 100%; background: #000; }
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 100;
-        }
-        .modal-overlay.active { display: block; }
-        .modal {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            border: 2px solid #000;
-            padding: 16px;
-            width: 90%;
-            max-width: 320px;
-            z-index: 101;
-        }
-        .modal-title { font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #000; }
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 0.75rem; text-transform: uppercase; color: #666; margin-bottom: 4px; }
-        .form-group input, .form-group select { width: 100%; padding: 6px; border: 1px solid #ccc; }
-        .modal-actions { margin-top: 12px; text-align: right; }
-        .modal-actions .btn { margin-left: 8px; }
-        .study-input { width: 100%; text-align: center; padding: 4px; border: 1px solid #ccc; font-size: 0.75rem; }
-        .study-input.reached { background: #ddd; }
+        .month-cell.has-events { font-weight: 700; text-decoration: underline; }
+        .entry { padding: 10px 0; border-bottom: 1px dotted var(--border); display: flex; align-items: flex-start; gap: 10px; }
+        .entry-symbol { width: 24px; cursor: pointer; font-size: var(--font-size-lg); flex-shrink: 0; }
+        .entry-text { flex: 1; }
+        .entry-text.done { text-decoration: line-through; color: var(--muted-foreground); }
+        .add-entry { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
+        .add-entry input { flex: 1; min-width: 150px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 0.5rem; font-size: var(--font-size-base); }
+        .add-entry select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 0.5rem; font-size: var(--font-size-base); }
+        .index-item { padding: 14px 0; border-bottom: 1px dotted var(--border); cursor: pointer; }
+        .index-item:active { background: var(--secondary); }
+        .summary-box { text-align: center; padding: 16px; }
+        .summary-percent { font-size: 2.5rem; font-weight: 700; }
+        .summary-bar { height: 10px; background: var(--secondary); margin-top: 10px; border-radius: 5px; overflow: hidden; }
+        .summary-fill { height: 100%; background: var(--primary); border-radius: 5px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+        .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+        .modal { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; width: 90%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .modal-title { font-weight: 700; font-size: var(--font-size-lg); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: var(--font-size-xs); text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 0.5rem; font-size: var(--font-size-base); font-family: inherit; }
+        .modal-actions { margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end; }
+        .study-check { width: 28px; height: 28px; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .study-check.checked { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .future-month { margin-bottom: 16px; }
+        .future-month-header { font-weight: 600; padding: 10px 14px; background: var(--primary); color: #fff; border-radius: 0.5rem 0.5rem 0 0; text-transform: capitalize; }
+        .future-month-content { padding: 10px 14px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 0.5rem 0.5rem; min-height: 50px; }
+        .note-item { padding: 14px; border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 12px; }
+        .note-date { font-size: var(--font-size-xs); color: var(--muted-foreground); margin-bottom: 6px; }
+        .note-type { display: inline-block; font-size: var(--font-size-xs); padding: 2px 8px; background: var(--secondary); border-radius: 4px; margin-right: 8px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>BULLET JOURNAL</h1>
-        <div class="header-date" id="header-date"></div>
+<div class="app-shell">
+    <header class="app-header">
+        <div class="header-top">
+            <div>
+                <div class="app-title">BULLET JOURNAL</div>
+                <div class="header-date" id="header-date"></div>
+            </div>
+            <button class="btn-icon" onclick="window.location.href='dashboard.html'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </button>
+        </div>
         <div class="nav-tabs" id="nav-tabs">
             <span class="nav-tab active" data-view="dia">Dia</span>
-            <span class="nav-tab" data-view="semana">Semana</span>
             <span class="nav-tab" data-view="mes">Mês</span>
             <span class="nav-tab" data-view="plano">Plano</span>
             <span class="nav-tab" data-view="estudo">Estudo</span>
             <span class="nav-tab" data-view="future">Future</span>
+            <span class="nav-tab" data-view="notas">Notas</span>
             <span class="nav-tab" data-view="projetos">Projetos</span>
             <span class="nav-tab" data-view="indice">Índice</span>
         </div>
-    </div>
+    </header>
     <div class="main" id="main-content"></div>
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal" id="modal-content"></div>
-    </div>
-
+</div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
 <script>
-// ========== ESTADO GLOBAL ==========
 var BuJo = {
     state: {
         currentView: 'dia',
         selectedDate: new Date(),
         entries: [],
         spiritualHabits: {},
-        studyHabits: {},
+        studyGoals: {},
         mortifications: {},
         projects: [],
-        futureLog: []
+        futureLog: [],
+        notes: [],
+        calendarEvents: []
     },
-
-    symbols: {
-        task: '•',
-        taskDone: '✕',
-        taskMigrated: '→',
-        event: '○',
-        note: '–'
-    },
-
+    symbols: { task: '•', taskDone: '✕', taskMigrated: '→', event: '○', note: '–' },
     dailySpiritualHabits: [
         { id: 'serviam', name: 'Sérviam' },
         { id: 'preces', name: 'Preces' },
@@ -238,795 +154,282 @@ var BuJo = {
         { id: '2-horas', name: '2 horas' },
         { id: '3-ave-marias', name: '3 Ave Marias' }
     ],
-
     weeklySpecialHabits: {
-        2: [{ id: 'turno', name: 'Dia de Turno' }],
+        2: [{ id: 'turno', name: 'Dia de Turno' }, { id: 'salmo-2', name: 'Salmo 2' }],
         3: [{ id: 'guarda', name: 'Dia de Guarda' }, { id: 'disciplina', name: 'Disciplina' }],
+        4: [{ id: 'adoro-te', name: 'Adoro Te Devote' }],
         6: [{ id: 'oracao-nossa-senhora', name: 'Oração N. Senhora' }, { id: 'mortificacao-extra', name: 'Mortif. Extra' }]
     },
-
-    studyHabitsList: [
-        { id: 'latim', name: 'Latim', target: 45 },
-        { id: 'japones', name: 'Japonês', target: 120 },
-        { id: 'estatistica', name: 'Estatística', target: 180 },
-        { id: 'literatura', name: 'Leitura', target: 60 },
-        { id: 'tenis-mesa', name: 'Tênis Mesa', target: 90 }
+    studyGoalsList: [
+        { id: 'latim', name: 'Latim', dailyGoal: 1, description: 'Gradus Primus - 1 lição' },
+        { id: 'japones', name: 'Japonês', dailyGoal: 2, description: '2 sessões de estudo' },
+        { id: 'estatistica', name: 'Estatística', dailyGoal: 2, description: '2 blocos de estudo' },
+        { id: 'literatura', name: 'Leitura', dailyGoal: 1, description: '1 hora de leitura' },
+        { id: 'tenis-mesa', name: 'Tênis Mesa', dailyGoal: 1, description: '1 treino', weekDays: [1, 5, 6] }
     ],
-
-    weeklySchedule: {
-        0: [
-            { time: '10:00', event: 'Latim (2h)' },
-            { time: '14:00', event: 'Estatística (3h)' },
-            { time: '17:30', event: 'Japonês' }
-        ],
-        1: [
-            { time: '05:45', event: 'Acordar' },
-            { time: '08:15', event: 'Ida IME (Terço)' },
-            { time: '09:00', event: 'Latim' },
-            { time: '10:00', event: 'Aula IME' },
-            { time: '13:30', event: 'Estatística' },
-            { time: '15:30', event: 'Tênis de Mesa', special: true },
-            { time: '18:30', event: 'Oração' }
-        ],
-        2: [
-            { time: '05:45', event: 'Acordar' },
-            { time: '09:00', event: 'Latim' },
-            { time: '10:00', event: 'Aula IME' },
-            { time: '18:00', event: 'Japonês (2h)' },
-            { time: '★', event: 'DIA DE TURNO', special: true }
-        ],
-        3: [
-            { time: '05:45', event: 'Acordar' },
-            { time: '09:00', event: 'Latim' },
-            { time: '10:00', event: 'Aula IME' },
-            { time: '13:45', event: 'Estatística' },
-            { time: '17:30', event: 'Disciplina', special: true },
-            { time: '18:00', event: 'Leitura' },
-            { time: '★', event: 'DIA DE GUARDA', special: true }
-        ],
-        4: [
-            { time: '05:45', event: 'Acordar' },
-            { time: '09:00', event: 'Latim' },
-            { time: '10:00', event: 'Aula IME' },
-            { time: '13:45', event: 'Estatística' },
-            { time: '18:00', event: 'Japonês (2h)' }
-        ],
-        5: [
-            { time: '05:45', event: 'Acordar' },
-            { time: '09:00', event: 'Latim' },
-            { time: '10:00', event: 'Aula IME' },
-            { time: '13:30', event: 'Estatística' },
-            { time: '15:30', event: 'Tênis de Mesa', special: true },
-            { time: '18:00', event: 'Leitura' }
-        ],
-        6: [
-            { time: '10:00', event: 'Tênis de Mesa', special: true },
-            { time: '14:00', event: 'Estatística (3h)' },
-            { time: '18:00', event: 'Leitura' },
-            { time: '★', event: 'Oração N. Senhora', special: true },
-            { time: '★', event: 'Mortif. Extra', special: true }
-        ]
-    },
-
     dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
     dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 };
 
-// ========== UTILITÁRIOS ==========
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 function formatDateKey(date) {
     var d = new Date(date);
-    var year = d.getFullYear();
-    var month = d.getMonth() + 1;
-    var day = d.getDate();
-    return year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-
-function getMonthKey(date) {
-    var d = new Date(date);
-    var year = d.getFullYear();
-    var month = d.getMonth() + 1;
-    return year + '-' + (month < 10 ? '0' : '') + month;
-}
-
+function getMonthKey(date) { var d = new Date(date); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
 function getWeekDays(date) {
-    var d = new Date(date);
-    var day = d.getDay();
-    var diff = d.getDate() - day;
-    var days = [];
-    for (var i = 0; i < 7; i++) {
-        days.push(new Date(d.getFullYear(), d.getMonth(), diff + i));
-    }
+    var d = new Date(date), day = d.getDay(), diff = d.getDate() - day, days = [];
+    for (var i = 0; i < 7; i++) days.push(new Date(d.getFullYear(), d.getMonth(), diff + i));
     return days;
 }
-
 function isToday(date) {
     var today = new Date();
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
+    return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
 }
+function isThirdSunday(date) { return date.getDay() === 0 && date.getDate() >= 15 && date.getDate() <= 21; }
+function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+function formatDateShort(date) { return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
-function isThirdSunday(date) {
-    if (date.getDay() !== 0) return false;
-    var day = date.getDate();
-    return day >= 15 && day <= 21;
-}
-
-function saveState() {
-    try {
-        localStorage.setItem('bujo-kindle-v1', JSON.stringify(BuJo.state));
-    } catch (e) {}
-}
-
+function saveState() { try { localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state)); } catch(e){} }
 function loadState() {
     try {
-        var saved = localStorage.getItem('bujo-kindle-v1');
+        var saved = localStorage.getItem('bujo-kindle-v2');
         if (saved) {
-            var parsed = JSON.parse(saved);
-            BuJo.state.entries = parsed.entries || [];
-            BuJo.state.spiritualHabits = parsed.spiritualHabits || {};
-            BuJo.state.studyHabits = parsed.studyHabits || {};
-            BuJo.state.mortifications = parsed.mortifications || {};
-            BuJo.state.projects = parsed.projects || [];
-            BuJo.state.futureLog = parsed.futureLog || [];
-            if (parsed.selectedDate) {
-                BuJo.state.selectedDate = new Date(parsed.selectedDate);
+            var p = JSON.parse(saved);
+            BuJo.state.entries = p.entries || [];
+            BuJo.state.spiritualHabits = p.spiritualHabits || {};
+            BuJo.state.studyGoals = p.studyGoals || {};
+            BuJo.state.mortifications = p.mortifications || {};
+            BuJo.state.projects = p.projects || [];
+            BuJo.state.futureLog = p.futureLog || [];
+            BuJo.state.notes = p.notes || [];
+            if (p.selectedDate) BuJo.state.selectedDate = new Date(p.selectedDate);
+        }
+    } catch(e){}
+}
+
+async function loadCalendarEvents() {
+    try {
+        var API_URL = window.location.origin;
+        var response = await fetch(API_URL + '/api/calendar/events?days=60');
+        if (response.ok) BuJo.state.calendarEvents = await response.json();
+        else BuJo.state.calendarEvents = [];
+    } catch(e) { BuJo.state.calendarEvents = []; }
+    render();
+}
+
+function getEventsForDate(dateStr) {
+    var events = [];
+    for (var i = 0; i < BuJo.state.calendarEvents.length; i++) {
+        var ev = BuJo.state.calendarEvents[i];
+        if (ev.start.date && ev.start.date === dateStr) {
+            events.push({ ...ev, allDay: true });
+        } else if (ev.start.dateTime) {
+            var rd = new Date(ev.start.dateTime);
+            rd.setHours(rd.getHours() - 3);
+            if (formatDateKey(rd) === dateStr) {
+                events.push({ ...ev, allDay: false, startTime: rd.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) });
             }
         }
-    } catch (e) {}
+    }
+    events.sort(function(a,b) { return a.allDay && !b.allDay ? -1 : !a.allDay && b.allDay ? 1 : (a.startTime||'').localeCompare(b.startTime||''); });
+    return events;
 }
 
-// ========== INICIALIZAÇÃO ==========
-function init() {
-    loadState();
-    updateHeaderDate();
-    bindNavEvents();
-    render();
-}
-
-function updateHeaderDate() {
-    var el = document.getElementById('header-date');
-    var now = new Date();
-    var options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
-    el.textContent = now.toLocaleDateString('pt-BR', options).toUpperCase();
-}
-
+function init() { loadState(); updateHeaderDate(); bindNavEvents(); loadCalendarEvents(); }
+function updateHeaderDate() { document.getElementById('header-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
 function bindNavEvents() {
-    var tabs = document.getElementById('nav-tabs');
-    tabs.onclick = function(e) {
-        var target = e.target;
-        if (target.className.indexOf('nav-tab') !== -1) {
-            var view = target.getAttribute('data-view');
-            setView(view);
-        }
+    document.getElementById('nav-tabs').onclick = function(e) {
+        if (e.target.className.indexOf('nav-tab') !== -1) setView(e.target.getAttribute('data-view'));
     };
-
-    var overlay = document.getElementById('modal-overlay');
-    overlay.onclick = function(e) {
-        if (e.target.id === 'modal-overlay') {
-            closeModal();
-        }
-    };
+    document.getElementById('modal-overlay').onclick = function(e) { if (e.target.id === 'modal-overlay') closeModal(); };
 }
-
 function setView(view) {
     BuJo.state.currentView = view;
-    var tabs = document.querySelectorAll('.nav-tab');
-    for (var i = 0; i < tabs.length; i++) {
-        var tab = tabs[i];
-        if (tab.getAttribute('data-view') === view) {
-            tab.className = 'nav-tab active';
-        } else {
-            tab.className = 'nav-tab';
-        }
-    }
+    document.querySelectorAll('.nav-tab').forEach(function(t) {
+        t.className = t.getAttribute('data-view') === view ? 'nav-tab active' : 'nav-tab';
+    });
     render();
 }
 
-// ========== RENDERIZAÇÃO ==========
 function render() {
     var main = document.getElementById('main-content');
     var view = BuJo.state.currentView;
-
-    if (view === 'dia') {
-        main.innerHTML = renderDayView();
-    } else if (view === 'semana') {
-        main.innerHTML = renderWeekView();
-    } else if (view === 'mes') {
-        main.innerHTML = renderMonthView();
-    } else if (view === 'plano') {
-        main.innerHTML = renderPlanoVida();
-    } else if (view === 'estudo') {
-        main.innerHTML = renderEstudo();
-    } else if (view === 'future') {
-        main.innerHTML = renderFutureLog();
-    } else if (view === 'projetos') {
-        main.innerHTML = renderProjects();
-    } else if (view === 'indice') {
-        main.innerHTML = renderIndex();
-    }
-
+    if (view === 'dia') main.innerHTML = renderDayView();
+    else if (view === 'mes') main.innerHTML = renderMonthView();
+    else if (view === 'plano') main.innerHTML = renderPlanoVida();
+    else if (view === 'estudo') main.innerHTML = renderEstudo();
+    else if (view === 'future') main.innerHTML = renderFutureLog();
+    else if (view === 'notas') main.innerHTML = renderNotas();
+    else if (view === 'projetos') main.innerHTML = renderProjects();
+    else if (view === 'indice') main.innerHTML = renderIndex();
     bindViewEvents();
 }
 
 function bindViewEvents() {
-    // Navegação
     var prevDate = document.getElementById('prev-date');
     var nextDate = document.getElementById('next-date');
     var prevWeek = document.getElementById('prev-week');
     var nextWeek = document.getElementById('next-week');
     var prevMonth = document.getElementById('prev-month');
     var nextMonth = document.getElementById('next-month');
-
+    var todayBtn = document.getElementById('today-btn');
     if (prevDate) prevDate.onclick = function() { navigateDate(-1); };
     if (nextDate) nextDate.onclick = function() { navigateDate(1); };
     if (prevWeek) prevWeek.onclick = function() { navigateWeek(-1); };
     if (nextWeek) nextWeek.onclick = function() { navigateWeek(1); };
     if (prevMonth) prevMonth.onclick = function() { navigateMonth(-1); };
     if (nextMonth) nextMonth.onclick = function() { navigateMonth(1); };
-
-    // Hábitos espirituais
-    var spiritualChecks = document.querySelectorAll('.spiritual-check');
-    for (var i = 0; i < spiritualChecks.length; i++) {
-        (function(el) {
-            el.onclick = function() {
-                toggleSpiritualHabit(el.getAttribute('data-habit'), el.getAttribute('data-date'));
-            };
-        })(spiritualChecks[i]);
-    }
-
-    // Hábitos de estudo
-    var studyInputs = document.querySelectorAll('.study-input');
-    for (var i = 0; i < studyInputs.length; i++) {
-        (function(el) {
-            el.onchange = function() {
-                updateStudyHabit(el.getAttribute('data-habit'), el.getAttribute('data-date'), parseInt(el.value) || 0);
-            };
-        })(studyInputs[i]);
-    }
-
-    // Mortificações
-    var mortChecks = document.querySelectorAll('.mort-check');
-    for (var i = 0; i < mortChecks.length; i++) {
-        (function(el) {
-            el.onclick = function() {
-                toggleMortification(el.getAttribute('data-date'), parseInt(el.getAttribute('data-index')));
-            };
-        })(mortChecks[i]);
-    }
-
-    // Entradas
+    if (todayBtn) todayBtn.onclick = function() { goToToday(); };
+    
+    document.querySelectorAll('.spiritual-check').forEach(function(el) {
+        el.onclick = function() { toggleSpiritualHabit(el.getAttribute('data-habit'), el.getAttribute('data-date')); };
+    });
+    document.querySelectorAll('.study-check').forEach(function(el) {
+        el.onclick = function() { toggleStudyGoal(el.getAttribute('data-habit'), el.getAttribute('data-date'), parseInt(el.getAttribute('data-index'))); };
+    });
+    document.querySelectorAll('.mort-check').forEach(function(el) {
+        el.onclick = function() { toggleMortification(el.getAttribute('data-date'), parseInt(el.getAttribute('data-index'))); };
+    });
+    
     var addEntryBtn = document.getElementById('add-entry-btn');
     var addEntryInput = document.getElementById('add-entry-input');
     if (addEntryBtn) addEntryBtn.onclick = addEntry;
-    if (addEntryInput) {
-        addEntryInput.onkeypress = function(e) {
-            if (e.key === 'Enter' || e.keyCode === 13) addEntry();
-        };
-    }
-
-    var entrySymbols = document.querySelectorAll('.entry-symbol[data-id]');
-    for (var i = 0; i < entrySymbols.length; i++) {
-        (function(el) {
-            el.onclick = function() { cycleEntrySymbol(el.getAttribute('data-id')); };
-        })(entrySymbols[i]);
-    }
-
-    var entryDeletes = document.querySelectorAll('.entry-delete');
-    for (var i = 0; i < entryDeletes.length; i++) {
-        (function(el) {
-            el.onclick = function() { deleteEntry(el.getAttribute('data-id')); };
-        })(entryDeletes[i]);
-    }
-
-    // Botões
+    if (addEntryInput) addEntryInput.onkeypress = function(e) { if (e.key === 'Enter') addEntry(); };
+    
+    document.querySelectorAll('.entry-symbol[data-id]').forEach(function(el) {
+        el.onclick = function() { cycleEntrySymbol(el.getAttribute('data-id')); };
+    });
+    document.querySelectorAll('.entry-delete').forEach(function(el) {
+        el.onclick = function() { deleteEntry(el.getAttribute('data-id')); };
+    });
+    
     var addMortBtn = document.getElementById('add-mort-btn');
     var addProjectBtn = document.getElementById('add-project-btn');
     var addFutureBtn = document.getElementById('add-future-btn');
-
+    var addNoteBtn = document.getElementById('add-note-btn');
+    var saveNotesBtn = document.getElementById('save-notes-btn');
     if (addMortBtn) addMortBtn.onclick = showAddMortModal;
     if (addProjectBtn) addProjectBtn.onclick = showAddProjectModal;
     if (addFutureBtn) addFutureBtn.onclick = showAddFutureModal;
-
-    // Calendário mensal - clique único mostra eventos, duplo clique vai para o dia
-    var monthCells = document.querySelectorAll('.month-cell[data-date]');
-    for (var i = 0; i < monthCells.length; i++) {
-        (function(el) {
-            var clickTimer = null;
-            var clickCount = 0;
-            
-            el.onclick = function() {
-                clickCount++;
-                var dateStr = el.getAttribute('data-date');
-                
-                if (clickCount === 1) {
-                    clickTimer = setTimeout(function() {
-                        // Clique único - mostrar eventos
-                        showDayEvents(dateStr);
-                        clickCount = 0;
-                    }, 300);
-                } else if (clickCount === 2) {
-                    // Duplo clique - ir para o dia
-                    clearTimeout(clickTimer);
-                    clickCount = 0;
-                    BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00');
-                    setView('dia');
-                }
-            };
-        })(monthCells[i]);
-    }
-
-    // Índice
-    var indexItems = document.querySelectorAll('.index-item[data-view]');
-    for (var i = 0; i < indexItems.length; i++) {
-        (function(el) {
-            el.onclick = function() { setView(el.getAttribute('data-view')); };
-        })(indexItems[i]);
-    }
+    if (addNoteBtn) addNoteBtn.onclick = showAddNoteModal;
+    if (saveNotesBtn) saveNotesBtn.onclick = saveAllNotes;
+    
+    document.querySelectorAll('.month-cell[data-date]').forEach(function(el) {
+        el.onclick = function() { selectMonthDay(el.getAttribute('data-date')); };
+        el.ondblclick = function() { BuJo.state.selectedDate = new Date(el.getAttribute('data-date') + 'T12:00:00'); setView('dia'); };
+    });
+    document.querySelectorAll('.index-item[data-view]').forEach(function(el) {
+        el.onclick = function() { setView(el.getAttribute('data-view')); };
+    });
 }
 
-// ========== VIEW: DIA ==========
 function renderDayView() {
     var date = BuJo.state.selectedDate;
     var dateStr = formatDateKey(date);
-    var dayOfWeek = date.getDay();
-    var schedule = BuJo.weeklySchedule[dayOfWeek] || [];
-    var specialHabits = BuJo.weeklySpecialHabits[dayOfWeek] || [];
+    var dow = date.getDay();
+    var specialHabits = BuJo.weeklySpecialHabits[dow] || [];
     var thirdSunday = isThirdSunday(date);
-    var dayEntries = [];
-
-    for (var i = 0; i < BuJo.state.entries.length; i++) {
-        if (BuJo.state.entries[i].date === dateStr) {
-            dayEntries.push(BuJo.state.entries[i]);
-        }
-    }
-
-    var dateLabel = date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-    var todayBadge = isToday(date) ? ' <span style="background:#000;color:#fff;padding:2px 6px;font-size:0.7rem;">HOJE</span>' : '';
+    var dayEntries = BuJo.state.entries.filter(function(e) { return e.date === dateStr; });
+    var calendarEvents = getEventsForDate(dateStr);
+    var todayBadge = isToday(date) ? ' <span style="background:var(--primary);color:#fff;padding:4px 10px;font-size:0.8rem;border-radius:4px;margin-left:8px;">HOJE</span>' : '';
 
     var html = '<div class="card">';
-    html += '<div class="card-title">';
-    html += '<span class="btn" id="prev-date">←</span> ';
-    html += dateLabel + todayBadge;
-    html += ' <span class="btn" id="next-date">→</span>';
-    html += '</div>';
+    html += '<div class="card-title"><span class="btn" id="prev-date">←</span>';
+    html += '<span style="flex:1;text-align:center;text-transform:capitalize;">' + formatDateDisplay(date) + todayBadge + '</span>';
+    html += '<span class="btn" id="next-date">→</span></div>';
 
-    // Dias especiais
     if (specialHabits.length > 0 || thirdSunday) {
         html += '<div class="special-day"><strong>★ Especial:</strong> ';
-        var specials = [];
-        for (var i = 0; i < specialHabits.length; i++) {
-            specials.push(specialHabits[i].name);
-        }
-        if (thirdSunday) specials.push('Sýmbolum Athanasiánum');
-        html += specials.join(' • ');
-        html += '</div>';
+        var sp = specialHabits.map(function(h) { return h.name; });
+        if (thirdSunday) sp.push('Sýmbolum Athanasiánum');
+        html += sp.join(' • ') + '</div>';
     }
 
-    // Rotina
-    html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:0.7rem;text-transform:uppercase;color:#666;margin-bottom:6px;">Rotina de ' + BuJo.dayNames[dayOfWeek] + '</div>';
-    for (var i = 0; i < schedule.length; i++) {
-        var item = schedule[i];
-        html += '<div class="schedule-item">';
-        html += '<span class="schedule-time">' + item.time + '</span>';
-        html += '<span class="schedule-event' + (item.special ? ' special' : '') + '">' + item.event + '</span>';
+    if (calendarEvents.length > 0) {
+        html += '<div style="margin-bottom:14px;"><div style="font-size:0.85rem;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:8px;">Agenda do Dia</div>';
+        calendarEvents.forEach(function(ev) {
+            html += '<div class="schedule-item"><span class="schedule-time">' + (ev.allDay ? 'Dia' : ev.startTime) + '</span>';
+            html += '<span class="schedule-event">' + (ev.summary || 'Sem título') + '</span></div>';
+        });
         html += '</div>';
     }
     html += '</div>';
-    html += '</div>';
 
-    // Registro Rápido (MOVIDO PARA CIMA)
-    html += '<div class="card">';
-    html += '<div class="card-title">Registro</div>';
-    // Legenda logo abaixo do título
-    html += '<div style="font-size:0.75rem;color:#666;padding:4px 0 8px;border-bottom:1px dotted #ccc;margin-bottom:8px;">';
-    html += BuJo.symbols.task + ' tarefa &nbsp; ';
-    html += BuJo.symbols.taskDone + ' feito &nbsp; ';
-    html += BuJo.symbols.taskMigrated + ' migrado &nbsp; ';
-    html += BuJo.symbols.event + ' evento &nbsp; ';
-    html += BuJo.symbols.note + ' nota';
-    html += '</div>';
-    if (dayEntries.length === 0) {
-        html += '<p style="color:#999;font-style:italic;">Nenhuma entrada...</p>';
-    } else {
-        for (var i = 0; i < dayEntries.length; i++) {
-            html += renderEntry(dayEntries[i]);
-        }
-    }
-    html += '<div class="add-entry">';
-    html += '<select id="add-entry-type">';
-    html += '<option value="task">' + BuJo.symbols.task + '</option>';
-    html += '<option value="event">' + BuJo.symbols.event + '</option>';
-    html += '<option value="note">' + BuJo.symbols.note + '</option>';
-    html += '</select> ';
-    html += '<input type="text" id="add-entry-input" placeholder="Digite..."> ';
-    html += '<span class="btn" id="add-entry-btn">+</span>';
-    html += '</div>';
-    html += '</div>';
+    html += '<div class="card"><div class="card-title">Registro</div>';
+    html += '<div style="font-size:0.9rem;color:var(--muted-foreground);padding:8px 0;border-bottom:1px dotted var(--border);margin-bottom:10px;">';
+    html += BuJo.symbols.task + ' tarefa &nbsp;&nbsp;' + BuJo.symbols.taskDone + ' feito &nbsp;&nbsp;' + BuJo.symbols.taskMigrated + ' migrado &nbsp;&nbsp;' + BuJo.symbols.event + ' evento &nbsp;&nbsp;' + BuJo.symbols.note + ' nota</div>';
+    if (dayEntries.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhuma entrada...</p>';
+    else dayEntries.forEach(function(e) { html += renderEntry(e); });
+    html += '<div class="add-entry"><select id="add-entry-type"><option value="task">' + BuJo.symbols.task + ' Tarefa</option><option value="event">' + BuJo.symbols.event + ' Evento</option><option value="note">' + BuJo.symbols.note + ' Nota</option></select>';
+    html += '<input type="text" id="add-entry-input" placeholder="Digite..."><span class="btn btn-primary" id="add-entry-btn">+</span></div></div>';
 
-    // Plano de Vida do Dia (MOVIDO PARA BAIXO)
-    html += '<div class="card">';
-    html += '<div class="card-title">Plano de Vida</div>';
-    html += renderDaySpiritualHabits(dateStr, dayOfWeek, thirdSunday);
-    html += '</div>';
+    html += '<div class="card"><div class="card-title">Plano de Vida</div>';
+    html += renderDaySpiritualHabits(dateStr, dow, thirdSunday) + '</div>';
 
-    // Mortificações
-    html += '<div class="card">';
-    html += '<div class="card-title">Mortificações <span class="btn" id="add-mort-btn" style="float:right;">+ Add</span></div>';
-    html += renderMortifications(dateStr);
-    html += '</div>';
-
+    html += '<div class="card"><div class="card-title">Mortificações <span class="btn" id="add-mort-btn">+ Add</span></div>';
+    html += renderMortifications(dateStr) + '</div>';
     return html;
 }
 
-function renderDaySpiritualHabits(dateStr, dayOfWeek, thirdSunday) {
+function renderDaySpiritualHabits(dateStr, dow, thirdSunday) {
     var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
-    var specialHabits = BuJo.weeklySpecialHabits[dayOfWeek] || [];
+    var specialHabits = BuJo.weeklySpecialHabits[dow] || [];
     var html = '';
-
-    // Hábitos diários em 2 colunas
-    html += '<table style="width:100%;border-collapse:collapse;">';
-    var habitsCount = BuJo.dailySpiritualHabits.length;
-    var halfCount = Math.ceil(habitsCount / 2);
-    
-    for (var i = 0; i < halfCount; i++) {
-        html += '<tr>';
-        
-        // Coluna 1
-        var habit1 = BuJo.dailySpiritualHabits[i];
-        var checked1 = dayHabits[habit1.id] || false;
-        html += '<td style="padding:3px 4px;border-bottom:1px dotted #ccc;width:45%;">' + habit1.name + '</td>';
-        html += '<td style="padding:3px;border-bottom:1px dotted #ccc;width:5%;text-align:center;">';
-        html += '<span class="habit-check spiritual-check' + (checked1 ? ' checked' : '') + '" data-habit="' + habit1.id + '" data-date="' + dateStr + '" style="display:inline-block;width:24px;height:24px;line-height:24px;">';
-        html += checked1 ? '✓' : '';
-        html += '</span></td>';
-        
-        // Coluna 2
-        var idx2 = i + halfCount;
-        if (idx2 < habitsCount) {
-            var habit2 = BuJo.dailySpiritualHabits[idx2];
-            var checked2 = dayHabits[habit2.id] || false;
-            html += '<td style="padding:3px 4px;border-bottom:1px dotted #ccc;border-left:1px solid #ccc;width:45%;">' + habit2.name + '</td>';
-            html += '<td style="padding:3px;border-bottom:1px dotted #ccc;width:5%;text-align:center;">';
-            html += '<span class="habit-check spiritual-check' + (checked2 ? ' checked' : '') + '" data-habit="' + habit2.id + '" data-date="' + dateStr + '" style="display:inline-block;width:24px;height:24px;line-height:24px;">';
-            html += checked2 ? '✓' : '';
-            html += '</span></td>';
-        } else {
-            html += '<td style="border-bottom:1px dotted #ccc;"></td><td style="border-bottom:1px dotted #ccc;"></td>';
-        }
-        
-        html += '</tr>';
-    }
-    html += '</table>';
-
-    // Hábitos especiais
+    BuJo.dailySpiritualHabits.forEach(function(h) {
+        var checked = dayHabits[h.id] || false;
+        html += '<div class="habit-row"><span class="habit-name">' + h.name + '</span>';
+        html += '<span class="habit-check spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + h.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
+    });
     if (specialHabits.length > 0) {
-        html += '<div style="margin-top:10px;padding-top:8px;border-top:2px solid #000;"><strong>★ Especial</strong></div>';
-        for (var i = 0; i < specialHabits.length; i++) {
-            var habit = specialHabits[i];
-            var checked = dayHabits[habit.id] || false;
-            html += '<div class="habit-row" style="background:#f5f5f5;">';
-            html += '<span class="habit-name" style="font-weight:bold;">' + habit.name + '</span>';
-            html += '<span class="habit-check spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + habit.id + '" data-date="' + dateStr + '">';
-            html += checked ? '✓' : '';
-            html += '</span>';
-            html += '</div>';
-        }
+        html += '<div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--primary);"><strong>★ Especiais do dia</strong></div>';
+        specialHabits.forEach(function(h) {
+            var checked = dayHabits[h.id] || false;
+            html += '<div class="habit-row" style="background:var(--secondary);margin:4px -10px;padding:10px;"><span class="habit-name" style="font-weight:600;">' + h.name + '</span>';
+            html += '<span class="habit-check spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + h.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
+        });
     }
-
-    // 3º Domingo
     if (thirdSunday) {
         var checked = dayHabits['symbolum-athanasianum'] || false;
-        html += '<div class="habit-row" style="background:#f5f5f5;margin-top:8px;">';
-        html += '<span class="habit-name" style="font-weight:bold;">Sýmbolum Athanasiánum</span>';
-        html += '<span class="habit-check spiritual-check' + (checked ? ' checked' : '') + '" data-habit="symbolum-athanasianum" data-date="' + dateStr + '">';
-        html += checked ? '✓' : '';
-        html += '</span>';
-        html += '</div>';
+        html += '<div class="habit-row" style="background:var(--secondary);margin:4px -10px;padding:10px;"><span class="habit-name" style="font-weight:600;">Sýmbolum Athanasiánum</span>';
+        html += '<span class="habit-check spiritual-check' + (checked ? ' checked' : '') + '" data-habit="symbolum-athanasianum" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
     }
-
     return html;
 }
 
 function renderMortifications(dateStr) {
     var morts = BuJo.state.mortifications[dateStr] || [];
-    if (morts.length === 0) {
-        return '<p style="color:#999;font-style:italic;font-size:0.85rem;">Nenhuma mortificação.</p>';
-    }
-    var html = '';
-    for (var i = 0; i < morts.length; i++) {
-        var m = morts[i];
-        html += '<div class="habit-row">';
-        html += '<span class="habit-name"' + (m.done ? ' style="text-decoration:line-through;color:#999;"' : '') + '>' + m.text + '</span>';
-        html += '<span class="habit-check mort-check' + (m.done ? ' checked' : '') + '" data-date="' + dateStr + '" data-index="' + i + '">';
-        html += m.done ? '✓' : '';
-        html += '</span>';
-        html += '</div>';
-    }
-    return html;
+    if (morts.length === 0) return '<p style="color:var(--muted-foreground);font-style:italic;">Nenhuma mortificação.</p>';
+    return morts.map(function(m, i) {
+        return '<div class="habit-row"><span class="habit-name"' + (m.done ? ' style="text-decoration:line-through;color:var(--muted-foreground);"' : '') + '>' + m.text + '</span>' +
+            '<span class="habit-check mort-check' + (m.done ? ' checked' : '') + '" data-date="' + dateStr + '" data-index="' + i + '">' + (m.done ? '✓' : '') + '</span></div>';
+    }).join('');
 }
 
 function renderEntry(entry) {
-    var symbol;
-    if (entry.type === 'note') symbol = BuJo.symbols.note;
-    else if (entry.type === 'event') symbol = BuJo.symbols.event;
-    else if (entry.status === 'done') symbol = BuJo.symbols.taskDone;
-    else if (entry.status === 'migrated') symbol = BuJo.symbols.taskMigrated;
-    else symbol = BuJo.symbols.task;
-
-    var textClass = entry.status === 'done' ? ' done' : '';
-
-    var html = '<div class="entry">';
-    html += '<span class="entry-symbol" data-id="' + entry.id + '">' + symbol + '</span>';
-    html += '<span class="entry-text' + textClass + '">' + entry.text + '</span>';
-    html += ' <span class="btn entry-delete" data-id="' + entry.id + '" style="font-size:0.7rem;padding:1px 5px;">×</span>';
-    html += '</div>';
-    return html;
+    var symbol = entry.type === 'note' ? BuJo.symbols.note : entry.type === 'event' ? BuJo.symbols.event : entry.status === 'done' ? BuJo.symbols.taskDone : entry.status === 'migrated' ? BuJo.symbols.taskMigrated : BuJo.symbols.task;
+    return '<div class="entry"><span class="entry-symbol" data-id="' + entry.id + '">' + symbol + '</span>' +
+        '<span class="entry-text' + (entry.status === 'done' ? ' done' : '') + '">' + entry.text + '</span>' +
+        '<span class="btn entry-delete" data-id="' + entry.id + '" style="padding:4px 10px;">×</span></div>';
 }
 
-// ========== VIEW: PLANO DE VIDA ==========
-function renderPlanoVida() {
-    var weekDays = getWeekDays(BuJo.state.selectedDate);
-    var html = '<div class="card">';
-    html += '<div class="card-title">';
-    html += '<span class="btn" id="prev-week">←</span> Plano de Vida <span class="btn" id="next-week">→</span>';
-    html += '</div>';
-
-    // Tabela
-    html += '<table class="tracker-table">';
-    html += '<tr><th class="label">Hábito</th>';
-    for (var i = 0; i < weekDays.length; i++) {
-        var d = weekDays[i];
-        var label = BuJo.dayNamesShort[d.getDay()] + '<br>' + d.getDate();
-        var style = isToday(d) ? ' style="font-weight:bold;text-decoration:underline;"' : '';
-        html += '<th' + style + '>' + label + '</th>';
-    }
-    html += '</tr>';
-
-    // Hábitos diários
-    for (var h = 0; h < BuJo.dailySpiritualHabits.length; h++) {
-        var habit = BuJo.dailySpiritualHabits[h];
-        html += '<tr><td class="label">' + habit.name + '</td>';
-        for (var i = 0; i < weekDays.length; i++) {
-            var dateStr = formatDateKey(weekDays[i]);
-            var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
-            var checked = dayHabits[habit.id] || false;
-            html += '<td class="tracker-cell spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + habit.id + '" data-date="' + dateStr + '">';
-            html += checked ? '✓' : '';
-            html += '</td>';
-        }
-        html += '</tr>';
-    }
-
-    // Especiais
-    var specialRows = [
-        { id: 'turno', name: 'Dia Turno', dow: 2 },
-        { id: 'guarda', name: 'Dia Guarda', dow: 3 },
-        { id: 'disciplina', name: 'Disciplina', dow: 3 },
-        { id: 'oracao-nossa-senhora', name: 'Oração N.Sra', dow: 6 },
-        { id: 'mortificacao-extra', name: 'Mortif. Extra', dow: 6 }
-    ];
-
-    for (var r = 0; r < specialRows.length; r++) {
-        var row = specialRows[r];
-        html += '<tr><td class="label">' + row.name + '</td>';
-        for (var i = 0; i < weekDays.length; i++) {
-            var d = weekDays[i];
-            var dateStr = formatDateKey(d);
-            if (d.getDay() !== row.dow) {
-                html += '<td class="tracker-cell na">–</td>';
-            } else {
-                var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
-                var checked = dayHabits[row.id] || false;
-                html += '<td class="tracker-cell spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + row.id + '" data-date="' + dateStr + '">';
-                html += checked ? '✓' : '';
-                html += '</td>';
-            }
-        }
-        html += '</tr>';
-    }
-
-    // Símbolo Atanasiano (3º domingo)
-    html += '<tr><td class="label">Symb. Athan.</td>';
-    for (var i = 0; i < weekDays.length; i++) {
-        var d = weekDays[i];
-        var dateStr = formatDateKey(d);
-        if (!isThirdSunday(d)) {
-            html += '<td class="tracker-cell na">–</td>';
-        } else {
-            var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
-            var checked = dayHabits['symbolum-athanasianum'] || false;
-            html += '<td class="tracker-cell spiritual-check' + (checked ? ' checked' : '') + '" data-habit="symbolum-athanasianum" data-date="' + dateStr + '">';
-            html += checked ? '✓' : '';
-            html += '</td>';
-        }
-    }
-    html += '</tr>';
-
-    html += '</table>';
-    html += '</div>';
-
-    // Resumo
-    html += '<div class="card">';
-    html += '<div class="card-title">Resumo</div>';
-    html += renderSpiritualSummary(weekDays);
-    html += '</div>';
-
-    return html;
-}
-
-function renderSpiritualSummary(weekDays) {
-    var totalChecked = 0;
-    var totalPossible = 0;
-
-    for (var i = 0; i < weekDays.length; i++) {
-        var d = weekDays[i];
-        var dateStr = formatDateKey(d);
-        var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
-
-        for (var h = 0; h < BuJo.dailySpiritualHabits.length; h++) {
-            totalPossible++;
-            if (dayHabits[BuJo.dailySpiritualHabits[h].id]) totalChecked++;
-        }
-
-        // Especiais
-        if (d.getDay() === 2) { totalPossible++; if (dayHabits['turno']) totalChecked++; }
-        if (d.getDay() === 3) { totalPossible += 2; if (dayHabits['guarda']) totalChecked++; if (dayHabits['disciplina']) totalChecked++; }
-        if (d.getDay() === 6) { totalPossible += 2; if (dayHabits['oracao-nossa-senhora']) totalChecked++; if (dayHabits['mortificacao-extra']) totalChecked++; }
-        if (isThirdSunday(d)) { totalPossible++; if (dayHabits['symbolum-athanasianum']) totalChecked++; }
-    }
-
-    var percent = totalPossible > 0 ? Math.round((totalChecked / totalPossible) * 100) : 0;
-
-    var html = '<div class="summary-box">';
-    html += '<div class="summary-percent">' + percent + '%</div>';
-    html += '<div style="font-size:0.85rem;color:#666;">' + totalChecked + ' de ' + totalPossible + ' práticas</div>';
-    html += '<div class="summary-bar"><div class="summary-fill" style="width:' + percent + '%;"></div></div>';
-    html += '</div>';
-    return html;
-}
-
-// ========== VIEW: ESTUDO ==========
-function renderEstudo() {
-    var weekDays = getWeekDays(BuJo.state.selectedDate);
-    var html = '<div class="card">';
-    html += '<div class="card-title">';
-    html += '<span class="btn" id="prev-week">←</span> Tracker de Estudo <span class="btn" id="next-week">→</span>';
-    html += '</div>';
-    html += '<p style="font-size:0.8rem;color:#666;margin-bottom:10px;">Registre minutos.</p>';
-
-    html += '<table class="tracker-table">';
-    html += '<tr><th class="label">Atividade</th>';
-    for (var i = 0; i < weekDays.length; i++) {
-        var d = weekDays[i];
-        var style = isToday(d) ? ' style="font-weight:bold;"' : '';
-        html += '<th' + style + '>' + BuJo.dayNamesShort[d.getDay()] + '</th>';
-    }
-    html += '</tr>';
-
-    for (var h = 0; h < BuJo.studyHabitsList.length; h++) {
-        var habit = BuJo.studyHabitsList[h];
-        html += '<tr><td class="label">' + habit.name + '</td>';
-        for (var i = 0; i < weekDays.length; i++) {
-            var dateStr = formatDateKey(weekDays[i]);
-            var dayStudy = BuJo.state.studyHabits[dateStr] || {};
-            var minutes = dayStudy[habit.id] || 0;
-            var reached = minutes >= habit.target;
-            html += '<td>';
-            html += '<input type="number" class="study-input' + (reached ? ' reached' : '') + '" data-habit="' + habit.id + '" data-date="' + dateStr + '" value="' + minutes + '" min="0">';
-            html += '</td>';
-        }
-        html += '</tr>';
-    }
-    html += '</table>';
-    html += '</div>';
-
-    // Resumo
-    html += '<div class="card">';
-    html += '<div class="card-title">Resumo Semanal</div>';
-    for (var h = 0; h < BuJo.studyHabitsList.length; h++) {
-        var habit = BuJo.studyHabitsList[h];
-        var total = 0;
-        for (var i = 0; i < weekDays.length; i++) {
-            var dateStr = formatDateKey(weekDays[i]);
-            var dayStudy = BuJo.state.studyHabits[dateStr] || {};
-            total += dayStudy[habit.id] || 0;
-        }
-        var hours = Math.floor(total / 60);
-        var mins = total % 60;
-        html += '<div style="display:table;width:100%;padding:4px 0;border-bottom:1px dotted #ccc;">';
-        html += '<span style="display:table-cell;">' + habit.name + '</span>';
-        html += '<span style="display:table-cell;text-align:right;">' + hours + 'h ' + mins + 'min</span>';
-        html += '</div>';
-    }
-    html += '</div>';
-
-    return html;
-}
-
-// ========== VIEW: SEMANA ==========
-function renderWeekView() {
-    var weekDays = getWeekDays(BuJo.state.selectedDate);
-    var html = '<div class="card">';
-    html += '<div class="card-title">';
-    html += '<span class="btn" id="prev-week">←</span> Semana <span class="btn" id="next-week">→</span>';
-    html += '</div>';
-
-    html += '<div class="week-grid">';
-    for (var i = 0; i < weekDays.length; i++) {
-        var d = weekDays[i];
-        var dow = d.getDay();
-        var schedule = BuJo.weeklySchedule[dow] || [];
-        var today = isToday(d);
-        var special = (BuJo.weeklySpecialHabits[dow] || []).length > 0;
-
-        var headerClass = 'week-day-header';
-        if (today) headerClass += ' today';
-        else if (special) headerClass += ' special';
-
-        html += '<div class="week-day">';
-        html += '<div class="' + headerClass + '" style="display:table;width:100%;padding:1.5px 4px;">';
-        html += '<span style="display:table-cell;text-align:left;">' + BuJo.dayNamesShort[dow] + '</span>';
-        html += '<span style="display:table-cell;text-align:right;font-weight:bold;">' + d.getDate() + '</span>';
-        html += '</div>';
-        html += '<div class="week-day-content">';
-        // Mostrar TODOS os eventos do dia
-        for (var j = 0; j < schedule.length; j++) {
-            var item = schedule[j];
-            var timeStr = item.time !== '★' ? item.time + ' ' : '★ ';
-            html += '<div style="border-bottom:1px dotted #ccc;padding:1px 0;">';
-            html += timeStr + item.event;
-            html += '</div>';
-        }
-        html += '</div>';
-        html += '</div>';
-    }
-    html += '</div>';
-    html += '</div>';
-
-    return html;
-}
-
-// ========== VIEW: MÊS ==========
 function renderMonthView() {
     var date = BuJo.state.selectedDate;
-    var year = date.getFullYear();
-    var month = date.getMonth();
+    var year = date.getFullYear(), month = date.getMonth();
     var firstDay = new Date(year, month, 1);
     var lastDay = new Date(year, month + 1, 0);
     var startPadding = firstDay.getDay();
-
     var monthName = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
-    var html = '<div class="card">';
-    html += '<div class="card-title">';
-    html += '<span class="btn" id="prev-month">←</span> ';
-    html += '<span style="text-transform:capitalize;">' + monthName + '</span>';
-    html += ' <span class="btn" id="next-month">→</span>';
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-month">←</span>';
+    html += '<span style="flex:1;text-align:center;text-transform:capitalize;">' + monthName + '</span>';
+    html += '<span class="btn" id="next-month">→</span></div>';
+    html += '<div style="text-align:center;margin-bottom:12px;"><span class="btn" id="today-btn">Hoje</span></div>';
+    html += '<div class="month-calendar"><div class="month-row">';
+    BuJo.dayNamesShort.forEach(function(d) { html += '<div class="month-cell header">' + d + '</div>'; });
     html += '</div>';
 
-    html += '<p style="font-size:0.7rem;color:#666;margin-bottom:6px;">★ Ter:Turno | Qua:Guarda | Sáb:N.Sra | 3ºDom:Athan.</p>';
-    html += '<p style="font-size:0.65rem;color:#999;margin-bottom:8px;">Clique: ver eventos | Duplo clique: ir para o dia</p>';
-
-    html += '<div class="month-calendar">';
-
-    // Header
-    html += '<div class="month-row">';
-    for (var i = 0; i < 7; i++) {
-        html += '<div class="month-cell header">' + BuJo.dayNamesShort[i] + '</div>';
-    }
-    html += '</div>';
-
-    // Dias
-    var dayCount = 0;
-    var totalCells = startPadding + lastDay.getDate();
-    var rows = Math.ceil(totalCells / 7);
-
+    var dayCount = 0, totalCells = startPadding + lastDay.getDate(), rows = Math.ceil(totalCells / 7);
     for (var r = 0; r < rows; r++) {
         html += '<div class="month-row">';
         for (var c = 0; c < 7; c++) {
@@ -1038,425 +441,410 @@ function renderMonthView() {
                 var dayDate = new Date(year, month, dayCount);
                 var dateStr = formatDateKey(dayDate);
                 var dow = dayDate.getDay();
-                var today = isToday(dayDate);
-                var special = dow === 2 || dow === 3 || dow === 6 || isThirdSunday(dayDate);
-                var hasHabits = BuJo.state.spiritualHabits[dateStr] && Object.keys(BuJo.state.spiritualHabits[dateStr]).length > 0;
+                var isTodayCell = isToday(dayDate);
+                var isSelected = dateStr === formatDateKey(date);
+                var special = dow === 2 || dow === 3 || dow === 4 || dow === 6 || isThirdSunday(dayDate);
+                var hasEvents = getEventsForDate(dateStr).length > 0;
 
                 var cellClass = 'month-cell';
-                if (today) cellClass += ' today';
-                if (special) cellClass += ' special';
-
-                html += '<div class="' + cellClass + '" data-date="' + dateStr + '" data-day="' + dayCount + '">';
-                html += '<strong>' + dayCount + '</strong>';
-                if (hasHabits) html += '<div style="width:4px;height:4px;background:#000;border-radius:50%;margin:2px auto 0;"></div>';
-                html += '</div>';
+                if (isTodayCell) cellClass += ' today';
+                if (isSelected) cellClass += ' selected';
+                if (special && !isTodayCell && !isSelected) cellClass += ' special';
+                if (hasEvents) cellClass += ' has-events';
+                html += '<div class="' + cellClass + '" data-date="' + dateStr + '"><strong>' + dayCount + '</strong></div>';
             }
         }
         html += '</div>';
     }
-    html += '</div>';
-    html += '</div>';
+    html += '</div></div>';
 
-    // Painel de eventos do dia selecionado
-    html += '<div class="card" id="day-events-panel">';
-    html += '<div class="card-title">Eventos do Dia</div>';
-    html += '<p style="color:#999;font-style:italic;font-size:0.85rem;">Clique em um dia para ver os eventos.</p>';
-    html += '</div>';
-
+    html += '<div class="card" id="day-events-panel">' + renderDayEventsPanel(formatDateKey(date)) + '</div>';
     return html;
 }
 
-function showDayEvents(dateStr) {
-    var panel = document.getElementById('day-events-panel');
-    if (!panel) return;
-
+function renderDayEventsPanel(dateStr) {
     var date = new Date(dateStr + 'T12:00:00');
     var dow = date.getDay();
-    var schedule = BuJo.weeklySchedule[dow] || [];
+    var calendarEvents = getEventsForDate(dateStr);
     var specialHabits = BuJo.weeklySpecialHabits[dow] || [];
     var thirdSunday = isThirdSunday(date);
 
-    var dateLabel = date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-
-    var html = '<div class="card-title">' + dateLabel + '</div>';
-
-    // Indicador de dia especial
+    var html = '<div class="card-title" style="text-transform:capitalize;">' + formatDateDisplay(date) + '</div>';
     if (specialHabits.length > 0 || thirdSunday) {
-        html += '<div style="background:#f5f5f5;padding:4px 8px;margin-bottom:8px;font-size:0.8rem;">';
-        html += '<strong>★ </strong>';
-        var specials = [];
-        for (var i = 0; i < specialHabits.length; i++) {
-            specials.push(specialHabits[i].name);
-        }
-        if (thirdSunday) specials.push('Sýmbolum Athanasiánum');
-        html += specials.join(' • ');
-        html += '</div>';
+        html += '<div class="special-day"><strong>★ </strong>';
+        var sp = specialHabits.map(function(h) { return h.name; });
+        if (thirdSunday) sp.push('Sýmbolum Athanasiánum');
+        html += sp.join(' • ') + '</div>';
     }
+    if (calendarEvents.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhum evento agendado.</p>';
+    else calendarEvents.forEach(function(ev) {
+        html += '<div class="schedule-item"><span class="schedule-time">' + (ev.allDay ? 'Dia' : ev.startTime) + '</span>';
+        html += '<span class="schedule-event">' + (ev.summary || 'Sem título') + '</span></div>';
+    });
+    html += '<div style="margin-top:14px;text-align:center;"><span class="btn btn-primary" onclick="goToDay(\'' + dateStr + '\')">Ir para este dia →</span></div>';
+    return html;
+}
 
-    // Eventos do dia
-    if (schedule.length === 0) {
-        html += '<p style="color:#999;font-style:italic;font-size:0.85rem;">Nenhum evento agendado.</p>';
-    } else {
-        for (var i = 0; i < schedule.length; i++) {
-            var item = schedule[i];
-            html += '<div class="schedule-item">';
-            html += '<span class="schedule-time">' + item.time + '</span>';
-            html += '<span class="schedule-event' + (item.special ? ' special' : '') + '">' + item.event + '</span>';
-            html += '</div>';
+function renderPlanoVida() {
+    var weekDays = getWeekDays(BuJo.state.selectedDate);
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week">←</span>';
+    html += '<span style="flex:1;text-align:center;">Plano de Vida</span><span class="btn" id="next-week">→</span></div>';
+    html += '<div style="overflow-x:auto;"><table class="tracker-table"><tr><th class="label">Hábito</th>';
+    weekDays.forEach(function(d) {
+        var style = isToday(d) ? ' style="background:var(--primary);color:#fff;"' : '';
+        html += '<th' + style + '>' + BuJo.dayNamesShort[d.getDay()] + '<br>' + d.getDate() + '</th>';
+    });
+    html += '</tr>';
+
+    BuJo.dailySpiritualHabits.forEach(function(h) {
+        html += '<tr><td class="label">' + h.name + '</td>';
+        weekDays.forEach(function(d) {
+            var dateStr = formatDateKey(d);
+            var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
+            var checked = dayHabits[h.id] || false;
+            html += '<td class="tracker-cell spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + h.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</td>';
+        });
+        html += '</tr>';
+    });
+
+    var specialRows = [
+        { id: 'turno', name: 'Dia Turno', dow: 2 }, { id: 'salmo-2', name: 'Salmo 2', dow: 2 },
+        { id: 'guarda', name: 'Dia Guarda', dow: 3 }, { id: 'disciplina', name: 'Disciplina', dow: 3 },
+        { id: 'adoro-te', name: 'Adoro Te Devote', dow: 4 },
+        { id: 'oracao-nossa-senhora', name: 'Oração N.Sra', dow: 6 }, { id: 'mortificacao-extra', name: 'Mortif. Extra', dow: 6 }
+    ];
+    html += '<tr><td colspan="8" style="background:var(--secondary);font-weight:600;padding:10px;">★ Especiais</td></tr>';
+    specialRows.forEach(function(row) {
+        html += '<tr><td class="label">' + row.name + '</td>';
+        weekDays.forEach(function(d) {
+            var dateStr = formatDateKey(d);
+            if (d.getDay() !== row.dow) html += '<td class="tracker-cell na">–</td>';
+            else {
+                var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
+                var checked = dayHabits[row.id] || false;
+                html += '<td class="tracker-cell spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + row.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</td>';
+            }
+        });
+        html += '</tr>';
+    });
+
+    html += '<tr><td class="label">Symb. Athan.</td>';
+    weekDays.forEach(function(d) {
+        var dateStr = formatDateKey(d);
+        if (!isThirdSunday(d)) html += '<td class="tracker-cell na">–</td>';
+        else {
+            var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
+            var checked = dayHabits['symbolum-athanasianum'] || false;
+            html += '<td class="tracker-cell spiritual-check' + (checked ? ' checked' : '') + '" data-habit="symbolum-athanasianum" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</td>';
         }
-    }
+    });
+    html += '</tr></table></div></div>';
 
-    html += '<div style="margin-top:12px;text-align:center;">';
-    html += '<span class="btn" onclick="goToDay(\'' + dateStr + '\')">Ir para este dia →</span>';
+    html += '<div class="card"><div class="card-title">Resumo da Semana</div>' + renderSpiritualSummary(weekDays) + '</div>';
+    return html;
+}
+
+function renderSpiritualSummary(weekDays) {
+    var totalChecked = 0, totalPossible = 0;
+    weekDays.forEach(function(d) {
+        var dateStr = formatDateKey(d);
+        var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
+        BuJo.dailySpiritualHabits.forEach(function(h) { totalPossible++; if (dayHabits[h.id]) totalChecked++; });
+        if (d.getDay() === 2) { totalPossible += 2; if (dayHabits['turno']) totalChecked++; if (dayHabits['salmo-2']) totalChecked++; }
+        if (d.getDay() === 3) { totalPossible += 2; if (dayHabits['guarda']) totalChecked++; if (dayHabits['disciplina']) totalChecked++; }
+        if (d.getDay() === 4) { totalPossible++; if (dayHabits['adoro-te']) totalChecked++; }
+        if (d.getDay() === 6) { totalPossible += 2; if (dayHabits['oracao-nossa-senhora']) totalChecked++; if (dayHabits['mortificacao-extra']) totalChecked++; }
+        if (isThirdSunday(d)) { totalPossible++; if (dayHabits['symbolum-athanasianum']) totalChecked++; }
+    });
+    var percent = totalPossible > 0 ? Math.round((totalChecked / totalPossible) * 100) : 0;
+    return '<div class="summary-box"><div class="summary-percent">' + percent + '%</div>' +
+        '<div style="font-size:1rem;color:var(--muted-foreground);margin-top:4px;">' + totalChecked + ' de ' + totalPossible + ' práticas</div>' +
+        '<div class="summary-bar"><div class="summary-fill" style="width:' + percent + '%;"></div></div></div>';
+}
+
+function renderEstudo() {
+    var weekDays = getWeekDays(BuJo.state.selectedDate);
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week">←</span>';
+    html += '<span style="flex:1;text-align:center;">Metas de Estudo</span><span class="btn" id="next-week">→</span></div>';
+    html += '<p style="font-size:0.95rem;color:var(--muted-foreground);margin-bottom:14px;">Marque cada meta alcançada. Cada quadrado = 1 sessão/meta.</p>';
+
+    BuJo.studyGoalsList.forEach(function(goal) {
+        html += '<div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">';
+        html += '<div style="font-weight:600;font-size:1.1rem;margin-bottom:4px;">' + goal.name + '</div>';
+        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:10px;">' + goal.description + '</div>';
+        html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><tr>';
+        weekDays.forEach(function(d) {
+            var style = isToday(d) ? ' style="background:var(--primary);color:#fff;padding:6px;font-weight:600;"' : ' style="padding:6px;background:var(--secondary);"';
+            html += '<th' + style + '>' + BuJo.dayNamesShort[d.getDay()] + ' ' + d.getDate() + '</th>';
+        });
+        html += '</tr><tr>';
+        weekDays.forEach(function(d) {
+            var dateStr = formatDateKey(d);
+            var isApplicable = !goal.weekDays || goal.weekDays.indexOf(d.getDay()) !== -1;
+            html += '<td style="padding:8px;text-align:center;">';
+            if (!isApplicable) html += '<span style="color:var(--muted-foreground);">–</span>';
+            else {
+                html += '<div style="display:flex;gap:4px;justify-content:center;">';
+                for (var g = 0; g < goal.dailyGoal; g++) {
+                    var dayGoals = BuJo.state.studyGoals[dateStr] || {};
+                    var goalChecks = dayGoals[goal.id] || [];
+                    var checked = goalChecks[g] || false;
+                    html += '<span class="study-check' + (checked ? ' checked' : '') + '" data-habit="' + goal.id + '" data-date="' + dateStr + '" data-index="' + g + '">' + (checked ? '✓' : '') + '</span>';
+                }
+                html += '</div>';
+            }
+            html += '</td>';
+        });
+        html += '</tr></table></div></div>';
+    });
     html += '</div>';
 
-    panel.innerHTML = html;
+    html += '<div class="card"><div class="card-title">Resumo Semanal</div>';
+    BuJo.studyGoalsList.forEach(function(goal) {
+        var completed = 0, total = 0;
+        weekDays.forEach(function(d) {
+            var isApplicable = !goal.weekDays || goal.weekDays.indexOf(d.getDay()) !== -1;
+            if (!isApplicable) return;
+            var dateStr = formatDateKey(d);
+            var dayGoals = BuJo.state.studyGoals[dateStr] || {};
+            var goalChecks = dayGoals[goal.id] || [];
+            for (var g = 0; g < goal.dailyGoal; g++) { total++; if (goalChecks[g]) completed++; }
+        });
+        var percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        html += '<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px dotted var(--border);">';
+        html += '<span style="flex:1;">' + goal.name + '</span><span style="width:60px;text-align:right;font-weight:600;">' + percent + '%</span>';
+        html += '<div style="width:80px;height:8px;background:var(--secondary);border-radius:4px;margin-left:10px;overflow:hidden;">';
+        html += '<div style="width:' + percent + '%;height:100%;background:var(--primary);"></div></div></div>';
+    });
+    html += '</div>';
+    return html;
 }
 
-function goToDay(dateStr) {
-    BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00');
-    setView('dia');
-}
-
-// ========== VIEW: FUTURE LOG ==========
 function renderFutureLog() {
     var now = new Date();
     var months = [];
     for (var i = 0; i < 12; i++) {
         var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        months.push({
-            key: getMonthKey(d),
-            name: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+        months.push({ key: getMonthKey(d), name: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) });
+    }
+
+    var html = '<div class="card"><div class="card-title">Future Log <span class="btn" id="add-future-btn">+ Add</span></div>';
+    html += '<div style="font-size:0.95rem;color:var(--muted-foreground);margin-bottom:16px;padding:12px;background:var(--secondary);border-radius:0.5rem;">';
+    html += '<strong>O que é o Future Log?</strong><br>Espaço para eventos, compromissos e objetivos futuros. Use para: aniversários, viagens, prazos importantes, metas trimestrais.</div>';
+
+    months.forEach(function(month) {
+        var entries = BuJo.state.futureLog.filter(function(e) { return e.month === month.key; });
+        html += '<div class="future-month"><div class="future-month-header">' + month.name + '</div>';
+        html += '<div class="future-month-content">';
+        if (entries.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;margin:0;">Nenhum evento</p>';
+        else entries.forEach(function(e) {
+            html += '<div class="entry" style="border-bottom:none;padding:6px 0;">';
+            html += '<span style="font-weight:600;min-width:30px;">' + (e.day || '–') + '</span>';
+            html += '<span class="entry-text">' + e.text + '</span>';
+            html += '<span class="btn" onclick="deleteFutureEntry(\'' + e.id + '\')" style="padding:2px 8px;">×</span></div>';
+        });
+        html += '</div></div>';
+    });
+    html += '</div>';
+    return html;
+}
+
+function renderNotas() {
+    var html = '<div class="card"><div class="card-title">Notas Salvas <span class="btn" id="add-note-btn">+ Nova</span></div>';
+    html += '<p style="font-size:0.95rem;color:var(--muted-foreground);margin-bottom:16px;">Notas e reflexões consolidadas.</p>';
+    html += '<div style="margin-bottom:16px;"><span class="btn" id="save-notes-btn">Importar notas do Registro</span></div>';
+
+    if (BuJo.state.notes.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;text-align:center;padding:20px;">Nenhuma nota salva.</p>';
+    else {
+        var sorted = BuJo.state.notes.slice().sort(function(a,b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+        sorted.forEach(function(note) {
+            var d = new Date(note.createdAt);
+            html += '<div class="note-item"><div class="note-date">';
+            if (note.type) html += '<span class="note-type">' + note.type + '</span>';
+            html += formatDateShort(d) + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '</div>';
+            html += '<div class="note-content">' + note.text + '</div>';
+            html += '<div style="margin-top:8px;"><span class="btn" onclick="deleteNote(\'' + note.id + '\')" style="padding:4px 10px;">Excluir</span></div></div>';
         });
     }
-
-    var html = '<div class="card">';
-    html += '<div class="card-title">Future Log <span class="btn" id="add-future-btn" style="float:right;">+ Add</span></div>';
-
-    for (var m = 0; m < months.length; m++) {
-        var month = months[m];
-        var entries = [];
-        for (var i = 0; i < BuJo.state.futureLog.length; i++) {
-            if (BuJo.state.futureLog[i].month === month.key) {
-                entries.push(BuJo.state.futureLog[i]);
-            }
-        }
-
-        html += '<div style="margin-bottom:12px;">';
-        html += '<div style="font-weight:bold;padding:6px;background:#000;color:#fff;text-transform:capitalize;">' + month.name + '</div>';
-        html += '<div style="padding-left:8px;">';
-        if (entries.length === 0) {
-            html += '<p style="color:#999;font-style:italic;font-size:0.85rem;">–</p>';
-        } else {
-            for (var e = 0; e < entries.length; e++) {
-                var entry = entries[e];
-                html += '<div class="entry">';
-                html += '<span class="entry-symbol">' + (entry.day || '–') + '</span> ';
-                html += '<span class="entry-text">' + entry.text + '</span>';
-                html += '</div>';
-            }
-        }
-        html += '</div>';
-        html += '</div>';
-    }
     html += '</div>';
-
     return html;
 }
 
-// ========== VIEW: PROJETOS ==========
 function renderProjects() {
-    var html = '<div class="card">';
-    html += '<div class="card-title">Projetos <span class="btn" id="add-project-btn" style="float:right;">+ Novo</span></div>';
-
-    if (BuJo.state.projects.length === 0) {
-        html += '<p style="color:#999;font-style:italic;">Nenhum projeto.</p>';
-    } else {
-        for (var i = 0; i < BuJo.state.projects.length; i++) {
-            var p = BuJo.state.projects[i];
-            html += '<div style="border-left:3px solid #000;padding-left:10px;margin-bottom:12px;">';
-            html += '<div style="font-weight:bold;">' + p.name + '</div>';
-            html += '<div style="font-size:0.75rem;color:#666;">' + (p.status || 'Em andamento') + '</div>';
-            if (p.nextAction) html += '<p style="font-size:0.9rem;">→ ' + p.nextAction + '</p>';
-            html += '</div>';
-        }
-    }
+    var html = '<div class="card"><div class="card-title">Projetos <span class="btn" id="add-project-btn">+ Novo</span></div>';
+    if (BuJo.state.projects.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhum projeto ativo.</p>';
+    else BuJo.state.projects.forEach(function(p) {
+        html += '<div style="border-left:4px solid var(--primary);padding-left:14px;margin-bottom:16px;">';
+        html += '<div style="font-weight:600;font-size:1.1rem;">' + p.name + '</div>';
+        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);">' + (p.status || 'Em andamento') + '</div>';
+        if (p.nextAction) html += '<p style="margin-top:6px;">→ ' + p.nextAction + '</p>';
+        html += '</div>';
+    });
     html += '</div>';
-
-    html += '<div class="card">';
-    html += '<div class="card-title">Projetos 2026</div>';
-    html += '<p style="margin-bottom:6px;"><strong>Línguas:</strong> Gradus Primus + Japonês N5→N4</p>';
-    html += '<p style="margin-bottom:6px;"><strong>Acadêmico:</strong> Mestrado IME-USP</p>';
-    html += '<p style="margin-bottom:6px;"><strong>Literatura:</strong> Machado de Assis</p>';
-    html += '<p><strong>Físico:</strong> TM Seg/Sex + Sáb</p>';
-    html += '</div>';
-
+    html += '<div class="card"><div class="card-title">Plano 2026</div>';
+    html += '<p style="margin-bottom:10px;"><strong>Línguas:</strong> Gradus Primus + Japonês N5→N4</p>';
+    html += '<p style="margin-bottom:10px;"><strong>Acadêmico:</strong> Mestrado IME-USP</p>';
+    html += '<p style="margin-bottom:10px;"><strong>Literatura:</strong> Machado de Assis</p>';
+    html += '<p><strong>Físico:</strong> Tênis de Mesa Seg/Sex + Sáb</p></div>';
     return html;
 }
 
-// ========== VIEW: ÍNDICE ==========
 function renderIndex() {
-    var html = '<div class="card">';
-    html += '<div class="card-title">Índice</div>';
-
-    html += '<div style="margin-bottom:12px;padding:10px;background:#f5f5f5;">';
-    html += '<div style="font-size:0.7rem;text-transform:uppercase;margin-bottom:6px;">Legenda</div>';
-    html += BuJo.symbols.task + ' tarefa &nbsp; ';
-    html += BuJo.symbols.taskDone + ' feito &nbsp; ';
-    html += BuJo.symbols.taskMigrated + ' migrado &nbsp; ';
-    html += BuJo.symbols.event + ' evento &nbsp; ';
-    html += BuJo.symbols.note + ' nota';
-    html += '</div>';
+    var html = '<div class="card"><div class="card-title">Índice</div>';
+    html += '<div style="margin-bottom:16px;padding:14px;background:var(--secondary);border-radius:0.5rem;">';
+    html += '<div style="font-size:0.9rem;text-transform:uppercase;margin-bottom:8px;color:var(--muted-foreground);">Legenda</div>';
+    html += '<div style="font-size:1.1rem;">' + BuJo.symbols.task + ' tarefa &nbsp;&nbsp;' + BuJo.symbols.taskDone + ' feito &nbsp;&nbsp;' + BuJo.symbols.taskMigrated + ' migrado &nbsp;&nbsp;' + BuJo.symbols.event + ' evento &nbsp;&nbsp;' + BuJo.symbols.note + ' nota</div></div>';
 
     var items = [
-        { name: 'Registro Diário', view: 'dia', desc: 'Rotina + Plano + Registro' },
-        { name: 'Visão Semanal', view: 'semana', desc: 'Rotina da semana' },
-        { name: 'Pacote Mensal', view: 'mes', desc: 'Calendário mensal' },
+        { name: 'Registro Diário', view: 'dia', desc: 'Agenda + Plano + Registro' },
+        { name: 'Calendário Mensal', view: 'mes', desc: 'Visão do mês com eventos' },
         { name: 'Plano de Vida', view: 'plano', desc: '15 hábitos + especiais' },
-        { name: 'Tracker Estudo', view: 'estudo', desc: 'Latim, Japonês, Estatística...' },
+        { name: 'Metas de Estudo', view: 'estudo', desc: 'Latim, Japonês, Estatística...' },
         { name: 'Future Log', view: 'future', desc: 'Próximos 12 meses' },
+        { name: 'Notas', view: 'notas', desc: 'Notas e reflexões' },
         { name: 'Projetos', view: 'projetos', desc: 'Projetos ativos' }
     ];
-
-    for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        html += '<div class="index-item" data-view="' + item.view + '">';
-        html += '<strong>' + item.name + '</strong><br>';
-        html += '<small style="color:#666;">' + item.desc + '</small>';
-        html += '</div>';
-    }
+    items.forEach(function(item) {
+        html += '<div class="index-item" data-view="' + item.view + '"><strong style="font-size:1.1rem;">' + item.name + '</strong><br>';
+        html += '<span style="color:var(--muted-foreground);">' + item.desc + '</span></div>';
+    });
     html += '</div>';
 
-    html += '<div class="card">';
-    html += '<div class="card-title">Dias Especiais</div>';
-    html += '<p style="margin-bottom:4px;"><strong>Terça:</strong> Dia de Turno</p>';
-    html += '<p style="margin-bottom:4px;"><strong>Quarta:</strong> Dia de Guarda + Disciplina</p>';
-    html += '<p style="margin-bottom:4px;"><strong>Sábado:</strong> Oração N.Senhora + Mortif. Extra</p>';
-    html += '<p><strong>3º Domingo:</strong> Sýmbolum Athanasiánum</p>';
-    html += '</div>';
+    html += '<div class="card"><div class="card-title">Dias Especiais</div>';
+    html += '<p style="margin-bottom:8px;"><strong>Terça:</strong> Dia de Turno + Salmo 2</p>';
+    html += '<p style="margin-bottom:8px;"><strong>Quarta:</strong> Dia de Guarda + Disciplina</p>';
+    html += '<p style="margin-bottom:8px;"><strong>Quinta:</strong> Adoro Te Devote</p>';
+    html += '<p style="margin-bottom:8px;"><strong>Sábado:</strong> Oração N.Senhora + Mortif. Extra</p>';
+    html += '<p><strong>3º Domingo:</strong> Sýmbolum Athanasiánum</p></div>';
 
-    html += '<div class="card">';
-    html += '<div class="card-title">Estatísticas</div>';
-    html += '<p>Entradas: ' + BuJo.state.entries.length + '</p>';
-    html += '<p>Projetos: ' + BuJo.state.projects.length + '</p>';
-    html += '<p>Dias com plano: ' + Object.keys(BuJo.state.spiritualHabits).length + '</p>';
-    html += '<p>Future Log: ' + BuJo.state.futureLog.length + '</p>';
-    html += '</div>';
-
+    html += '<div class="card"><div class="card-title">Estatísticas</div>';
+    html += '<p style="margin-bottom:6px;">Entradas: ' + BuJo.state.entries.length + '</p>';
+    html += '<p style="margin-bottom:6px;">Projetos: ' + BuJo.state.projects.length + '</p>';
+    html += '<p style="margin-bottom:6px;">Notas: ' + BuJo.state.notes.length + '</p>';
+    html += '<p style="margin-bottom:6px;">Dias com plano: ' + Object.keys(BuJo.state.spiritualHabits).length + '</p>';
+    html += '<p>Future Log: ' + BuJo.state.futureLog.length + '</p></div>';
     return html;
 }
 
-// ========== AÇÕES ==========
-function navigateDate(delta) {
-    var d = BuJo.state.selectedDate;
-    BuJo.state.selectedDate = new Date(d.getTime() + delta * 86400000);
-    render();
-}
-
-function navigateWeek(delta) {
-    var d = BuJo.state.selectedDate;
-    BuJo.state.selectedDate = new Date(d.getTime() + delta * 7 * 86400000);
-    render();
-}
-
-function navigateMonth(delta) {
-    var d = BuJo.state.selectedDate;
-    BuJo.state.selectedDate = new Date(d.getFullYear(), d.getMonth() + delta, 1);
-    render();
-}
+function navigateDate(delta) { BuJo.state.selectedDate = new Date(BuJo.state.selectedDate.getTime() + delta * 86400000); render(); }
+function navigateWeek(delta) { BuJo.state.selectedDate = new Date(BuJo.state.selectedDate.getTime() + delta * 7 * 86400000); render(); }
+function navigateMonth(delta) { var d = BuJo.state.selectedDate; BuJo.state.selectedDate = new Date(d.getFullYear(), d.getMonth() + delta, 1); render(); }
+function selectMonthDay(dateStr) { BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00'); render(); }
+function goToDay(dateStr) { BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00'); setView('dia'); }
+function goToToday() { BuJo.state.selectedDate = new Date(); render(); }
 
 function toggleSpiritualHabit(habitId, dateStr) {
-    if (!BuJo.state.spiritualHabits[dateStr]) {
-        BuJo.state.spiritualHabits[dateStr] = {};
-    }
+    if (!BuJo.state.spiritualHabits[dateStr]) BuJo.state.spiritualHabits[dateStr] = {};
     BuJo.state.spiritualHabits[dateStr][habitId] = !BuJo.state.spiritualHabits[dateStr][habitId];
-    saveState();
-    render();
+    saveState(); render();
 }
-
-function updateStudyHabit(habitId, dateStr, minutes) {
-    if (!BuJo.state.studyHabits[dateStr]) {
-        BuJo.state.studyHabits[dateStr] = {};
-    }
-    BuJo.state.studyHabits[dateStr][habitId] = minutes;
-    saveState();
+function toggleStudyGoal(habitId, dateStr, index) {
+    if (!BuJo.state.studyGoals[dateStr]) BuJo.state.studyGoals[dateStr] = {};
+    if (!BuJo.state.studyGoals[dateStr][habitId]) BuJo.state.studyGoals[dateStr][habitId] = [];
+    BuJo.state.studyGoals[dateStr][habitId][index] = !BuJo.state.studyGoals[dateStr][habitId][index];
+    saveState(); render();
 }
-
 function toggleMortification(dateStr, index) {
     var morts = BuJo.state.mortifications[dateStr];
-    if (morts && morts[index]) {
-        morts[index].done = !morts[index].done;
-        saveState();
-        render();
-    }
+    if (morts && morts[index]) { morts[index].done = !morts[index].done; saveState(); render(); }
 }
 
 function addEntry() {
     var input = document.getElementById('add-entry-input');
-    var typeSelect = document.getElementById('add-entry-type');
-    var text = input.value.replace(/^\s+|\s+$/g, '');
+    var type = document.getElementById('add-entry-type').value;
+    var text = input.value.trim();
     if (!text) return;
+    BuJo.state.entries.push({ id: generateId(), date: formatDateKey(BuJo.state.selectedDate), type: type, text: text, status: 'pending', createdAt: new Date().toISOString() });
+    saveState(); input.value = ''; render();
+}
+function cycleEntrySymbol(id) {
+    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
+    if (entry && entry.type === 'task') {
+        entry.status = entry.status === 'pending' ? 'done' : entry.status === 'done' ? 'migrated' : 'pending';
+        saveState(); render();
+    }
+}
+function deleteEntry(id) { BuJo.state.entries = BuJo.state.entries.filter(function(e) { return e.id !== id; }); saveState(); render(); }
+function deleteNote(id) { BuJo.state.notes = BuJo.state.notes.filter(function(n) { return n.id !== id; }); saveState(); render(); }
+function deleteFutureEntry(id) { BuJo.state.futureLog = BuJo.state.futureLog.filter(function(f) { return f.id !== id; }); saveState(); render(); }
 
-    BuJo.state.entries.push({
-        id: generateId(),
-        date: formatDateKey(BuJo.state.selectedDate),
-        type: typeSelect.value,
-        text: text,
-        status: 'pending',
-        createdAt: new Date().toISOString()
+function saveAllNotes() {
+    var imported = 0;
+    BuJo.state.entries.forEach(function(entry) {
+        if (entry.type === 'note' && !BuJo.state.notes.some(function(n) { return n.originalId === entry.id; })) {
+            BuJo.state.notes.push({ id: generateId(), originalId: entry.id, text: entry.text, type: 'Registro', date: entry.date, createdAt: entry.createdAt });
+            imported++;
+        }
     });
     saveState();
-    input.value = '';
+    alert(imported > 0 ? imported + ' nota(s) importada(s)!' : 'Nenhuma nota nova.');
     render();
 }
 
-function cycleEntrySymbol(id) {
-    for (var i = 0; i < BuJo.state.entries.length; i++) {
-        if (BuJo.state.entries[i].id === id) {
-            var entry = BuJo.state.entries[i];
-            if (entry.type === 'task') {
-                if (entry.status === 'pending') entry.status = 'done';
-                else if (entry.status === 'done') entry.status = 'migrated';
-                else entry.status = 'pending';
-            }
-            break;
-        }
-    }
-    saveState();
-    render();
-}
-
-function deleteEntry(id) {
-    var newEntries = [];
-    for (var i = 0; i < BuJo.state.entries.length; i++) {
-        if (BuJo.state.entries[i].id !== id) {
-            newEntries.push(BuJo.state.entries[i]);
-        }
-    }
-    BuJo.state.entries = newEntries;
-    saveState();
-    render();
-}
-
-// ========== MODAIS ==========
-function showModal(content) {
-    document.getElementById('modal-content').innerHTML = content;
-    document.getElementById('modal-overlay').className = 'modal-overlay active';
-}
-
-function closeModal() {
-    document.getElementById('modal-overlay').className = 'modal-overlay';
-}
+function showModal(content) { document.getElementById('modal-content').innerHTML = content; document.getElementById('modal-overlay').className = 'modal-overlay active'; }
+function closeModal() { document.getElementById('modal-overlay').className = 'modal-overlay'; }
 
 function showAddMortModal() {
     var dateStr = formatDateKey(BuJo.state.selectedDate);
-    var html = '<div class="modal-title">Adicionar Mortificação</div>';
-    html += '<div class="form-group">';
-    html += '<label>Descrição</label>';
-    html += '<input type="text" id="mort-text" placeholder="Ex: Jejum até o almoço">';
-    html += '</div>';
-    html += '<div class="modal-actions">';
-    html += '<span class="btn" onclick="closeModal()">Cancelar</span>';
-    html += '<span class="btn" onclick="addMortification(\'' + dateStr + '\')">Adicionar</span>';
-    html += '</div>';
-    showModal(html);
+    showModal('<div class="modal-title">Adicionar Mortificação</div>' +
+        '<div class="form-group"><label>Descrição</label><input type="text" id="mort-text" placeholder="Ex: Jejum até o almoço"></div>' +
+        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="addMortification(\'' + dateStr + '\')">Adicionar</span></div>');
 }
-
 function addMortification(dateStr) {
-    var text = document.getElementById('mort-text').value.replace(/^\s+|\s+$/g, '');
+    var text = document.getElementById('mort-text').value.trim();
     if (!text) return;
-    if (!BuJo.state.mortifications[dateStr]) {
-        BuJo.state.mortifications[dateStr] = [];
-    }
+    if (!BuJo.state.mortifications[dateStr]) BuJo.state.mortifications[dateStr] = [];
     BuJo.state.mortifications[dateStr].push({ text: text, done: false });
-    saveState();
-    closeModal();
-    render();
+    saveState(); closeModal(); render();
 }
 
 function showAddProjectModal() {
-    var html = '<div class="modal-title">Novo Projeto</div>';
-    html += '<div class="form-group">';
-    html += '<label>Nome</label>';
-    html += '<input type="text" id="project-name">';
-    html += '</div>';
-    html += '<div class="form-group">';
-    html += '<label>Próxima Ação</label>';
-    html += '<input type="text" id="project-next">';
-    html += '</div>';
-    html += '<div class="modal-actions">';
-    html += '<span class="btn" onclick="closeModal()">Cancelar</span>';
-    html += '<span class="btn" onclick="addProject()">Criar</span>';
-    html += '</div>';
-    showModal(html);
+    showModal('<div class="modal-title">Novo Projeto</div>' +
+        '<div class="form-group"><label>Nome</label><input type="text" id="project-name"></div>' +
+        '<div class="form-group"><label>Próxima Ação</label><input type="text" id="project-next"></div>' +
+        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="addProject()">Criar</span></div>');
 }
-
 function addProject() {
-    var name = document.getElementById('project-name').value.replace(/^\s+|\s+$/g, '');
+    var name = document.getElementById('project-name').value.trim();
     if (!name) return;
-    BuJo.state.projects.push({
-        id: generateId(),
-        name: name,
-        nextAction: document.getElementById('project-next').value,
-        status: 'Em andamento',
-        createdAt: new Date().toISOString()
-    });
-    saveState();
-    closeModal();
-    render();
+    BuJo.state.projects.push({ id: generateId(), name: name, nextAction: document.getElementById('project-next').value, status: 'Em andamento', createdAt: new Date().toISOString() });
+    saveState(); closeModal(); render();
 }
 
 function showAddFutureModal() {
-    var now = new Date();
-    var options = '';
+    var now = new Date(), options = '';
     for (var i = 0; i < 12; i++) {
         var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        var key = getMonthKey(d);
-        var name = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-        options += '<option value="' + key + '">' + name + '</option>';
+        options += '<option value="' + getMonthKey(d) + '">' + d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) + '</option>';
     }
-
-    var html = '<div class="modal-title">Adicionar ao Future</div>';
-    html += '<div class="form-group">';
-    html += '<label>Mês</label>';
-    html += '<select id="future-month">' + options + '</select>';
-    html += '</div>';
-    html += '<div class="form-group">';
-    html += '<label>Dia (opcional)</label>';
-    html += '<input type="number" id="future-day" min="1" max="31">';
-    html += '</div>';
-    html += '<div class="form-group">';
-    html += '<label>Descrição</label>';
-    html += '<input type="text" id="future-text">';
-    html += '</div>';
-    html += '<div class="modal-actions">';
-    html += '<span class="btn" onclick="closeModal()">Cancelar</span>';
-    html += '<span class="btn" onclick="addFutureEntry()">Adicionar</span>';
-    html += '</div>';
-    showModal(html);
+    showModal('<div class="modal-title">Adicionar ao Future Log</div>' +
+        '<div class="form-group"><label>Mês</label><select id="future-month">' + options + '</select></div>' +
+        '<div class="form-group"><label>Dia (opcional)</label><input type="number" id="future-day" min="1" max="31" placeholder="Ex: 15"></div>' +
+        '<div class="form-group"><label>Descrição</label><input type="text" id="future-text" placeholder="Ex: Aniversário"></div>' +
+        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="addFutureEntry()">Adicionar</span></div>');
 }
-
 function addFutureEntry() {
-    var text = document.getElementById('future-text').value.replace(/^\s+|\s+$/g, '');
+    var text = document.getElementById('future-text').value.trim();
     if (!text) return;
-    BuJo.state.futureLog.push({
-        id: generateId(),
-        month: document.getElementById('future-month').value,
-        day: document.getElementById('future-day').value || null,
-        text: text,
-        createdAt: new Date().toISOString()
-    });
-    saveState();
-    closeModal();
-    render();
+    BuJo.state.futureLog.push({ id: generateId(), month: document.getElementById('future-month').value, day: document.getElementById('future-day').value || null, text: text, createdAt: new Date().toISOString() });
+    saveState(); closeModal(); render();
 }
 
-// ========== INICIALIZAÇÃO ==========
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
+function showAddNoteModal() {
+    showModal('<div class="modal-title">Nova Nota</div>' +
+        '<div class="form-group"><label>Tipo (opcional)</label><input type="text" id="note-type" placeholder="Ex: Reflexão, Ideia"></div>' +
+        '<div class="form-group"><label>Conteúdo</label><textarea id="note-text" rows="4" placeholder="Escreva sua nota..."></textarea></div>' +
+        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="addNote()">Salvar</span></div>');
 }
+function addNote() {
+    var text = document.getElementById('note-text').value.trim();
+    if (!text) return;
+    BuJo.state.notes.push({ id: generateId(), text: text, type: document.getElementById('note-type').value.trim() || 'Nota', createdAt: new Date().toISOString() });
+    saveState(); closeModal(); render();
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
 </script>
 </body>
 </html>
