@@ -1,0 +1,526 @@
+{
+  "biblioteca": [
+    {
+      "id": "lewis_cartas_diabo_aprendiz",
+      "titulo": "Cartas de um diabo a seu aprendiz",
+      "autor": "C. S. Lewis",
+      "editora": "Thomas Nelson Brasil",
+      "paginas": "208",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "danielrops_sao_bernardo_claraval",
+      "titulo": "São Bernardo de Claraval",
+      "autor": "Daniel-Rops",
+      "editora": "Quadrante",
+      "paginas": "128",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "sao_joao_da_cruz_desconhecido",
+      "titulo": "São João da Cruz: Obras completas",
+      "autor": "São João da Cruz",
+      "editora": "Editora Vozes",
+      "paginas": "1152",
+      "idioma": "pt-BR",
+      "notas": "Capa não permite ler autor/editora com nitidez; preencher depois."
+    },
+    {
+      "id": "sheen_a_vida_vale_a_pena_ser_vivida",
+      "titulo": "A vida vale a pena ser vivida",
+      "autor": "Ven. Fulton Sheen",
+      "editora": "Mensageiros",
+      "paginas": "416",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "dalin_o_mito_do_papa_de_hitler",
+      "titulo": "O mito do Papa de Hitler",
+      "autor": "David G. Dalin",
+      "editora": "Quadrante",
+      "paginas": "224",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "molla_cartas_de_amor_de_uma_santa",
+      "titulo": "Cartas de Amor de uma Santa",
+      "autor": "Gianna Beretta Molla",
+      "editora": "Editora Santuário",
+      "paginas": "144",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "lewis_cristianismo_puro_e_simples",
+      "titulo": "Cristianismo puro e simples",
+      "autor": "C. S. Lewis",
+      "editora": "Thomas Nelson Brasil",
+      "edicao": "Edição especial",
+      "paginas": "288",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "teresa_davila_as_moradas_do_castelo_interior",
+      "titulo": "As Moradas do Castelo Interior",
+      "autor": "Santa Teresa d'Ávila",
+      "editora": "É Realização Editora",
+      "paginas": "254",
+      "idioma": "pt-BR",
+      "notas": "Editora não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "del_portillo_caminhar_com_jesus_ao_longo_do_tempo_liturgico",
+      "titulo": "Caminhar com Jesus ao longo do tempo litúrgico",
+      "autor": "Álvaro del Portillo",
+      "editora": "Quadrante",
+      "paginas": "336",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "benson_confissoes_de_um_converso",
+      "titulo": "Confissões de um Converso",
+      "autor": "Robert Hugh Benson",
+      "editora": "Quadrante",
+      "paginas": "136",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "wojtyla_amor_e_responsabilidade",
+      "titulo": "Amor e responsabilidade",
+      "autor": "Karol Wojtyla",
+      "editora": "Cultor de Livros",
+      "colecao": "Coleção Crisol",
+      "paginas": "354",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "mendoza_montaner_vargasllosa_manual_do_perfeito_idiota_latino_americano",
+      "titulo": "Manual do Perfeito Idiota Latino-Americano",
+      "autor": "Plinio Apuleyo Mendoza; Carlos Alberto Montaner; Alvaro Vargas Llosa",
+      "editora": "Bertrand Brasil",
+      "paginas": "364",
+      "idioma": "pt-BR",
+      "apresentacao": "Mario Vargas Llosa",
+      "prefacio": "Roberto Campos",
+      "notas": "Capa também menciona Instituto Liberal-RS."
+    },
+    {
+      "id": "machado_memorias_postumas_de_bras_cubas",
+      "titulo": "Memórias póstumas de Brás Cubas",
+      "autor": "Machado de Assis",
+      "editora": "Abril Coleções",
+      "colecao": "Clássicos",
+      "paginas": "332",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "machado_50_contos_selecionados_por_john_gledson",
+      "titulo": "50 contos de Machado de Assis",
+      "autor": "Machado de Assis",
+      "editora": "Companhia das Letras",
+      "paginas": "496",
+      "idioma": "pt-BR",
+      "organizador": "John Gledson",
+      "notas": null
+    },
+    {
+      "id": "weil_tompakow_o_corpo_fala",
+      "titulo": "O Corpo Fala",
+      "subtitulo": "A linguagem silenciosa da comunicação não verbal",
+      "autor": "Pierre Weil; Roland Tompakow",
+      "editora": "Editora Vozes",
+      "edicao": "74ª edição",
+      "paginas": "288",
+      "idioma": "pt-BR",
+      "notas": "Capa menciona: 'com 350 ilustrações de expressão corporal'."
+    },
+    {
+      "id": "shakespeare_otelo",
+      "titulo": "Otelo",
+      "autor": "William Shakespeare",
+      "editora": "Penguin Companhia",
+      "colecao": "Clássicos",
+      "paginas": "328",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "lefort_a_ultima_ao_cadafalso_medo_e_esperanca",
+      "titulo": "A última ao cadafalso",
+      "subtitulo": "Medo e esperança",
+      "autor": "Gertrud von le Fort",
+      "editora": "Quadrante",
+      "paginas": "192",
+      "idioma": "pt-BR",
+      "notas": "Editora não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "gasda_cristianismo_e_economia_repensar_o_trabalho_alem_do_capitalismo",
+      "titulo": "Cristianismo e economia",
+      "subtitulo": "Repensar o trabalho além do capitalismo",
+      "autor": "Élio Estanislau Gasda",
+      "editora": "Paulinas",
+      "paginas": "312",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "messori_ratzinger_relatorio_sobre_a_fe",
+      "titulo": "Relatório sobre a fé",
+      "subtitulo": "Vittorio Messori conversa com o cardeal Joseph Ratzinger",
+      "autor": "Vittorio Messori; Joseph Ratzinger",
+      "editora": "Editora Escola Ratzinger",
+      "paginas": "272",
+      "idioma": "pt-BR",
+      "notas": "Editora não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "aristoteles_categorias_edson_bini",
+      "titulo": "Categorias",
+      "autor": "Aristóteles",
+      "editora": "Edipro",
+      "colecao": "Edipro de bolso",
+      "paginas": "64",
+      "idioma": "pt-BR",
+      "traducao": "Edson Bini",
+      "notas": "Capa menciona: 'Texto integral'."
+    },
+    {
+      "id": "weaver_as_ideias_tem_consequencias",
+      "titulo": "As ideias têm consequências",
+      "autor": "Richard M. Weaver",
+      "editora": "É Realizações Editora",
+      "colecao": "Coleção Abertura Cultural",
+      "paginas": "208",
+      "idioma": "pt-BR",
+      "notas": "O nome da editora não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "sirico_a_economia_das_parabolas",
+      "titulo": "A economia das parábolas",
+      "autor": "Robert A. Sirico",
+      "editora": "LVM Editora",
+      "paginas": "184",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "ortega_y_gasset_meditacoes_do_quixote",
+      "titulo": "Meditações do Quixote",
+      "autor": "José Ortega y Gasset",
+      "editora": "Vide Editorial",
+      "paginas": "160",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "aristoteles_retorica_a_alexandre_edson_bini",
+      "titulo": "Retórica a Alexandre",
+      "autor": "Aristóteles",
+      "editora": "Edipro",
+      "colecao": "Obras Completas",
+      "paginas": "128",
+      "idioma": "pt-BR",
+      "traducao_e_notas": "Edson Bini",
+      "notas": null
+    },
+    {
+      "id": "genta_comunismo_a_inevitavel_consequencia_do_livre_exame_protestante",
+      "titulo": "Comunismo",
+      "subtitulo": "A inevitável consequência do livre exame protestante",
+      "autor": "Jordán Bruno Genta",
+      "editora": "Editora CDB",
+      "paginas": "200",
+      "idioma": "pt-BR",
+      "notas": "Nome da editora não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "marias_a_educacao_sentimental",
+      "titulo": "A educação sentimental",
+      "autor": "Julián Marías",
+      "editora": "Kirion",
+      "paginas": "240",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "chesterton_o_que_ha_de_errado_com_o_mundo",
+      "titulo": "O que há de errado com o mundo",
+      "autor": "G. K. Chesterton",
+      "editora": "Ecclesiae",
+      "paginas": "218",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "ratzinger_introducao_ao_cristianismo",
+      "titulo": "Introdução ao Cristianismo",
+      "subtitulo": "Preleções sobre o Símbolo Apostólico",
+      "autor": "Joseph Ratzinger (Bento XVI)",
+      "editora": "Edições Loyola",
+      "edicao": "2ª edição",
+      "paginas": "272",
+      "idioma": "pt-BR",
+      "notas": "Capa menciona: 'Com um novo ensaio introdutório'."
+    },
+    {
+      "id": "obrien_viagem_a_alfa_centauri",
+      "titulo": "Viagem a Alfa Centauri",
+      "autor": "Michael D. O'Brien",
+      "editora": "Ecclesiae",
+      "edicao": "2ª edição revisada",
+      "paginas": "608",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "rothbard_a_grande_depressao_americana",
+      "titulo": "A Grande Depressão Americana",
+      "autor": "Murray N. Rothbard",
+      "editora": "Instituto Ludwig von Mises Brasil",
+      "paginas": "378",
+      "idioma": "pt-BR",
+      "introducao": "Paul Johnson",
+      "notas": null
+    },
+    {
+      "id": "spaemann_pessoas",
+      "titulo": "Pessoas",
+      "subtitulo": "Ensaios sobre a diferença entre algo e alguém",
+      "autor": "Robert Spaemann",
+      "editora": "Editora Unisinos",
+      "paginas": "198",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "vieira_a_ladeira_da_memoria",
+      "titulo": "A ladeira da memória",
+      "autor": "José Geraldo Vieira",
+      "editora": "Sétimo Selo",
+      "paginas": "364",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "lewis_a_abolicao_do_homem",
+      "titulo": "A abolição do homem",
+      "autor": "C. S. Lewis",
+      "editora": "Thomas Nelson Brasil",
+      "edicao": "Edição especial",
+      "paginas": "128",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "cejas_as_cerejeiras_em_flor",
+      "titulo": "As cerejeiras em flor",
+      "subtitulo": "A expansão do Opus Dei no Japão",
+      "autor": "José Miguel Cejas",
+      "editora": "Quadrante",
+      "paginas": "368",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "marias_mapa_do_mundo_pessoal",
+      "titulo": "Mapa do mundo pessoal",
+      "autor": "Julián Marías",
+      "editora": "Auster",
+      "prefacio": "Ítalo Marsili",
+      "paginas": "148",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "rodrigues_ze_batalha",
+      "titulo": "Zé Batalha",
+      "subtitulo": "O herói da infância do Albe",
+      "autor": "Alberico Rodrigues",
+      "editora": "Editora Mentes Raras",
+      "edicao": "6ª edição",
+      "paginas": "107",
+      "idioma": "pt-BR",
+      "notas": "Capa também indica: 'Uma história afro-brasileira'."
+    },
+    {
+      "id": "zilles_gabriel_marcel_e_edith_stein",
+      "titulo": "Gabriel Marcel e Edith Stein",
+      "autor": "Urbano Zilles",
+      "editora": "EST Edições",
+      "paginas": "94",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "joao_paulo_ii_teologia_do_corpo",
+      "titulo": "Teologia do Corpo",
+      "autor": "São João Paulo II",
+      "editora": "Minha Biblioteca Católica",
+      "paginas": "542",
+      "idioma": "pt-BR",
+      "notas": "O nome da editora não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "borel_probabilidade_e_certeza",
+      "titulo": "Probabilidade e certeza",
+      "autor": "E. Borel",
+      "editora": "Difusão Européia do Livro",
+      "colecao": "Saber Atual",
+      "paginas": "135",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "mounier_personalismo",
+      "titulo": "Personalismo",
+      "autor": "Emmanuel Mounier",
+      "editora": "Centauro Editora",
+      "paginas": "139",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "severino_a_antropologia_personalista_de_mounier",
+      "titulo": "A antropologia personalista de Emmanuel Mounier",
+      "autor": "Antônio Joaquim Severino",
+      "editora": "Edição Saraiva",
+      "paginas": "158",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "calvino_por_que_ler_os_classicos",
+      "titulo": "Por que ler os clássicos",
+      "autor": "Italo Calvino",
+      "traducao": "Nilson Moulin",
+      "editora": "Companhia das Letras",
+      "paginas": "279",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "fundamentos_de_antropologia_um_ideal_de_excelencia_humana",
+      "titulo": "Fundamentos de antropologia",
+      "subtitulo": "Um ideal de excelência humana",
+      "autor":  "Ricardo Yepes Stork",
+      "traducao": "Patrícia Carol Dwyer",
+      "editora": "Instituto Brasileiro de Filosofia e Ciência \"Raimundo Lúlio\" (Ramon Llull)",
+      "paginas": "380",
+      "idioma": "pt-BR",
+      "notas": "Nome do autor não aparece na capa desta foto; preencher depois."
+    },
+    {
+      "id": "giles_historia_da_educacao",
+      "titulo": "História da educação",
+      "autor": "Thomas Ransom Giles",
+      "editora": "E.P.U.",
+      "paginas": "302",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "frank_dostoievski_as_sementes_da_revolta_1821_1849",
+      "titulo": "Dostoievski",
+      "subtitulo": "As sementes da revolta",
+      "autor": "Joseph Frank",
+      "periodo_coberto": "1821 a 1849",
+      "editora": "EDUSP",
+      "paginas": "496",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "frank_dostoievski_os_anos_de_provacao_1850_1859",
+      "titulo": "Dostoievski",
+      "subtitulo": "Os anos de provação",
+      "autor": "Joseph Frank",
+      "periodo_coberto": "1850 a 1859",
+      "editora": "EDUSP",
+      "paginas": "424",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "frank_dostoievski_os_efeitos_da_libertacao_1860_1865",
+      "titulo": "Dostoievski",
+      "subtitulo": "Os efeitos da libertação",
+      "autor": "Joseph Frank",
+      "periodo_coberto": "1860 a 1865",
+      "editora": "EDUSP",
+      "paginas": "528",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "frank_dostoievski_os_anos_milagrosos_1865_1871",
+      "titulo": "Dostoievski",
+      "subtitulo": "Os anos milagrosos",
+      "autor": "Joseph Frank",
+      "periodo_coberto": "1865 a 1871",
+      "editora": "EDUSP",
+      "paginas": "662",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "frank_dostoievski_o_manto_do_profeta_1871_1881",
+      "titulo": "Dostoievski",
+      "subtitulo": "O manto do profeta",
+      "autor": "Joseph Frank",
+      "periodo_coberto": "1871 a 1881",
+      "editora": "EDUSP",
+      "paginas": "952",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "sheen_vida_de_cristo",
+      "titulo": "Vida de Cristo",
+      "autor": "Fulton J. Sheen",
+      "editora": "Molokai",
+      "paginas": "1015",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "sheen_o_catecismo",
+      "titulo": "O Catecismo",
+      "autor": "Fulton J. Sheen",
+      "editora": "Molokai",
+      "paginas": "639",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "fortea_summa_daemonica_tratado_de_demonologia_e_manual_de_exorcistas",
+      "titulo": "Summa Daemoníaca",
+      "subtitulo": "Tratado de demonologia e manual de exorcistas",
+      "autor": "José Antonio Fortea",
+      "editora": "Edições DLL",
+      "coeditora": "Palavra & Prece",
+      "edicao": "Edição Especial",
+      "paginas": "336",
+      "idioma": "pt-BR",
+      "notas": null
+    },
+    {
+      "id": "tomas_de_aquino_suma_contra_os_gentios",
+      "titulo": "Suma contra os gentios",
+      "autor": "Santo Tomás de Aquino",
+      "editora": "Ecclesiae",
+      "paginas": "778",
+      "idioma": "pt-BR",
+      "notas": null
+    }
+  ]
+}

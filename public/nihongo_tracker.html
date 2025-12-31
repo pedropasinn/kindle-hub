@@ -35,8 +35,8 @@
         .header-date { font-size: var(--font-size-xs); color: var(--muted-foreground); }
         .btn-icon { background: transparent; border: 1px solid var(--border); border-radius: 0.5rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .btn-icon:active { background: var(--secondary); transform: scale(0.96); }
-        .nav-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-        .nav-tab { font-size: var(--font-size-sm); text-transform: uppercase; padding: 8px 14px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; }
+        .nav-tabs { display: -webkit-box; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-box-pack: center; justify-content: center; }
+        .nav-tab { font-size: var(--font-size-sm); text-transform: uppercase; padding: 8px 14px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; margin-right: 6px; margin-bottom: 6px; }
         .nav-tab:active { transform: scale(0.96); }
         .nav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
         .main { flex: 1; overflow-y: auto; padding: 1.25rem; padding-bottom: 3rem; max-width: 700px; margin: 0 auto; width: 100%; }
@@ -71,13 +71,14 @@
         .progress-bar { height: 10px; background: var(--secondary); border-radius: 5px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); border-radius: 5px; transition: width 0.3s; }
         .progress-fill.accent { background: var(--accent); }
-        .tracker-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+        .tracker-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); table-layout: fixed; }
         .tracker-table th, .tracker-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
         .tracker-table th { background: var(--secondary); font-size: var(--font-size-xs); text-transform: uppercase; }
-        .tracker-table .label { text-align: left; font-weight: 500; }
+        .tracker-table .label { text-align: left; font-weight: 500; width: 25%; }
         .tracker-cell { cursor: pointer; min-width: 36px; height: 36px; }
         .tracker-cell.checked { background: var(--primary); color: #fff; }
         .tracker-cell.na { background: var(--secondary); color: var(--muted-foreground); }
+        .week-session-check { cursor: pointer; height: 36px; }
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
         .stat-box { background: var(--secondary); border-radius: 0.5rem; padding: 14px; text-align: center; }
         .stat-value { font-size: 1.8rem; font-weight: 700; }
@@ -199,9 +200,9 @@ var JpTracker = {
 };
 
 function formatDateKey(date) { var d = new Date(date); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
-function getWeekDays(date) { var d = new Date(date), day = d.getDay(), diff = d.getDate() - day, days = []; for (var i = 0; i < 7; i++) days.push(new Date(d.getFullYear(), d.getMonth(), diff + i)); return days; }
+function getWeekDays(date) { var d = new Date(date); var start = new Date(d); start.setDate(d.getDate() - d.getDay()); var days = []; for (var i = 0; i < 7; i++) { var day = new Date(start); day.setDate(start.getDate() + i); days.push(day); } return days; }
 function isToday(date) { var today = new Date(); return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear(); }
-function isStudyDay(date) { var dow = date.getDay(); return dow === 2 || dow === 3 || dow === 4; }
+function isStudyDay(date) { var dow = date.getDay(); return dow === 0 || dow === 2 || dow === 3 || dow === 4; }
 function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
 
 function saveState() { try { localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state)); } catch(e){} }
@@ -224,6 +225,7 @@ function bindViewEvents() {
     if (prevMonth) prevMonth.onclick = function() { navigateMonth(-1); };
     if (nextMonth) nextMonth.onclick = function() { navigateMonth(1); };
     document.querySelectorAll('.session-check').forEach(function(el) { el.onclick = function() { toggleSession(el.getAttribute('data-date'), el.getAttribute('data-session')); }; });
+    document.querySelectorAll('.week-session-check').forEach(function(el) { el.onclick = function() { toggleSession(el.getAttribute('data-date'), el.getAttribute('data-session')); }; });
     document.querySelectorAll('.kana-cell').forEach(function(el) { el.onclick = function() { toggleKana(el.getAttribute('data-type'), el.getAttribute('data-char')); }; });
     document.querySelectorAll('.kanji-check').forEach(function(el) { el.onclick = function() { toggleKanji(el.getAttribute('data-kanji')); }; });
     document.querySelectorAll('.vocab-check').forEach(function(el) { el.onclick = function() { toggleVocab(el.getAttribute('data-word')); }; });
@@ -263,12 +265,64 @@ function renderSemanaView() {
     var weekDays = getWeekDays(JpTracker.state.selectedDate);
     var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week">←</span><span style="flex:1;text-align:center;">Semana de Estudo</span><span class="btn" id="next-week">→</span></div>';
     html += '<div style="overflow-x:auto;"><table class="tracker-table"><tr><th class="label">Sessão</th>';
-    weekDays.forEach(function(d) { var style = isToday(d) ? ' style="background:var(--accent);color:#fff;"' : ''; html += '<th' + style + '>' + JpTracker.dayNamesShort[d.getDay()] + '<br>' + d.getDate() + '</th>'; });
+    weekDays.forEach(function(d) {
+        var style = isToday(d) ? ' style="background:var(--primary);color:#fff;"' : '';
+        html += '<th' + style + '>' + JpTracker.dayNamesShort[d.getDay()] + '<br>' + d.getDate() + '</th>';
+    });
     html += '</tr>';
-    JpTracker.sessionStructure.forEach(function(session) { html += '<tr><td class="label">' + session.name.split(' ')[0] + '</td>'; weekDays.forEach(function(d) { var dateStr = formatDateKey(d); if (!isStudyDay(d)) { html += '<td class="tracker-cell na">–</td>'; } else { var sessions = JpTracker.state.sessions[dateStr] || {}; var checked = sessions[session.id] || false; html += '<td class="tracker-cell session-check' + (checked ? ' checked' : '') + '" data-date="' + dateStr + '" data-session="' + session.id + '">' + (checked ? '✓' : '') + '</td>'; } }); html += '</tr>'; });
+
+    JpTracker.sessionStructure.forEach(function(session) {
+        html += '<tr><td class="label">' + session.name.split(' ')[0] + '</td>';
+        weekDays.forEach(function(d) {
+            var dateStr = formatDateKey(d);
+            if (!isStudyDay(d)) {
+                html += '<td class="tracker-cell na">–</td>';
+            } else {
+                var sessions = JpTracker.state.sessions[dateStr] || {};
+                var checked = sessions[session.id] || false;
+                html += '<td class="tracker-cell week-session-check' + (checked ? ' checked' : '') + '" data-date="' + dateStr + '" data-session="' + session.id + '">' + (checked ? '✓' : '') + '</td>';
+            }
+        });
+        html += '</tr>';
+    });
     html += '</table></div></div>';
-    var totalSessions = 0, completedSessions = 0; weekDays.forEach(function(d) { if (isStudyDay(d)) { totalSessions += 4; var sessions = JpTracker.state.sessions[formatDateKey(d)] || {}; completedSessions += Object.values(sessions).filter(function(v) { return v; }).length; } }); var percent = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
-    html += '<div class="card"><div class="card-title">Resumo da Semana</div><div class="summary-box"><div class="summary-percent">' + percent + '%</div><div style="font-size:1rem;color:var(--muted-foreground);margin-top:4px;">' + completedSessions + ' de ' + totalSessions + ' sessões</div><div class="summary-bar"><div class="summary-fill" style="width:' + percent + '%;"></div></div></div></div>';
+
+    html += '<div class="card"><div class="card-title">Resumo da Semana</div>' + renderWeeklySummary(weekDays) + '</div>';
+    return html;
+}
+
+function renderWeeklySummary(weekDays) {
+    var dayStats = [];
+    weekDays.forEach(function(d) {
+        var dateStr = formatDateKey(d);
+        var sessions = JpTracker.state.sessions[dateStr] || {};
+        var checked = 0, possible = 0;
+        if (isStudyDay(d)) {
+            possible = 4;
+            JpTracker.sessionStructure.forEach(function(s) { if (sessions[s.id]) checked++; });
+        }
+        var pct = possible > 0 ? Math.round((checked / possible) * 100) : 0;
+        dayStats.push({ day: JpTracker.dayNamesShort[d.getDay()], pct: pct, isToday: isToday(d), isStudyDay: isStudyDay(d) });
+    });
+    var html = '<div style="display:-webkit-box;display:flex;-webkit-box-align:flex-end;align-items:flex-end;height:150px;border-bottom:2px solid var(--primary);padding-bottom:8px;">';
+    dayStats.forEach(function(s) {
+        var barHeight = s.isStudyDay ? Math.max(s.pct * 1.2, 4) : 4;
+        var barColor = s.isToday ? 'var(--primary)' : (s.isStudyDay ? 'var(--border)' : 'var(--secondary)');
+        var barStyle = 'width:12%;height:' + barHeight + 'px;background:' + barColor + ';margin-right:2%;';
+        html += '<div style="' + barStyle + '"></div>';
+    });
+    html += '</div>';
+    html += '<div style="display:-webkit-box;display:flex;margin-top:4px;">';
+    dayStats.forEach(function(s) {
+        html += '<div style="width:12%;margin-right:2%;text-align:center;font-size:var(--font-size-xs);">' + s.day + '</div>';
+    });
+    html += '</div>';
+    html += '<div style="display:-webkit-box;display:flex;margin-top:2px;">';
+    dayStats.forEach(function(s) {
+        var pctText = s.isStudyDay ? s.pct + '%' : '–';
+        html += '<div style="width:12%;margin-right:2%;text-align:center;font-size:var(--font-size-xs);font-weight:600;">' + pctText + '</div>';
+    });
+    html += '</div>';
     return html;
 }
 
@@ -280,7 +334,7 @@ function renderMesView() {
     html += '<div class="month-calendar"><div class="month-row">'; JpTracker.dayNamesShort.forEach(function(d) { html += '<div class="month-cell header">' + d + '</div>'; }); html += '</div>';
     var dayCount = 0, totalCells = startPadding + lastDay.getDate(), rows = Math.ceil(totalCells / 7);
     for (var r = 0; r < rows; r++) { html += '<div class="month-row">'; for (var c = 0; c < 7; c++) { var cellIndex = r * 7 + c; if (cellIndex < startPadding || dayCount >= lastDay.getDate()) { html += '<div class="month-cell empty"></div>'; } else { dayCount++; var dayDate = new Date(year, month, dayCount); var dateStr = formatDateKey(dayDate); var isTodayCell = isToday(dayDate); var hasLesson = JpTracker.schedule[dateStr]; var sessions = JpTracker.state.sessions[dateStr] || {}; var sessionCount = Object.values(sessions).filter(function(v) { return v; }).length; var isComplete = sessionCount === 4; var cellClass = 'month-cell'; if (isTodayCell) cellClass += ' today'; else if (isComplete && hasLesson) cellClass += ' completed'; else if (hasLesson) cellClass += ' has-lesson'; html += '<div class="' + cellClass + '" data-date="' + dateStr + '"><strong>' + dayCount + '</strong>'; if (hasLesson && sessionCount > 0) html += '<div style="font-size:0.6rem;">' + sessionCount + '/4</div>'; html += '</div>'; } } html += '</div>'; }
-    html += '</div><div style="margin-top:14px;font-size:0.85rem;display:flex;gap:12px;flex-wrap:wrap;"><span>🟡 Aula</span><span>🟢 Completa</span><span>🔴 Hoje</span></div></div>';
+    html += '</div><div style="margin-top:14px;font-size:0.85rem;display:-webkit-box;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;"><span style="margin-right:12px;"><span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1px solid #f59e0b;margin-right:4px;"></span>Aula</span><span style="margin-right:12px;"><span style="display:inline-block;width:12px;height:12px;background:var(--success-light);border:1px solid var(--success);margin-right:4px;"></span>Completa</span><span><span style="display:inline-block;width:12px;height:12px;background:var(--accent-light);border:2px solid var(--accent);margin-right:4px;"></span>Hoje</span></div></div>';
     return html;
 }
 
