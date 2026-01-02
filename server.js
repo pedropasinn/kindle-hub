@@ -1232,19 +1232,22 @@ async function initializeServices() {
   // Inicializar Google Sheets para persistência (usando Service Account)
   if (process.env.GOOGLE_SHEETS_ID) {
     try {
-      sheetsDB = new SheetsDB(process.env.GOOGLE_SHEETS_ID);
+      // Se houver a variável com o JSON, podemos passar para o SheetsDB
+      const serviceAccount = process.env.GOOGLE_SERVICE_ACCOUNT_JSON 
+        ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON) 
+        : null;
+
+      // Você precisará ajustar seu SheetsDB para aceitar esse objeto opcional
+      sheetsDB = new SheetsDB(process.env.GOOGLE_SHEETS_ID, serviceAccount);
       const initialized = await sheetsDB.init();
+      
       if (initialized) {
         console.log('✅ Google Sheets configurado para persistência');
-      } else {
-        sheetsDB = null;
       }
     } catch (error) {
-      console.warn('⚠️  Erro ao configurar Google Sheets:', error.message);
+      console.warn('⚠️ Erro ao configurar Google Sheets:', error.message);
       sheetsDB = null;
     }
-  } else {
-    console.warn('⚠️  GOOGLE_SHEETS_ID não configurado - persistência em Sheets desabilitada');
   }
 }
 
