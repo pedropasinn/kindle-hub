@@ -322,7 +322,63 @@ function isThirdSunday(date) { return date.getDay() === 0 && date.getDate() >= 1
 function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
 function formatDateShort(date) { return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
-function saveState() { try { localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state)); } catch(e){} }
+// Debounce para evitar múltiplas chamadas de sync
+var syncTimeout = null;
+var lastSyncTime = 0;
+
+function saveState() {
+    try {
+        localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
+    } catch(e){}
+
+    // Sincronizar com Google Sheets (debounced - espera 3 segundos após última alteração)
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(syncToCloud, 3000);
+}
+
+async function syncToCloud() {
+    try {
+        var stateToSync = {
+            entries: BuJo.state.entries,
+            spiritualHabits: BuJo.state.spiritualHabits,
+            studyGoals: BuJo.state.studyGoals,
+            mortifications: BuJo.state.mortifications,
+            projects: BuJo.state.projects,
+            futureLog: BuJo.state.futureLog,
+            notes: BuJo.state.notes,
+            readingProgress: BuJo.state.readingProgress
+        };
+
+        var response = await fetch('/api/sync/jornal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stateToSync)
+        });
+
+        if (response.ok) {
+            lastSyncTime = Date.now();
+            console.log('Jornal sincronizado com sucesso');
+        }
+    } catch(e) {
+        console.warn('Falha ao sincronizar com nuvem:', e.message);
+    }
+}
+
+async function loadFromCloud() {
+    try {
+        var response = await fetch('/api/sync/jornal');
+        if (response.ok) {
+            var data = await response.json();
+            if (data.state) {
+                return data;
+            }
+        }
+    } catch(e) {
+        console.warn('Falha ao carregar da nuvem:', e.message);
+    }
+    return null;
+}
+
 function loadState() {
     try {
         var saved = localStorage.getItem('bujo-kindle-v2');
@@ -339,6 +395,31 @@ function loadState() {
             if (p.selectedDate) BuJo.state.selectedDate = new Date(p.selectedDate);
         }
     } catch(e){}
+}
+
+async function syncFromCloud() {
+    var cloudData = await loadFromCloud();
+    if (cloudData && cloudData.state) {
+        var localTime = localStorage.getItem('bujo-kindle-v2-time') || '0';
+        var cloudTime = new Date(cloudData.timestamp).getTime();
+
+        // Se dados da nuvem são mais recentes, usar eles
+        if (cloudTime > parseInt(localTime)) {
+            var p = cloudData.state;
+            BuJo.state.entries = p.entries || [];
+            BuJo.state.spiritualHabits = p.spiritualHabits || {};
+            BuJo.state.studyGoals = p.studyGoals || {};
+            BuJo.state.mortifications = p.mortifications || {};
+            BuJo.state.projects = p.projects || [];
+            BuJo.state.futureLog = p.futureLog || [];
+            BuJo.state.notes = p.notes || [];
+            BuJo.state.readingProgress = p.readingProgress || BuJo.state.readingProgress;
+            localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
+            localStorage.setItem('bujo-kindle-v2-time', cloudTime.toString());
+            console.log('Dados carregados da nuvem');
+            render();
+        }
+    }
 }
 
 async function loadCalendarEvents() {
@@ -369,7 +450,7 @@ function getEventsForDate(dateStr) {
     return events;
 }
 
-function init() { loadState(); updateHeaderDate(); bindNavEvents(); loadCalendarEvents(); }
+function init() { loadState(); updateHeaderDate(); bindNavEvents(); loadCalendarEvents(); syncFromCloud(); }
 function updateHeaderDate() { document.getElementById('header-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
 function bindNavEvents() {
     document.getElementById('nav-tabs').onclick = function(e) {

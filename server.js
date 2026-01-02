@@ -8,8 +8,12 @@ const fs = require('fs');
 const { Client: NotionClient } = require('@notionhq/client');
 require('isomorphic-fetch');
 const db = require('./db'); // Importar nosso módulo KV
+const SheetsDB = require('./sheets'); // Importar módulo Google Sheets
 
 const app = express();
+
+// Instância do SheetsDB (será inicializada após auth)
+let sheetsDB = null;
 const PORT = process.env.PORT || 3000;
 
 // Configurar Google OAuth2
@@ -919,6 +923,262 @@ app.get('/api/escriva/random-point', async (req, res) => {
   }
 });
 
+// ============= ROTAS DE SINCRONIZAÇÃO COM GOOGLE SHEETS =============
+
+// Salvar estado do Jornal (BuJo)
+app.post('/api/sync/jornal', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const state = req.body;
+    const result = await sheetsDB.saveState('jornal_state', state);
+    res.json(result);
+  } catch (error) {
+    console.error('Erro ao salvar jornal no Sheets:', error);
+    res.status(500).json({ error: 'Erro ao salvar dados', details: error.message });
+  }
+});
+
+// Carregar estado do Jornal
+app.get('/api/sync/jornal', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const data = await sheetsDB.loadState('jornal_state');
+    if (!data) {
+      return res.json({ state: null, message: 'Nenhum dado salvo' });
+    }
+    res.json(data);
+  } catch (error) {
+    console.error('Erro ao carregar jornal do Sheets:', error);
+    res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
+  }
+});
+
+// Salvar estado do Nihongo Tracker
+app.post('/api/sync/nihongo', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const state = req.body;
+    const result = await sheetsDB.saveState('nihongo_state', state);
+    res.json(result);
+  } catch (error) {
+    console.error('Erro ao salvar nihongo no Sheets:', error);
+    res.status(500).json({ error: 'Erro ao salvar dados', details: error.message });
+  }
+});
+
+// Carregar estado do Nihongo Tracker
+app.get('/api/sync/nihongo', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const data = await sheetsDB.loadState('nihongo_state');
+    if (!data) {
+      return res.json({ state: null, message: 'Nenhum dado salvo' });
+    }
+    res.json(data);
+  } catch (error) {
+    console.error('Erro ao carregar nihongo do Sheets:', error);
+    res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
+  }
+});
+
+// Salvar estado do Plano de Vida (hábitos)
+app.post('/api/sync/plano', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const state = req.body;
+    const result = await sheetsDB.saveState('plano_state', state);
+    res.json(result);
+  } catch (error) {
+    console.error('Erro ao salvar plano no Sheets:', error);
+    res.status(500).json({ error: 'Erro ao salvar dados', details: error.message });
+  }
+});
+
+// Carregar estado do Plano de Vida
+app.get('/api/sync/plano', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const data = await sheetsDB.loadState('plano_state');
+    if (!data) {
+      return res.json({ state: null, message: 'Nenhum dado salvo' });
+    }
+    res.json(data);
+  } catch (error) {
+    console.error('Erro ao carregar plano do Sheets:', error);
+    res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
+  }
+});
+
+// Verificar status da sincronização
+app.get('/api/sync/status', (req, res) => {
+  res.json({
+    sheetsConfigured: !!sheetsDB,
+    spreadsheetId: process.env.GOOGLE_SHEETS_ID ? 'Configurado' : 'Não configurado'
+  });
+});
+
+// ============= ROTAS DE ANOTAÇÕES (GOOGLE SHEETS) =============
+
+// Listar todas as anotações
+app.get('/api/anotacoes', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const data = await sheetsDB.loadState('anotacoes');
+    const annotations = data?.state?.annotations || [];
+
+    // Filtrar por tag se especificado
+    const tagFilter = req.query.tag;
+    let filtered = annotations;
+    if (tagFilter) {
+      filtered = annotations.filter(a => a.tags && a.tags.includes(tagFilter));
+    }
+
+    // Adicionar preview para cada anotação
+    const withPreview = filtered.map(a => ({
+      ...a,
+      preview: (a.content || '').substring(0, 150) + ((a.content || '').length > 150 ? '...' : '')
+    }));
+
+    res.json(withPreview);
+  } catch (error) {
+    console.error('Erro ao listar anotações:', error);
+    res.status(500).json({ error: 'Erro ao carregar anotações', details: error.message });
+  }
+});
+
+// Obter uma anotação específica
+app.get('/api/anotacoes/:id', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const data = await sheetsDB.loadState('anotacoes');
+    const annotations = data?.state?.annotations || [];
+    const annotation = annotations.find(a => a.id === req.params.id);
+
+    if (!annotation) {
+      return res.status(404).json({ error: 'Anotação não encontrada' });
+    }
+
+    res.json(annotation);
+  } catch (error) {
+    console.error('Erro ao buscar anotação:', error);
+    res.status(500).json({ error: 'Erro ao carregar anotação', details: error.message });
+  }
+});
+
+// Criar nova anotação
+app.post('/api/anotacoes', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const { title, content, tags } = req.body;
+    const data = await sheetsDB.loadState('anotacoes');
+    const annotations = data?.state?.annotations || [];
+
+    const newAnnotation = {
+      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
+      title: title || 'Sem título',
+      content: content || '',
+      tags: tags || [],
+      createdTime: new Date().toISOString(),
+      updatedTime: new Date().toISOString()
+    };
+
+    annotations.unshift(newAnnotation);
+
+    await sheetsDB.saveState('anotacoes', { annotations });
+
+    res.status(201).json(newAnnotation);
+  } catch (error) {
+    console.error('Erro ao criar anotação:', error);
+    res.status(500).json({ error: 'Erro ao criar anotação', details: error.message });
+  }
+});
+
+// Atualizar anotação
+app.put('/api/anotacoes/:id', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const { title, content, tags } = req.body;
+    const data = await sheetsDB.loadState('anotacoes');
+    const annotations = data?.state?.annotations || [];
+
+    const index = annotations.findIndex(a => a.id === req.params.id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Anotação não encontrada' });
+    }
+
+    annotations[index] = {
+      ...annotations[index],
+      title: title !== undefined ? title : annotations[index].title,
+      content: content !== undefined ? content : annotations[index].content,
+      tags: tags !== undefined ? tags : annotations[index].tags,
+      updatedTime: new Date().toISOString()
+    };
+
+    await sheetsDB.saveState('anotacoes', { annotations });
+
+    res.json(annotations[index]);
+  } catch (error) {
+    console.error('Erro ao atualizar anotação:', error);
+    res.status(500).json({ error: 'Erro ao atualizar anotação', details: error.message });
+  }
+});
+
+// Excluir anotação
+app.delete('/api/anotacoes/:id', async (req, res) => {
+  if (!sheetsDB) {
+    return res.status(503).json({ error: 'Google Sheets não configurado' });
+  }
+
+  try {
+    const data = await sheetsDB.loadState('anotacoes');
+    const annotations = data?.state?.annotations || [];
+
+    const index = annotations.findIndex(a => a.id === req.params.id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Anotação não encontrada' });
+    }
+
+    annotations.splice(index, 1);
+
+    await sheetsDB.saveState('anotacoes', { annotations });
+
+    res.json({ success: true, message: 'Anotação excluída' });
+  } catch (error) {
+    console.error('Erro ao excluir anotação:', error);
+    res.status(500).json({ error: 'Erro ao excluir anotação', details: error.message });
+  }
+});
+
 // Rotas para páginas HTML
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -968,6 +1228,24 @@ app.get('/plano-inclinado', (req, res) => {
 async function initializeServices() {
   await loadGoogleAuth();
   loadNotionClient();
+
+  // Inicializar Google Sheets para persistência (usando Service Account)
+  if (process.env.GOOGLE_SHEETS_ID) {
+    try {
+      sheetsDB = new SheetsDB(process.env.GOOGLE_SHEETS_ID);
+      const initialized = await sheetsDB.init();
+      if (initialized) {
+        console.log('✅ Google Sheets configurado para persistência');
+      } else {
+        sheetsDB = null;
+      }
+    } catch (error) {
+      console.warn('⚠️  Erro ao configurar Google Sheets:', error.message);
+      sheetsDB = null;
+    }
+  } else {
+    console.warn('⚠️  GOOGLE_SHEETS_ID não configurado - persistência em Sheets desabilitada');
+  }
 }
 
 // Inicializar serviços imediatamente (funciona no Vercel e localmente)

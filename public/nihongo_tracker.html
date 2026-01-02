@@ -205,10 +205,88 @@ function isToday(date) { var today = new Date(); return date.getDate() === today
 function isStudyDay(date) { var dow = date.getDay(); return dow === 0 || dow === 2 || dow === 3 || dow === 4; }
 function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
 
-function saveState() { try { localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state)); } catch(e){} }
-function loadState() { try { var saved = localStorage.getItem('jp-tracker-v1'); if (saved) { var p = JSON.parse(saved); JpTracker.state.sessions = p.sessions || {}; JpTracker.state.hiragana = p.hiragana || {}; JpTracker.state.katakana = p.katakana || {}; JpTracker.state.kanji = p.kanji || {}; JpTracker.state.vocabulary = p.vocabulary || {}; JpTracker.state.progress = p.progress || JpTracker.state.progress; if (p.selectedDate) JpTracker.state.selectedDate = new Date(p.selectedDate); } } catch(e){} }
+// Debounce para evitar múltiplas chamadas de sync
+var syncTimeout = null;
+var lastSyncTime = 0;
 
-function init() { loadState(); updateHeaderDate(); bindNavEvents(); render(); }
+function saveState() {
+    try { localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state)); } catch(e){}
+    // Sincronizar com Google Sheets (debounced - espera 3 segundos após última alteração)
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(syncToCloud, 3000);
+}
+
+async function syncToCloud() {
+    try {
+        var stateToSync = {
+            sessions: JpTracker.state.sessions,
+            hiragana: JpTracker.state.hiragana,
+            katakana: JpTracker.state.katakana,
+            kanji: JpTracker.state.kanji,
+            vocabulary: JpTracker.state.vocabulary,
+            progress: JpTracker.state.progress
+        };
+        var response = await fetch('/api/sync/nihongo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stateToSync)
+        });
+        if (response.ok) {
+            lastSyncTime = Date.now();
+            console.log('Nihongo sincronizado com sucesso');
+        }
+    } catch(e) { console.warn('Falha ao sincronizar com nuvem:', e.message); }
+}
+
+async function loadFromCloud() {
+    try {
+        var response = await fetch('/api/sync/nihongo');
+        if (response.ok) {
+            var data = await response.json();
+            if (data.state) return data;
+        }
+    } catch(e) { console.warn('Falha ao carregar da nuvem:', e.message); }
+    return null;
+}
+
+function loadState() {
+    try {
+        var saved = localStorage.getItem('jp-tracker-v1');
+        if (saved) {
+            var p = JSON.parse(saved);
+            JpTracker.state.sessions = p.sessions || {};
+            JpTracker.state.hiragana = p.hiragana || {};
+            JpTracker.state.katakana = p.katakana || {};
+            JpTracker.state.kanji = p.kanji || {};
+            JpTracker.state.vocabulary = p.vocabulary || {};
+            JpTracker.state.progress = p.progress || JpTracker.state.progress;
+            if (p.selectedDate) JpTracker.state.selectedDate = new Date(p.selectedDate);
+        }
+    } catch(e){}
+}
+
+async function syncFromCloud() {
+    var cloudData = await loadFromCloud();
+    if (cloudData && cloudData.state) {
+        var localTime = localStorage.getItem('jp-tracker-v1-time') || '0';
+        var cloudTime = new Date(cloudData.timestamp).getTime();
+        if (cloudTime > parseInt(localTime)) {
+            var p = cloudData.state;
+            JpTracker.state.sessions = p.sessions || {};
+            JpTracker.state.hiragana = p.hiragana || {};
+            JpTracker.state.katakana = p.katakana || {};
+            JpTracker.state.kanji = p.kanji || {};
+            JpTracker.state.vocabulary = p.vocabulary || {};
+            JpTracker.state.progress = p.progress || JpTracker.state.progress;
+            localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state));
+            localStorage.setItem('jp-tracker-v1-time', cloudTime.toString());
+            console.log('Dados carregados da nuvem');
+            render();
+        }
+    }
+}
+
+function init() { loadState(); updateHeaderDate(); bindNavEvents(); render(); syncFromCloud(); }
 function updateHeaderDate() { document.getElementById('header-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
 function bindNavEvents() { document.getElementById('nav-tabs').onclick = function(e) { if (e.target.className.indexOf('nav-tab') !== -1) setView(e.target.getAttribute('data-view')); }; document.getElementById('modal-overlay').onclick = function(e) { if (e.target.id === 'modal-overlay') closeModal(); }; }
 function setView(view) { JpTracker.state.currentView = view; document.querySelectorAll('.nav-tab').forEach(function(tab) { tab.className = tab.getAttribute('data-view') === view ? 'nav-tab active' : 'nav-tab'; }); render(); }

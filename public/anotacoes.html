@@ -504,7 +504,7 @@
                 console.log("Iniciando carregamento...");
                 notesList.innerHTML = '<div style="text-align:center;padding:30px;">Carregando...</div>';
 
-                const response = await fetch('/api/notion/annotations');
+                const response = await fetch('/api/anotacoes');
                 
                 if (!response.ok) {
                     throw new Error(`Erro API: ${response.status}`);
@@ -640,7 +640,7 @@
         // ============= ABRIR ANOTAÇÃO =============
         async function openAnnotation(annotationId) {
             try {
-                const response = await fetch(`/api/notion/annotations/${annotationId}`);
+                const response = await fetch(`/api/anotacoes/${annotationId}`);
                 if (!response.ok) throw new Error('Erro ao carregar anotação');
 
                 const annotation = await response.json();
@@ -780,7 +780,7 @@
                 const selectedTag = tagSelector.value;
                 const tags = selectedTag ? [selectedTag] : [];
 
-                const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
+                const response = await fetch(`/api/anotacoes/${currentAnnotation.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -885,7 +885,7 @@
                 const selectedTag = tagSelector.value;
                 const tags = selectedTag ? [selectedTag] : [];
 
-                const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
+                const response = await fetch(`/api/anotacoes/${currentAnnotation.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -924,7 +924,7 @@
             if (!currentAnnotation) return;
 
             try {
-                const response = await fetch(`/api/notion/annotations/${currentAnnotation.id}`, {
+                const response = await fetch(`/api/anotacoes/${currentAnnotation.id}`, {
                     method: 'DELETE'
                 });
 
@@ -948,7 +948,7 @@
                 // Herdar tag do filtro atual, se houver
                 const inheritedTags = currentFilter ? [currentFilter] : [];
 
-                const response = await fetch('/api/notion/annotations', {
+                const response = await fetch('/api/anotacoes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

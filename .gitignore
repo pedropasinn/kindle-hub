@@ -14,6 +14,9 @@ RAILWAY_VALUES.txt
 client_secret_*.json
 *.json:Zone.Identifier
 bibliaAveMaria.json
+git-token.json
+client_secret_987498090119-cupam4rcudhoq07oi20ba9oequrbgdh4.apps.googleusercontent.com.json
+service-account.json
 
 # Backup files
 server-sqlite-backup.js

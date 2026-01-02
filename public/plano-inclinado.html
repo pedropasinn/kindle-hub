@@ -423,6 +423,9 @@
         let isSyncing = false; // Flag para evitar múltiplas sincronizações simultâneas
         let syncTimeouts = new Map(); // Timeouts de debounce por hábito
 
+        // Debounce para Google Sheets sync
+        let sheetsSyncTimeout = null;
+
         // Carregar estado do localStorage
         function loadState() {
             const dailyState = JSON.parse(localStorage.getItem('dailyHabitsState') || '{}');
@@ -434,6 +437,46 @@
         function saveState(dailyState, weeklyState) {
             localStorage.setItem('dailyHabitsState', JSON.stringify(dailyState));
             localStorage.setItem('weeklyHabitsState', JSON.stringify(weeklyState));
+
+            // Sincronizar com Google Sheets (debounced)
+            clearTimeout(sheetsSyncTimeout);
+            sheetsSyncTimeout = setTimeout(() => syncToSheets(dailyState, weeklyState), 3000);
+        }
+
+        // Sincronizar com Google Sheets
+        async function syncToSheets(dailyState, weeklyState) {
+            try {
+                const response = await fetch('/api/sync/plano', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dailyState, weeklyState, date: new Date().toISOString().split('T')[0] })
+                });
+                if (response.ok) {
+                    console.log('Plano sincronizado com Google Sheets');
+                }
+            } catch(e) { console.warn('Falha ao sincronizar com Sheets:', e.message); }
+        }
+
+        // Carregar do Google Sheets
+        async function loadFromSheets() {
+            try {
+                const response = await fetch('/api/sync/plano');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.state) {
+                        const localTime = localStorage.getItem('planoHabits-time') || '0';
+                        const cloudTime = new Date(data.timestamp).getTime();
+                        if (cloudTime > parseInt(localTime)) {
+                            localStorage.setItem('dailyHabitsState', JSON.stringify(data.state.dailyState || {}));
+                            localStorage.setItem('weeklyHabitsState', JSON.stringify(data.state.weeklyState || {}));
+                            localStorage.setItem('planoHabits-time', cloudTime.toString());
+                            console.log('Dados do plano carregados da nuvem');
+                            return true;
+                        }
+                    }
+                }
+            } catch(e) { console.warn('Falha ao carregar do Sheets:', e.message); }
+            return false;
         }
 
         // Tentar carregar do Notion
@@ -760,6 +803,9 @@
         // Inicializar
         async function init() {
             console.log(' Inicializando Plano Inclinado...');
+
+            // Carregar dados da nuvem (Google Sheets) primeiro
+            await loadFromSheets();
 
             await loadFromNotion();
             await loadWeeklyNotionHabits();
