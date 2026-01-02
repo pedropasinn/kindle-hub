@@ -14,6 +14,7 @@ const app = express();
 
 // Instância do SheetsDB (será inicializada após auth)
 let sheetsDB = null;
+let initPromise = null; // Promise global de inicialização
 const PORT = process.env.PORT || 3000;
 
 // Configurar Google OAuth2
@@ -66,6 +67,20 @@ async function loadGoogleAuth() {
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// Middleware que aguarda inicialização antes de verificar sheetsDB
+async function requireSheets(req, res, next) {
+  try {
+    await initPromise;
+    if (!sheetsDB) {
+      return res.status(503).json({ error: 'Google Sheets não configurado' });
+    }
+    next();
+  } catch (error) {
+    console.error('Erro na inicialização:', error);
+    return res.status(503).json({ error: 'Serviço indisponível', details: error.message });
+  }
+}
 
 // ============= HELPERS PARA KV =============
 async function getNextId(key) {
@@ -926,11 +941,7 @@ app.get('/api/escriva/random-point', async (req, res) => {
 // ============= ROTAS DE SINCRONIZAÇÃO COM GOOGLE SHEETS =============
 
 // Salvar estado do Jornal (BuJo)
-app.post('/api/sync/jornal', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
+app.post('/api/sync/jornal', requireSheets, async (req, res) => {
   try {
     const state = req.body;
     const result = await sheetsDB.saveState('jornal_state', state);
@@ -942,11 +953,7 @@ app.post('/api/sync/jornal', async (req, res) => {
 });
 
 // Carregar estado do Jornal
-app.get('/api/sync/jornal', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
+app.get('/api/sync/jornal', requireSheets, async (req, res) => {
   try {
     const data = await sheetsDB.loadState('jornal_state');
     if (!data) {
@@ -960,11 +967,7 @@ app.get('/api/sync/jornal', async (req, res) => {
 });
 
 // Salvar estado do Nihongo Tracker
-app.post('/api/sync/nihongo', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
+app.post('/api/sync/nihongo', requireSheets, async (req, res) => {
   try {
     const state = req.body;
     const result = await sheetsDB.saveState('nihongo_state', state);
@@ -976,11 +979,7 @@ app.post('/api/sync/nihongo', async (req, res) => {
 });
 
 // Carregar estado do Nihongo Tracker
-app.get('/api/sync/nihongo', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
+app.get('/api/sync/nihongo', requireSheets, async (req, res) => {
   try {
     const data = await sheetsDB.loadState('nihongo_state');
     if (!data) {
@@ -994,11 +993,7 @@ app.get('/api/sync/nihongo', async (req, res) => {
 });
 
 // Salvar estado do Plano de Vida (hábitos)
-app.post('/api/sync/plano', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
+app.post('/api/sync/plano', requireSheets, async (req, res) => {
   try {
     const state = req.body;
     const result = await sheetsDB.saveState('plano_state', state);
@@ -1010,11 +1005,7 @@ app.post('/api/sync/plano', async (req, res) => {
 });
 
 // Carregar estado do Plano de Vida
-app.get('/api/sync/plano', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
+app.get('/api/sync/plano', requireSheets, async (req, res) => {
   try {
     const data = await sheetsDB.loadState('plano_state');
     if (!data) {
@@ -1035,17 +1026,23 @@ app.get('/api/sync/status', (req, res) => {
   });
 });
 
-// ============= ROTAS DE ANOTAÇÕES (GOOGLE SHEETS) =============
+// ============= ROTAS DE ANOTAÇÕES (KV) =============
 
 // Listar todas as anotações
 app.get('/api/anotacoes', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
   try {
-    const data = await sheetsDB.loadState('anotacoes');
-    const annotations = data?.state?.annotations || [];
+    const noteKeys = await db.keys('note:*');
+    const annotations = [];
+
+    for (const key of noteKeys) {
+      if (!key.endsWith(':counter')) {
+        const noteData = await db.get(key);
+        if (noteData) {
+          const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
+          annotations.push(note);
+        }
+      }
+    }
 
     // Filtrar por tag se especificado
     const tagFilter = req.query.tag;
@@ -1053,6 +1050,9 @@ app.get('/api/anotacoes', async (req, res) => {
     if (tagFilter) {
       filtered = annotations.filter(a => a.tags && a.tags.includes(tagFilter));
     }
+
+    // Ordenar por updatedTime (mais recentes primeiro)
+    filtered.sort((a, b) => new Date(b.updatedTime) - new Date(a.updatedTime));
 
     // Adicionar preview para cada anotação
     const withPreview = filtered.map(a => ({
@@ -1069,20 +1069,15 @@ app.get('/api/anotacoes', async (req, res) => {
 
 // Obter uma anotação específica
 app.get('/api/anotacoes/:id', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
   try {
-    const data = await sheetsDB.loadState('anotacoes');
-    const annotations = data?.state?.annotations || [];
-    const annotation = annotations.find(a => a.id === req.params.id);
+    const noteData = await db.get(`note:${req.params.id}`);
 
-    if (!annotation) {
+    if (!noteData) {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
 
-    res.json(annotation);
+    const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
+    res.json(note);
   } catch (error) {
     console.error('Erro ao buscar anotação:', error);
     res.status(500).json({ error: 'Erro ao carregar anotação', details: error.message });
@@ -1091,17 +1086,12 @@ app.get('/api/anotacoes/:id', async (req, res) => {
 
 // Criar nova anotação
 app.post('/api/anotacoes', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
   try {
     const { title, content, tags } = req.body;
-    const data = await sheetsDB.loadState('anotacoes');
-    const annotations = data?.state?.annotations || [];
+    const id = await getNextId('note');
 
     const newAnnotation = {
-      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
+      id: id.toString(),
       title: title || 'Sem título',
       content: content || '',
       tags: tags || [],
@@ -1109,9 +1099,7 @@ app.post('/api/anotacoes', async (req, res) => {
       updatedTime: new Date().toISOString()
     };
 
-    annotations.unshift(newAnnotation);
-
-    await sheetsDB.saveState('anotacoes', { annotations });
+    await db.set(`note:${id}`, JSON.stringify(newAnnotation));
 
     res.status(201).json(newAnnotation);
   } catch (error) {
@@ -1122,31 +1110,27 @@ app.post('/api/anotacoes', async (req, res) => {
 
 // Atualizar anotação
 app.put('/api/anotacoes/:id', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
   try {
-    const { title, content, tags } = req.body;
-    const data = await sheetsDB.loadState('anotacoes');
-    const annotations = data?.state?.annotations || [];
+    const noteData = await db.get(`note:${req.params.id}`);
 
-    const index = annotations.findIndex(a => a.id === req.params.id);
-    if (index === -1) {
+    if (!noteData) {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
 
-    annotations[index] = {
-      ...annotations[index],
-      title: title !== undefined ? title : annotations[index].title,
-      content: content !== undefined ? content : annotations[index].content,
-      tags: tags !== undefined ? tags : annotations[index].tags,
+    const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
+    const { title, content, tags } = req.body;
+
+    const updatedNote = {
+      ...note,
+      title: title !== undefined ? title : note.title,
+      content: content !== undefined ? content : note.content,
+      tags: tags !== undefined ? tags : note.tags,
       updatedTime: new Date().toISOString()
     };
 
-    await sheetsDB.saveState('anotacoes', { annotations });
+    await db.set(`note:${req.params.id}`, JSON.stringify(updatedNote));
 
-    res.json(annotations[index]);
+    res.json(updatedNote);
   } catch (error) {
     console.error('Erro ao atualizar anotação:', error);
     res.status(500).json({ error: 'Erro ao atualizar anotação', details: error.message });
@@ -1155,27 +1139,84 @@ app.put('/api/anotacoes/:id', async (req, res) => {
 
 // Excluir anotação
 app.delete('/api/anotacoes/:id', async (req, res) => {
-  if (!sheetsDB) {
-    return res.status(503).json({ error: 'Google Sheets não configurado' });
-  }
-
   try {
-    const data = await sheetsDB.loadState('anotacoes');
-    const annotations = data?.state?.annotations || [];
+    const noteData = await db.get(`note:${req.params.id}`);
 
-    const index = annotations.findIndex(a => a.id === req.params.id);
-    if (index === -1) {
+    if (!noteData) {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
 
-    annotations.splice(index, 1);
-
-    await sheetsDB.saveState('anotacoes', { annotations });
+    await db.del(`note:${req.params.id}`);
 
     res.json({ success: true, message: 'Anotação excluída' });
   } catch (error) {
     console.error('Erro ao excluir anotação:', error);
     res.status(500).json({ error: 'Erro ao excluir anotação', details: error.message });
+  }
+});
+
+// Migrar anotações do Google Sheets para KV (rota temporária)
+// Remover após migração completa
+app.post('/api/anotacoes/migrate-from-sheets', requireSheets, async (req, res) => {
+  try {
+    // Carregar anotações do Sheets
+    const data = await sheetsDB.loadState('anotacoes');
+    const sheetsAnnotations = data?.state?.annotations || [];
+
+    if (sheetsAnnotations.length === 0) {
+      return res.json({ success: true, migrated: 0, message: 'Nenhuma anotação para migrar' });
+    }
+
+    let migrated = 0;
+    let skipped = 0;
+
+    // Obter o maior ID atual no KV para não sobrescrever
+    const existingKeys = await db.keys('note:*');
+    const existingIds = new Set();
+    for (const key of existingKeys) {
+      if (!key.endsWith(':counter')) {
+        const noteData = await db.get(key);
+        if (noteData) {
+          const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
+          existingIds.add(note.id);
+        }
+      }
+    }
+
+    for (const annotation of sheetsAnnotations) {
+      // Pular se já existe uma nota com o mesmo ID (evita duplicação)
+      if (existingIds.has(annotation.id)) {
+        skipped++;
+        continue;
+      }
+
+      // Gerar novo ID numérico
+      const newId = await getNextId('note');
+
+      const newNote = {
+        id: newId.toString(),
+        title: annotation.title || 'Sem título',
+        content: annotation.content || '',
+        tags: annotation.tags || [],
+        createdTime: annotation.createdTime || new Date().toISOString(),
+        updatedTime: annotation.updatedTime || new Date().toISOString(),
+        migratedFrom: annotation.id // Guardar referência ao ID original do Sheets
+      };
+
+      await db.set(`note:${newId}`, JSON.stringify(newNote));
+      migrated++;
+    }
+
+    res.json({
+      success: true,
+      migrated,
+      skipped,
+      total: sheetsAnnotations.length,
+      message: `Migração concluída: ${migrated} anotações migradas, ${skipped} puladas`
+    });
+  } catch (error) {
+    console.error('Erro ao migrar anotações:', error);
+    res.status(500).json({ error: 'Erro ao migrar anotações', details: error.message });
   }
 });
 
@@ -1233,9 +1274,14 @@ async function initializeServices() {
   if (process.env.GOOGLE_SHEETS_ID) {
     try {
       // Se houver a variável com o JSON, podemos passar para o SheetsDB
-      const serviceAccount = process.env.GOOGLE_SERVICE_ACCOUNT_JSON 
-        ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON) 
+      const serviceAccount = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+        ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
         : null;
+
+      // Corrigir private_key que pode vir com \\n no Vercel
+      if (serviceAccount?.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
 
       // Você precisará ajustar seu SheetsDB para aceitar esse objeto opcional
       sheetsDB = new SheetsDB(process.env.GOOGLE_SHEETS_ID, serviceAccount);
@@ -1252,7 +1298,9 @@ async function initializeServices() {
 }
 
 // Inicializar serviços imediatamente (funciona no Vercel e localmente)
-initializeServices().catch(console.error);
+initPromise = initializeServices().catch(err => {
+  console.error('Erro ao inicializar serviços:', err);
+});
 
 // Se não estiver no Vercel (ambiente de desenvolvimento local)
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
