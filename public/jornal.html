@@ -322,6 +322,77 @@ function isThirdSunday(date) { return date.getDay() === 0 && date.getDate() >= 1
 function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
 function formatDateShort(date) { return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
+// ============= SISTEMA DE LOG DE EVENTOS =============
+function getDeviceId() {
+    var deviceId = localStorage.getItem('bujo-device-id');
+    if (!deviceId) {
+        deviceId = 'device-' + generateId();
+        localStorage.setItem('bujo-device-id', deviceId);
+    }
+    return deviceId;
+}
+
+function recordEvent(type, payload, dateKey) {
+    var event = {
+        eventId: generateId(),
+        app: 'jornal',
+        deviceId: getDeviceId(),
+        ts: new Date().toISOString(),
+        type: type,
+        dateKey: dateKey || null,
+        payload: payload || {}
+    };
+
+    var queue = [];
+    try {
+        var saved = localStorage.getItem('bujo-event-queue');
+        if (saved) queue = JSON.parse(saved);
+    } catch(e) {}
+
+    queue.push(event);
+    localStorage.setItem('bujo-event-queue', JSON.stringify(queue));
+
+    // Tentar flush se fila grande ou após 10 segundos
+    if (queue.length >= 10) {
+        flushEventQueue();
+    } else {
+        clearTimeout(window.eventFlushTimeout);
+        window.eventFlushTimeout = setTimeout(flushEventQueue, 10000);
+    }
+}
+
+async function flushEventQueue() {
+    var queue = [];
+    try {
+        var saved = localStorage.getItem('bujo-event-queue');
+        if (saved) queue = JSON.parse(saved);
+    } catch(e) {}
+
+    if (queue.length === 0) return;
+
+    try {
+        var response = await fetch('/api/log/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ events: queue })
+        });
+
+        if (response.ok) {
+            var result = await response.json();
+            console.log('Eventos enviados:', result.accepted, 'de', result.total);
+            // Limpar apenas os eventos enviados com sucesso
+            localStorage.setItem('bujo-event-queue', '[]');
+        }
+    } catch(e) {
+        console.warn('Falha ao enviar eventos:', e.message);
+    }
+}
+
+// Flush quando voltar online
+if (typeof window !== 'undefined') {
+    window.addEventListener('online', flushEventQueue);
+}
+
 // Debounce para evitar múltiplas chamadas de sync
 var syncTimeout = null;
 var lastSyncTime = 0;
@@ -356,7 +427,10 @@ async function syncToCloud() {
         });
 
         if (response.ok) {
-            lastSyncTime = Date.now();
+            var result = await response.json();
+            var syncTime = result.timestamp ? new Date(result.timestamp).getTime() : Date.now();
+            localStorage.setItem('bujo-kindle-v2-time', syncTime.toString());
+            lastSyncTime = syncTime;
             console.log('Jornal sincronizado com sucesso');
         }
     } catch(e) {
@@ -935,18 +1009,26 @@ function goToToday() { BuJo.state.selectedDate = new Date(); render(); }
 
 function toggleSpiritualHabit(habitId, dateStr) {
     if (!BuJo.state.spiritualHabits[dateStr]) BuJo.state.spiritualHabits[dateStr] = {};
-    BuJo.state.spiritualHabits[dateStr][habitId] = !BuJo.state.spiritualHabits[dateStr][habitId];
+    var newValue = !BuJo.state.spiritualHabits[dateStr][habitId];
+    BuJo.state.spiritualHabits[dateStr][habitId] = newValue;
+    recordEvent('spiritual_toggled', { habitId: habitId, value: newValue }, dateStr);
     saveState(); render();
 }
 function toggleStudyGoal(habitId, dateStr, index) {
     if (!BuJo.state.studyGoals[dateStr]) BuJo.state.studyGoals[dateStr] = {};
     if (!BuJo.state.studyGoals[dateStr][habitId]) BuJo.state.studyGoals[dateStr][habitId] = [];
-    BuJo.state.studyGoals[dateStr][habitId][index] = !BuJo.state.studyGoals[dateStr][habitId][index];
+    var newValue = !BuJo.state.studyGoals[dateStr][habitId][index];
+    BuJo.state.studyGoals[dateStr][habitId][index] = newValue;
+    recordEvent('study_toggled', { habitId: habitId, index: index, value: newValue }, dateStr);
     saveState(); render();
 }
 function toggleMortification(dateStr, index) {
     var morts = BuJo.state.mortifications[dateStr];
-    if (morts && morts[index]) { morts[index].done = !morts[index].done; saveState(); render(); }
+    if (morts && morts[index]) {
+        morts[index].done = !morts[index].done;
+        recordEvent('mortification_toggled', { index: index, text: morts[index].text, done: morts[index].done }, dateStr);
+        saveState(); render();
+    }
 }
 
 function addEntry() {
@@ -954,19 +1036,39 @@ function addEntry() {
     var type = document.getElementById('add-entry-type').value;
     var text = input.value.trim();
     if (!text) return;
-    BuJo.state.entries.push({ id: generateId(), date: formatDateKey(BuJo.state.selectedDate), type: type, text: text, status: 'pending', createdAt: new Date().toISOString() });
+    var dateStr = formatDateKey(BuJo.state.selectedDate);
+    var newEntry = { id: generateId(), date: dateStr, type: type, text: text, status: 'pending', createdAt: new Date().toISOString() };
+    BuJo.state.entries.push(newEntry);
+    recordEvent('entry_added', { id: newEntry.id, entryType: type, text: text, status: 'pending' }, dateStr);
     saveState(); input.value = ''; render();
 }
 function cycleEntrySymbol(id) {
     var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
     if (entry && entry.type === 'task') {
+        var oldStatus = entry.status;
         entry.status = entry.status === 'pending' ? 'done' : entry.status === 'done' ? 'migrated' : 'pending';
+        recordEvent('entry_status_changed', { id: id, from: oldStatus, to: entry.status }, entry.date);
         saveState(); render();
     }
 }
-function deleteEntry(id) { BuJo.state.entries = BuJo.state.entries.filter(function(e) { return e.id !== id; }); saveState(); render(); }
-function deleteNote(id) { BuJo.state.notes = BuJo.state.notes.filter(function(n) { return n.id !== id; }); saveState(); render(); }
-function deleteFutureEntry(id) { BuJo.state.futureLog = BuJo.state.futureLog.filter(function(f) { return f.id !== id; }); saveState(); render(); }
+function deleteEntry(id) {
+    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
+    if (entry) recordEvent('entry_deleted', { id: id, entryType: entry.type, text: entry.text }, entry.date);
+    BuJo.state.entries = BuJo.state.entries.filter(function(e) { return e.id !== id; });
+    saveState(); render();
+}
+function deleteNote(id) {
+    var note = BuJo.state.notes.find(function(n) { return n.id === id; });
+    if (note) recordEvent('note_deleted', { id: id, text: note.text }, note.date);
+    BuJo.state.notes = BuJo.state.notes.filter(function(n) { return n.id !== id; });
+    saveState(); render();
+}
+function deleteFutureEntry(id) {
+    var entry = BuJo.state.futureLog.find(function(f) { return f.id === id; });
+    if (entry) recordEvent('future_deleted', { id: id, text: entry.text, month: entry.month });
+    BuJo.state.futureLog = BuJo.state.futureLog.filter(function(f) { return f.id !== id; });
+    saveState(); render();
+}
 
 function saveAllNotes() {
     var imported = 0;
@@ -995,6 +1097,7 @@ function addMortification(dateStr) {
     if (!text) return;
     if (!BuJo.state.mortifications[dateStr]) BuJo.state.mortifications[dateStr] = [];
     BuJo.state.mortifications[dateStr].push({ text: text, done: false });
+    recordEvent('mortification_added', { text: text }, dateStr);
     saveState(); closeModal(); render();
 }
 
@@ -1007,7 +1110,9 @@ function showAddProjectModal() {
 function addProject() {
     var name = document.getElementById('project-name').value.trim();
     if (!name) return;
-    BuJo.state.projects.push({ id: generateId(), name: name, nextAction: document.getElementById('project-next').value, status: 'Em andamento', createdAt: new Date().toISOString() });
+    var newProject = { id: generateId(), name: name, nextAction: document.getElementById('project-next').value, status: 'Em andamento', createdAt: new Date().toISOString() };
+    BuJo.state.projects.push(newProject);
+    recordEvent('project_added', { id: newProject.id, name: name });
     saveState(); closeModal(); render();
 }
 
@@ -1026,7 +1131,11 @@ function showAddFutureModal() {
 function addFutureEntry() {
     var text = document.getElementById('future-text').value.trim();
     if (!text) return;
-    BuJo.state.futureLog.push({ id: generateId(), month: document.getElementById('future-month').value, day: document.getElementById('future-day').value || null, text: text, createdAt: new Date().toISOString() });
+    var month = document.getElementById('future-month').value;
+    var day = document.getElementById('future-day').value || null;
+    var newEntry = { id: generateId(), month: month, day: day, text: text, createdAt: new Date().toISOString() };
+    BuJo.state.futureLog.push(newEntry);
+    recordEvent('future_added', { id: newEntry.id, month: month, day: day, text: text });
     saveState(); closeModal(); render();
 }
 
@@ -1039,7 +1148,10 @@ function showAddNoteModal() {
 function addNote() {
     var text = document.getElementById('note-text').value.trim();
     if (!text) return;
-    BuJo.state.notes.push({ id: generateId(), text: text, type: document.getElementById('note-type').value.trim() || 'Nota', createdAt: new Date().toISOString() });
+    var noteType = document.getElementById('note-type').value.trim() || 'Nota';
+    var newNote = { id: generateId(), text: text, type: noteType, createdAt: new Date().toISOString() };
+    BuJo.state.notes.push(newNote);
+    recordEvent('note_added', { id: newNote.id, text: text, type: noteType });
     saveState(); closeModal(); render();
 }
 

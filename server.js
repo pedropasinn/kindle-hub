@@ -1026,6 +1026,94 @@ app.get('/api/sync/status', (req, res) => {
   });
 });
 
+// ============= ROTAS DE LOG DE EVENTOS =============
+
+// Receber batch de eventos (append-only log)
+app.post('/api/log/batch', async (req, res) => {
+  try {
+    const { events } = req.body;
+
+    if (!Array.isArray(events)) {
+      return res.status(400).json({ error: 'events deve ser um array' });
+    }
+
+    if (events.length > 200) {
+      return res.status(400).json({ error: 'Máximo de 200 eventos por batch' });
+    }
+
+    let accepted = 0;
+
+    for (const event of events) {
+      // Validar campos obrigatórios
+      if (!event.eventId || !event.app || !event.type || !event.ts) {
+        continue;
+      }
+
+      // Verificar se evento já foi processado (idempotência)
+      const existingEvent = await db.get(`log:${event.eventId}`);
+      if (existingEvent) {
+        continue;
+      }
+
+      // Normalizar e salvar evento
+      const logEntry = {
+        eventId: event.eventId,
+        app: event.app,
+        deviceId: event.deviceId || 'unknown',
+        ts: event.ts,
+        type: event.type,
+        dateKey: event.dateKey || null,
+        payload: event.payload || {},
+        receivedAt: new Date().toISOString()
+      };
+
+      await db.set(`log:${event.eventId}`, JSON.stringify(logEntry));
+      accepted++;
+    }
+
+    res.json({ ok: true, accepted, total: events.length });
+  } catch (error) {
+    console.error('Erro ao salvar log de eventos:', error);
+    res.status(500).json({ error: 'Erro ao salvar eventos', details: error.message });
+  }
+});
+
+// Listar eventos (para debug/análise)
+app.get('/api/log', async (req, res) => {
+  try {
+    const { app, from, to, limit = 100 } = req.query;
+    const logKeys = await db.keys('log:*');
+    const events = [];
+
+    for (const key of logKeys) {
+      const eventData = await db.get(key);
+      if (eventData) {
+        const event = typeof eventData === 'string' ? JSON.parse(eventData) : eventData;
+
+        // Filtrar por app se especificado
+        if (app && event.app !== app) continue;
+
+        // Filtrar por intervalo de datas se especificado
+        if (from && event.ts < from) continue;
+        if (to && event.ts > to) continue;
+
+        events.push(event);
+      }
+    }
+
+    // Ordenar por timestamp (mais recentes primeiro)
+    events.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+    // Limitar quantidade
+    const limitedEvents = events.slice(0, parseInt(limit));
+
+    res.json({ events: limitedEvents, total: events.length });
+  } catch (error) {
+    console.error('Erro ao buscar log de eventos:', error);
+    res.status(500).json({ error: 'Erro ao buscar eventos', details: error.message });
+  }
+});
+
 // ============= ROTAS DE ANOTAÇÕES (KV) =============
 
 // Listar todas as anotações

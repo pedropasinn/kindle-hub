@@ -204,6 +204,77 @@ function getWeekDays(date) { var d = new Date(date); var start = new Date(d); st
 function isToday(date) { var today = new Date(); return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear(); }
 function isStudyDay(date) { var dow = date.getDay(); return dow === 0 || dow === 2 || dow === 3 || dow === 4; }
 function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+
+// ============= SISTEMA DE LOG DE EVENTOS =============
+function getDeviceId() {
+    var deviceId = localStorage.getItem('jp-device-id');
+    if (!deviceId) {
+        deviceId = 'device-' + generateId();
+        localStorage.setItem('jp-device-id', deviceId);
+    }
+    return deviceId;
+}
+
+function recordEvent(type, payload, dateKey) {
+    var event = {
+        eventId: generateId(),
+        app: 'nihongo',
+        deviceId: getDeviceId(),
+        ts: new Date().toISOString(),
+        type: type,
+        dateKey: dateKey || null,
+        payload: payload || {}
+    };
+
+    var queue = [];
+    try {
+        var saved = localStorage.getItem('jp-event-queue');
+        if (saved) queue = JSON.parse(saved);
+    } catch(e) {}
+
+    queue.push(event);
+    localStorage.setItem('jp-event-queue', JSON.stringify(queue));
+
+    // Tentar flush se fila grande ou após 10 segundos
+    if (queue.length >= 10) {
+        flushEventQueue();
+    } else {
+        clearTimeout(window.eventFlushTimeout);
+        window.eventFlushTimeout = setTimeout(flushEventQueue, 10000);
+    }
+}
+
+async function flushEventQueue() {
+    var queue = [];
+    try {
+        var saved = localStorage.getItem('jp-event-queue');
+        if (saved) queue = JSON.parse(saved);
+    } catch(e) {}
+
+    if (queue.length === 0) return;
+
+    try {
+        var response = await fetch('/api/log/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ events: queue })
+        });
+
+        if (response.ok) {
+            var result = await response.json();
+            console.log('Eventos enviados:', result.accepted, 'de', result.total);
+            localStorage.setItem('jp-event-queue', '[]');
+        }
+    } catch(e) {
+        console.warn('Falha ao enviar eventos:', e.message);
+    }
+}
+
+// Flush quando voltar online
+if (typeof window !== 'undefined') {
+    window.addEventListener('online', flushEventQueue);
+}
 
 // Debounce para evitar múltiplas chamadas de sync
 var syncTimeout = null;
@@ -232,7 +303,10 @@ async function syncToCloud() {
             body: JSON.stringify(stateToSync)
         });
         if (response.ok) {
-            lastSyncTime = Date.now();
+            var result = await response.json();
+            var syncTime = result.timestamp ? new Date(result.timestamp).getTime() : Date.now();
+            localStorage.setItem('jp-tracker-v1-time', syncTime.toString());
+            lastSyncTime = syncTime;
             console.log('Nihongo sincronizado com sucesso');
         }
     } catch(e) { console.warn('Falha ao sincronizar com nuvem:', e.message); }
@@ -315,10 +389,35 @@ function navigateWeek(dir) { JpTracker.state.selectedDate.setDate(JpTracker.stat
 function navigateMonth(dir) { JpTracker.state.selectedDate.setMonth(JpTracker.state.selectedDate.getMonth() + dir); saveState(); render(); }
 function selectDay(dateStr) { JpTracker.state.selectedDate = new Date(dateStr + 'T12:00:00'); saveState(); setView('hoje'); }
 
-function toggleSession(dateStr, sessionId) { if (!JpTracker.state.sessions[dateStr]) JpTracker.state.sessions[dateStr] = {}; JpTracker.state.sessions[dateStr][sessionId] = !JpTracker.state.sessions[dateStr][sessionId]; saveState(); render(); }
-function toggleKana(type, char) { if (!char) return; var store = type === 'hiragana' ? JpTracker.state.hiragana : JpTracker.state.katakana; if (!store[char]) store[char] = 'learning'; else if (store[char] === 'learning') store[char] = 'learned'; else store[char] = null; updateProgress(); saveState(); render(); }
-function toggleKanji(kanji) { JpTracker.state.kanji[kanji] = !JpTracker.state.kanji[kanji]; updateProgress(); saveState(); render(); }
-function toggleVocab(word) { JpTracker.state.vocabulary[word] = !JpTracker.state.vocabulary[word]; updateProgress(); saveState(); render(); }
+function toggleSession(dateStr, sessionId) {
+    if (!JpTracker.state.sessions[dateStr]) JpTracker.state.sessions[dateStr] = {};
+    var newValue = !JpTracker.state.sessions[dateStr][sessionId];
+    JpTracker.state.sessions[dateStr][sessionId] = newValue;
+    recordEvent('session_toggled', { sessionId: sessionId, value: newValue }, dateStr);
+    saveState(); render();
+}
+function toggleKana(type, char) {
+    if (!char) return;
+    var store = type === 'hiragana' ? JpTracker.state.hiragana : JpTracker.state.katakana;
+    var oldStatus = store[char] || null;
+    if (!store[char]) store[char] = 'learning';
+    else if (store[char] === 'learning') store[char] = 'learned';
+    else store[char] = null;
+    recordEvent('kana_status_changed', { type: type, char: char, from: oldStatus, to: store[char] });
+    updateProgress(); saveState(); render();
+}
+function toggleKanji(kanji) {
+    var newValue = !JpTracker.state.kanji[kanji];
+    JpTracker.state.kanji[kanji] = newValue;
+    recordEvent('kanji_toggled', { kanji: kanji, value: newValue });
+    updateProgress(); saveState(); render();
+}
+function toggleVocab(word) {
+    var newValue = !JpTracker.state.vocabulary[word];
+    JpTracker.state.vocabulary[word] = newValue;
+    recordEvent('vocab_toggled', { word: word, value: newValue });
+    updateProgress(); saveState(); render();
+}
 
 function updateProgress() { var hCount = 0, kCount = 0, kanjiCount = 0, vocabCount = 0; for (var k in JpTracker.state.hiragana) if (JpTracker.state.hiragana[k] === 'learned') hCount++; for (var k in JpTracker.state.katakana) if (JpTracker.state.katakana[k] === 'learned') kCount++; for (var k in JpTracker.state.kanji) if (JpTracker.state.kanji[k]) kanjiCount++; for (var k in JpTracker.state.vocabulary) if (JpTracker.state.vocabulary[k]) vocabCount++; JpTracker.state.progress.hiraganaBasic = hCount; JpTracker.state.progress.katakanaBasic = kCount; JpTracker.state.progress.kanjiCount = kanjiCount; JpTracker.state.progress.vocabCount = vocabCount; }
 
