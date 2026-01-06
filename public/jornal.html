@@ -590,8 +590,14 @@ function bindViewEvents() {
     document.querySelectorAll('.entry-symbol[data-id]').forEach(function(el) {
         el.onclick = function() { cycleEntrySymbol(el.getAttribute('data-id')); };
     });
+    document.querySelectorAll('.entry-edit').forEach(function(el) {
+        el.onclick = function() { showEditEntryModal(el.getAttribute('data-id')); };
+    });
     document.querySelectorAll('.entry-delete').forEach(function(el) {
         el.onclick = function() { deleteEntry(el.getAttribute('data-id')); };
+    });
+    document.querySelectorAll('.event-clickable').forEach(function(el) {
+        el.onclick = function() { showEventDetails(el.getAttribute('data-event-date'), parseInt(el.getAttribute('data-event-idx'))); };
     });
     
     var addMortBtn = document.getElementById('add-mort-btn');
@@ -638,8 +644,8 @@ function renderDayView() {
 
     if (calendarEvents.length > 0) {
         html += '<div style="margin-bottom:14px;"><div style="font-size:0.85rem;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:8px;">Agenda do Dia</div>';
-        calendarEvents.forEach(function(ev) {
-            html += '<div class="schedule-item"><span class="schedule-time">' + (ev.allDay ? 'Dia' : ev.startTime) + '</span>';
+        calendarEvents.forEach(function(ev, idx) {
+            html += '<div class="schedule-item event-clickable" data-event-idx="' + idx + '" data-event-date="' + dateStr + '" style="cursor:pointer;"><span class="schedule-time">' + (ev.allDay ? 'Dia' : ev.startTime) + '</span>';
             html += '<span class="schedule-event">' + (ev.summary || 'Sem título') + '</span></div>';
         });
         html += '</div>';
@@ -704,6 +710,7 @@ function renderEntry(entry) {
     var symbol = entry.type === 'note' ? BuJo.symbols.note : entry.type === 'event' ? BuJo.symbols.event : entry.status === 'done' ? BuJo.symbols.taskDone : entry.status === 'migrated' ? BuJo.symbols.taskMigrated : BuJo.symbols.task;
     return '<div class="entry"><span class="entry-symbol" data-id="' + entry.id + '">' + symbol + '</span>' +
         '<span class="entry-text' + (entry.status === 'done' ? ' done' : '') + '">' + entry.text + '</span>' +
+        '<span class="btn entry-edit" data-id="' + entry.id + '" style="padding:4px 10px;">✎</span>' +
         '<span class="btn entry-delete" data-id="' + entry.id + '" style="padding:4px 10px;">×</span></div>';
 }
 
@@ -1057,6 +1064,82 @@ function deleteEntry(id) {
     BuJo.state.entries = BuJo.state.entries.filter(function(e) { return e.id !== id; });
     saveState(); render();
 }
+
+function showEditEntryModal(id) {
+    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
+    if (!entry) return;
+    var typeOptions = '<option value="task"' + (entry.type === 'task' ? ' selected' : '') + '>' + BuJo.symbols.task + ' Tarefa</option>' +
+        '<option value="event"' + (entry.type === 'event' ? ' selected' : '') + '>' + BuJo.symbols.event + ' Evento</option>' +
+        '<option value="note"' + (entry.type === 'note' ? ' selected' : '') + '>' + BuJo.symbols.note + ' Nota</option>';
+    showModal('<div class="modal-title">Editar Registro</div>' +
+        '<div class="form-group"><label>Tipo</label><select id="edit-entry-type">' + typeOptions + '</select></div>' +
+        '<div class="form-group"><label>Texto</label><textarea id="edit-entry-text" rows="3">' + entry.text + '</textarea></div>' +
+        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="editEntry(\'' + id + '\')">Salvar</span></div>');
+}
+
+function editEntry(id) {
+    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
+    if (!entry) return;
+    var newText = document.getElementById('edit-entry-text').value.trim();
+    var newType = document.getElementById('edit-entry-type').value;
+    if (!newText) return;
+    var oldText = entry.text;
+    var oldType = entry.type;
+    entry.text = newText;
+    entry.type = newType;
+    if (newType !== 'task') entry.status = 'pending';
+    recordEvent('entry_edited', { id: id, oldText: oldText, newText: newText, oldType: oldType, newType: newType }, entry.date);
+    saveState(); closeModal(); render();
+}
+
+function showEventDetails(dateStr, eventIdx) {
+    var events = getEventsForDate(dateStr);
+    if (!events || eventIdx >= events.length) return;
+    var ev = events[eventIdx];
+
+    var html = '<div class="modal-title">' + (ev.summary || 'Sem título') + '</div>';
+
+    // Horários
+    if (ev.allDay) {
+        html += '<div style="margin-bottom:12px;"><strong>Dia inteiro</strong></div>';
+    } else {
+        var startTime = '';
+        var endTime = '';
+        if (ev.start.dateTime) {
+            var startDate = new Date(ev.start.dateTime);
+            startDate.setHours(startDate.getHours() - 3);
+            startTime = startDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        if (ev.end && ev.end.dateTime) {
+            var endDate = new Date(ev.end.dateTime);
+            endDate.setHours(endDate.getHours() - 3);
+            endTime = endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        html += '<div style="margin-bottom:12px;">';
+        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:4px;">Horário</div>';
+        html += '<div style="font-size:1.1rem;font-weight:600;">' + startTime;
+        if (endTime) html += ' – ' + endTime;
+        html += '</div></div>';
+    }
+
+    // Localização
+    if (ev.location) {
+        html += '<div style="margin-bottom:12px;">';
+        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:4px;">Local</div>';
+        html += '<div>' + ev.location + '</div></div>';
+    }
+
+    // Descrição
+    if (ev.description) {
+        html += '<div style="margin-bottom:12px;">';
+        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:4px;">Descrição</div>';
+        html += '<div style="white-space:pre-wrap;font-size:0.95rem;background:var(--secondary);padding:10px;border-radius:6px;">' + ev.description + '</div></div>';
+    }
+
+    html += '<div class="modal-actions"><span class="btn btn-primary" onclick="closeModal()">Fechar</span></div>';
+    showModal(html);
+}
+
 function deleteNote(id) {
     var note = BuJo.state.notes.find(function(n) { return n.id === id; });
     if (note) recordEvent('note_deleted', { id: id, text: note.text }, note.date);
@@ -1207,21 +1290,99 @@ function renderLeituras() {
         html += '<div style="font-weight:600;margin:8px 0;">' + wd.espiritual.titulo + '</div>';
         html += '<div class="reading-meta">' + wd.espiritual.autor + '</div>';
         html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + ePct + '%;"></div></div><span class="reading-percent">' + ePct + '%</span></div>';
-        html += '<input type="range" style="width:100%;" min="0" max="' + et + '" value="' + ep + '" onchange="updateBook(\'' + ek + '\',this.value)"></div>';
+        var epPage = ep > 0 ? wd.espiritual.pInicio + ep - 1 : '';
+        html += '<div style="display:flex;align-items:center;margin-top:10px;">Página: <input type="number" class="reading-input" value="' + epPage + '" min="' + wd.espiritual.pInicio + '" max="' + wd.espiritual.pFim + '" placeholder="' + wd.espiritual.pInicio + '" onchange="updateBookPage(\'' + ek + '\',' + wd.espiritual.pInicio + ',' + wd.espiritual.pFim + ',this.value)" style="margin-left:10px;margin-right:10px;width:80px;"> / ' + wd.espiritual.pFim + '</div></div>';
 
         html += '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;">';
         html += '<span class="book-type">Secular</span> <span style="float:right;font-size:0.85rem;">p.' + wd.secular.pInicio + '–' + wd.secular.pFim + '</span>';
         html += '<div style="font-weight:600;margin:8px 0;">' + wd.secular.titulo + '</div>';
         html += '<div class="reading-meta">' + wd.secular.autor + '</div>';
         html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + sPct + '%;"></div></div><span class="reading-percent">' + sPct + '%</span></div>';
-        html += '<input type="range" style="width:100%;" min="0" max="' + st + '" value="' + sp + '" onchange="updateBook(\'' + sk + '\',this.value)"></div>';
+        var spPage = sp > 0 ? wd.secular.pInicio + sp - 1 : '';
+        html += '<div style="display:flex;align-items:center;margin-top:10px;">Página: <input type="number" class="reading-input" value="' + spPage + '" min="' + wd.secular.pInicio + '" max="' + wd.secular.pFim + '" placeholder="' + wd.secular.pInicio + '" onchange="updateBookPage(\'' + sk + '\',' + wd.secular.pInicio + ',' + wd.secular.pFim + ',this.value)" style="margin-left:10px;margin-right:10px;width:80px;"> / ' + wd.secular.pFim + '</div></div>';
     }
     html += '</div>';
+
+    // Histórico de leitura
+    html += '<div class="card"><div class="card-title">Histórico de Leituras</div>';
+    html += renderReadingHistory();
+    html += '</div>';
+
     return html;
 }
 
-function updateNoturna(v) { BuJo.state.readingProgress.noturna.currentPage = parseInt(v) || 0; saveState(); render(); }
+function renderReadingHistory() {
+    var history = BuJo.state.readingProgress.history || {};
+    var noturnaHistory = BuJo.state.readingProgress.noturna.history || {};
+    var dates = Object.keys(history).concat(Object.keys(noturnaHistory));
+    dates = [...new Set(dates)].sort().reverse().slice(0, 14); // últimos 14 dias com registros
+
+    if (dates.length === 0) {
+        return '<p style="color:var(--muted-foreground);font-style:italic;">Nenhum histórico de leitura registrado.</p>';
+    }
+
+    var html = '';
+    dates.forEach(function(dateStr) {
+        var d = new Date(dateStr + 'T12:00:00');
+        var dayName = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        var dayHistory = history[dateStr] || {};
+        var noturnaPage = noturnaHistory[dateStr];
+
+        html += '<div style="padding:10px 0;border-bottom:1px dotted var(--border);">';
+        html += '<div style="font-weight:600;margin-bottom:6px;">' + dayName + '</div>';
+
+        if (noturnaPage !== undefined) {
+            html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-left:10px;">Vida de Cristo: p.' + noturnaPage + '</div>';
+        }
+
+        Object.keys(dayHistory).forEach(function(bookKey) {
+            var page = dayHistory[bookKey];
+            var bookName = getBookNameFromKey(bookKey);
+            html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-left:10px;">' + bookName + ': p.' + page + '</div>';
+        });
+
+        html += '</div>';
+    });
+
+    return html;
+}
+
+function getBookNameFromKey(bookKey) {
+    var match = bookKey.match(/sem(\d+)_(esp|sec)/);
+    if (!match) return bookKey;
+    var week = parseInt(match[1]);
+    var type = match[2] === 'esp' ? 'Espiritual' : 'Secular';
+    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === week; });
+    if (!wd) return bookKey;
+    var book = type === 'Espiritual' ? wd.espiritual : wd.secular;
+    return book.titulo;
+}
+
+function updateNoturna(v) {
+    var page = parseInt(v) || 0;
+    var dateStr = formatDateKey(new Date());
+    if (!BuJo.state.readingProgress.noturna.history) BuJo.state.readingProgress.noturna.history = {};
+    BuJo.state.readingProgress.noturna.history[dateStr] = page;
+    BuJo.state.readingProgress.noturna.currentPage = page;
+    saveState(); render();
+}
 function updateBook(k, v) { BuJo.state.readingProgress.books[k] = parseInt(v) || 0; saveState(); render(); }
+function updateBookPage(bookKey, pInicio, pFim, pageValue) {
+    var page = parseInt(pageValue);
+    if (isNaN(page) || page < pInicio) {
+        BuJo.state.readingProgress.books[bookKey] = 0;
+    } else if (page > pFim) {
+        BuJo.state.readingProgress.books[bookKey] = pFim - pInicio + 1;
+    } else {
+        BuJo.state.readingProgress.books[bookKey] = page - pInicio + 1;
+    }
+    // Salvar histórico por dia
+    var dateStr = formatDateKey(new Date());
+    if (!BuJo.state.readingProgress.history) BuJo.state.readingProgress.history = {};
+    if (!BuJo.state.readingProgress.history[dateStr]) BuJo.state.readingProgress.history[dateStr] = {};
+    BuJo.state.readingProgress.history[dateStr][bookKey] = page;
+    saveState(); render();
+}
 function navWeek(d) { var nw = BuJo.state.readingProgress.currentWeek + d; if (nw >= 1 && nw <= 104) { BuJo.state.readingProgress.currentWeek = nw; saveState(); render(); } }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

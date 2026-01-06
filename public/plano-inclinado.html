@@ -4,12 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plano Inclinado - Hub Kindle</title>
-    <!-- Phosphor Icons: Biblioteca de ícones leve e nítida, ideal para simular o design e-ink -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="timer.js" defer></script>
-    <script src="points-popup.js"></script>
     <style>
-        /* --- RESET & VARIÁVEIS --- */
         :root {
             --bg-color: #ffffff;
             --text-color: #000000;
@@ -31,200 +27,91 @@
             flex-direction: column;
         }
 
-        /* --- CABEÇALHO GERAL --- */
         header {
             padding: var(--spacing);
             border-bottom: 1px solid #ccc;
-            flex-shrink: 0; 
+            flex-shrink: 0;
         }
 
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
         }
 
-        header h1 { font-size: 30px; font-weight: bold; }
+        header h1 { font-size: 30px; font-weight: bold; cursor: pointer; }
 
-        .icon-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-color);
-        }
-
-                /* Container dos ícones */
         .header-icons {
             display: flex;
             align-items: center;
-            /* gap: 16px; -> REMOVIDO */
         }
 
-        /* Estilo para os links (a) dentro do container */
         .header-icons a {
-            display: flex;       /* Remove espaços extras embaixo da imagem */
-            margin-right: 16px;  /* A SOLUÇÃO: Empurra o próximo ícone para a direita */
+            display: flex;
+            margin-right: 16px;
             text-decoration: none;
         }
 
-        /* Remove a margem do último ícone para não atrapalhar o alinhamento */
         .header-icons a:last-child {
             margin-right: 0;
         }
 
-        /* Tamanho das imagens (estava inline no HTML, agora está aqui) */
         .header-icons img {
             width: 40px;
             height: 40px;
             display: block;
         }
 
-        /* O espaçador da direita para equilibrar o layout */
         .header-spacer {
-            width: 70px; /* Mesma largura visual que os ícones ocupam */
+            width: 70px;
         }
 
-        /* --- A CORREÇÃO ESTÁ AQUI --- */
-        /* Isso diz: "Se um botão de ícone estiver logo depois de outro, dê uma margem na esquerda" */
-        .icon-btn + .icon-btn {
-            margin-left: 20px; /* Ajuste este valor para aumentar/diminuir a distância */
-        }
-
-        /* Container de rolagem principal (caso precise rolar o conteúdo abaixo do header) */
         .main-content {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: var(--spacing);
         }
 
-        .habits-section {
-            margin: 8px var(--spacing);
-            padding: 20px;
-            border: 2px solid #000;
-            background: #fff;
-            border-radius: var(--radius);
-            box-shadow: 4px 4px 0px #000;
+        .menu-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .habits-section h2 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 8px;
-        }
-
-        /* =========================================
-        SUBSTITUIÇÃO DO GRID (CRÍTICO PARA KINDLE)
-        ========================================= */
-        .habits-grid {
-            display: flex;       /* Kindle entende Flex melhor que Grid */
-            flex-wrap: wrap;     /* Permite que os itens quebrem para a linha de baixo */
-            justify-content: space-between; /* Empurra as colunas para as pontas */
-            /* gap: 0 20px; -> REMOVIDO */
-        }
-
-        .habit-item {
-            /* Largura calculada para simular 2 colunas com espaço no meio */
-            width: 48%; 
-            
+        .menu-btn {
+            width: calc(50% - 10px);
+            min-height: 80px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        /* Opcional: Ajuste para remover borda dos dois últimos itens visualmente, 
-        mas no flex-wrap é difícil prever. Melhor manter a borda ou usar CSS avançado.
-        Vou simplificar removendo apenas se for uma lista simples. */
-
-        .habit-checkbox {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            cursor: pointer;
-        }
-
-        .habit-label {
-            font-size: 16px;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .habit-item.completed .habit-label {
-            text-decoration: line-through;
-            color: #999;
-        }
-
-        .nav-button {
-            border: 2px solid #000;
-            border-radius: 50px;
-            padding: 12px 24px;
+            justify-content: center;
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius);
             background: white;
-            font-size: 16px;
+            font-size: 20px;
+            font-weight: bold;
             font-family: inherit;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .nav-button:hover {
-            background: #000;
-            color: #fff;
-        }
-
-        /* =========================================
-        CHIPS DE NAVEGAÇÃO
-        ========================================= */
-        .nav-chips {
-            display: flex;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* Rolagem suave */
-            padding-top: 4px;
-            /* gap: 10px; -> REMOVIDO */
-            
-            /* Padding extra no final para facilitar o toque no último item */
-            padding-right: var(--spacing); 
-            
-            scrollbar-width: none;
-        }
-        .nav-chips::-webkit-scrollbar { display: none; }
-
-        .nav-chip {
-            /* SOLUÇÃO PARA O GAP */
-            margin-right: 10px;
-            
-            border: 2px solid var(--border-color);
-            border-radius: 20px;
-            padding: 8px 18px;
-            font-weight: bold;
-            font-size: 15px;
-            white-space: nowrap;
-            background: white;
-            cursor: pointer;
-            font-family: inherit;
             text-decoration: none;
             color: var(--text-color);
-            display: inline-block;
-            transition: all 0.2s;
-            flex-shrink: 0; /* Garante que não amasse */
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.15s;
         }
 
-        /* Remove margem do último */
-        .nav-chip:last-child {
-            margin-right: 0;
+        .menu-btn:hover, .menu-btn:active {
+            background: #000;
+            color: #fff;
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
         }
 
-        .nav-chip:hover {
-            background: var(--text-color);
-            color: var(--bg-color);
-        }
-
-        /* --- ESTILOS DA VIEW DE ORAÇÃO --- */
+        /* --- ESTILOS DA VIEW DE ORACAO --- */
         #oracaoView {
             display: none;
             position: fixed;
@@ -326,44 +213,33 @@
 <body>
     <header>
         <div class="header-top">
-                <div class="header-icons">
-                    <a href="dashboard.html">
-                        <img src="/icones/casa.png" alt="Home">
-                    </a>
-                    <a href="anotacoes.html">
-                        <img src="/icones/notas.png" alt="Anotações">
-                    </a>
-                </div>
-                
-                <h1 onclick="handleTitleClick()" style="cursor: pointer;">Plano Inclinado</h1>
-                
-                <div class="header-spacer"></div> 
-        </div>
+            <div class="header-icons">
+                <a href="dashboard.html">
+                    <img src="/icones/casa.png" alt="Home">
+                </a>
+                <a href="anotacoes.html">
+                    <img src="/icones/notas.png" alt="Anotacoes">
+                </a>
+            </div>
 
-        <!-- Navegação em Chips -->
-        <div class="nav-chips">
-            <a href="biblia.html" class="nav-chip">Bíblia</a>
-            <a href="exame.html" class="nav-chip">Exame</a>
-            <a href="oracoes.html" class="nav-chip">Orações</a>
-            <a href="ag.html" class="nav-chip">AG</a>
-            <a href="contemplacao.html" class="nav-chip">Mistérios</a>
-            <a href="escriva.html" class="nav-chip">Pontos</a>
+            <h1 onclick="handleTitleClick()">Plano Inclinado</h1>
+
+            <div class="header-spacer"></div>
         </div>
     </header>
 
     <div class="main-content">
-        <div class="habits-section">
-            <h2>Normas de Hoje</h2>
-            <div id="dailyHabits"></div>
-        </div>
-
-        <div class="habits-section">
-            <h2>Normas Semanais</h2>
-            <div id="weeklyNotionHabits"></div>
+        <div class="menu-grid">
+            <a href="biblia.html" class="menu-btn">Biblia</a>
+            <a href="exame.html" class="menu-btn">Exame</a>
+            <a href="oracoes.html" class="menu-btn">Oracoes</a>
+            <a href="ag.html" class="menu-btn">AG</a>
+            <a href="contemplacao.html" class="menu-btn">Misterios</a>
+            <a href="escriva.html" class="menu-btn">Pontos</a>
         </div>
     </div>
 
-    <!-- View de Oração (Oculta por padrão) -->
+    <!-- View de Oracao -->
     <div id="oracaoView">
         <div class="oracao-header">
             <div class="oracao-header-top">
@@ -387,594 +263,124 @@
     <button id="btnVoltarTopoOracao" onclick="scrollToTopOracao()">↑</button>
 
     <script>
-        // Hábitos diários fixos
-        const dailyHabits = [
-            'Sérviam',
-            'Preces',
-            'Oração da manhã',
-            'Santa Missa',
-            'Leitura Espiritual',
-            'Leitura do NT',
-            'Angelus',
-            'Visita ao Santíssimo',
-            'Lembrai-vos',
-            'Terço',
-            'Oração da tarde',
-            'Contemplação',
-            'Exame',
-            '2 horas',
-            '3 Ave Marias'
-        ];
-
-        // Hábitos semanais fixos
-        const weeklyHabits = [
-            'Disciplina',
-            'Confissão',
-            'Sábado'
-        ];
-
-        let notionEnabled = false;
-        let notionHabitsMap = {}; // Mapa nome -> pageId
-        let weeklyNotionPageId = null; // ID da página das normas semanais
-        let weeklyNotionHabits = { confissao: false, disciplina: false, sabado: false };
-
-        // Controle de sincronização
-        let syncQueue = new Map(); // Fila de sincronizações pendentes
-        let isSyncing = false; // Flag para evitar múltiplas sincronizações simultâneas
-        let syncTimeouts = new Map(); // Timeouts de debounce por hábito
-
-        // Debounce para Google Sheets sync
-        let sheetsSyncTimeout = null;
-
-        // Carregar estado do localStorage
-        function loadState() {
-            const dailyState = JSON.parse(localStorage.getItem('dailyHabitsState') || '{}');
-            const weeklyState = JSON.parse(localStorage.getItem('weeklyHabitsState') || '{}');
-            return { dailyState, weeklyState };
-        }
-
-        // Salvar estado no localStorage
-        function saveState(dailyState, weeklyState) {
-            localStorage.setItem('dailyHabitsState', JSON.stringify(dailyState));
-            localStorage.setItem('weeklyHabitsState', JSON.stringify(weeklyState));
-
-            // Sincronizar com Google Sheets (debounced)
-            clearTimeout(sheetsSyncTimeout);
-            sheetsSyncTimeout = setTimeout(() => syncToSheets(dailyState, weeklyState), 3000);
-        }
-
-        // Sincronizar com Google Sheets
-        async function syncToSheets(dailyState, weeklyState) {
-            try {
-                const response = await fetch('/api/sync/plano', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dailyState, weeklyState, date: new Date().toISOString().split('T')[0] })
-                });
-                if (response.ok) {
-                    console.log('Plano sincronizado com Google Sheets');
-                }
-            } catch(e) { console.warn('Falha ao sincronizar com Sheets:', e.message); }
-        }
-
-        // Carregar do Google Sheets
-        async function loadFromSheets() {
-            try {
-                const response = await fetch('/api/sync/plano');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.state) {
-                        const localTime = localStorage.getItem('planoHabits-time') || '0';
-                        const cloudTime = new Date(data.timestamp).getTime();
-                        if (cloudTime > parseInt(localTime)) {
-                            localStorage.setItem('dailyHabitsState', JSON.stringify(data.state.dailyState || {}));
-                            localStorage.setItem('weeklyHabitsState', JSON.stringify(data.state.weeklyState || {}));
-                            localStorage.setItem('planoHabits-time', cloudTime.toString());
-                            console.log('Dados do plano carregados da nuvem');
-                            return true;
-                        }
-                    }
-                }
-            } catch(e) { console.warn('Falha ao carregar do Sheets:', e.message); }
-            return false;
-        }
-
-        // Tentar carregar do Notion
-        async function loadFromNotion() {
-            try {
-                const response = await fetch('/api/notion/habits');
-                if (response.ok) {
-                    const habits = await response.json();
-                    notionEnabled = true;
-
-                    // Criar mapa de hábitos do Notion
-                    habits.forEach(habit => {
-                        notionHabitsMap[habit.nome] = habit;
-                    });
-
-                    console.log(' Notion integrado com sucesso');
-                    return true;
-                } else {
-                    console.warn(' Notion não configurado, usando localStorage');
-                    return false;
-                }
-            } catch (error) {
-                console.warn(' Erro ao conectar com Notion:', error);
-                return false;
-            }
-        }
-
-        // Sincronizar com Notion com debounce e retry
-        async function syncWithNotion(habitName, checked) {
-            if (!notionEnabled || !notionHabitsMap[habitName]) {
-                console.log(`⏭ Notion não habilitado ou hábito '${habitName}' não encontrado`);
-                return false;
-            }
-
-            // Cancelar timeout anterior se existir (debounce)
-            if (syncTimeouts.has(habitName)) {
-                clearTimeout(syncTimeouts.get(habitName));
-            }
-
-            // Adicionar à fila de sincronização
-            syncQueue.set(habitName, checked);
-
-            // Debounce: aguardar 500ms antes de sincronizar
-            const timeout = setTimeout(async () => {
-                await processSyncQueue();
-            }, 500);
-
-            syncTimeouts.set(habitName, timeout);
-            return true;
-        }
-
-        // Processar fila de sincronização
-        async function processSyncQueue() {
-            if (isSyncing || syncQueue.size === 0) {
-                return;
-            }
-
-            isSyncing = true;
-            const habitsToSync = Array.from(syncQueue.entries());
-            syncQueue.clear();
-
-            console.log(` Sincronizando ${habitsToSync.length} hábito(s) com Notion...`);
-
-            for (const [habitName, checked] of habitsToSync) {
-                const success = await syncHabitToNotion(habitName, checked);
-                if (!success) {
-                    // Recolocar na fila para retry
-                    console.warn(` Falha ao sincronizar '${habitName}', tentando novamente...`);
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1s
-                    await syncHabitToNotion(habitName, checked); // Tentar novamente
-                }
-            }
-
-            isSyncing = false;
-        }
-
-        // Sincronizar um hábito individual com retry
-        async function syncHabitToNotion(habitName, checked, retries = 2) {
-            if (!notionHabitsMap[habitName]) {
-                return false;
-            }
-
-            for (let attempt = 0; attempt <= retries; attempt++) {
-                try {
-                    const pageId = notionHabitsMap[habitName].id;
-                    console.log(` Tentativa ${attempt + 1}/${retries + 1}: Sincronizando '${habitName}' = ${checked}`);
-
-                    const response = await fetch(`/api/notion/habits/${pageId}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            concluido: checked,
-                            habitName: habitName
-                        })
-                    });
-
-                    if (response.ok) {
-                        notionHabitsMap[habitName].concluido = checked;
-                        console.log(` '${habitName}' sincronizado com sucesso`);
-                        return true;
-                    } else {
-                        const error = await response.text();
-                        console.error(` Erro HTTP ${response.status}:`, error);
-                    }
-                } catch (error) {
-                    console.error(` Erro na tentativa ${attempt + 1}:`, error);
-                }
-
-                // Aguardar antes de tentar novamente
-                if (attempt < retries) {
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-                }
-            }
-
-            console.error(` Falha definitiva ao sincronizar '${habitName}' após ${retries + 1} tentativas`);
-            return false;
-        }
-
-        // Renderizar hábitos diários
-        async function renderDaily() {
-            const { dailyState } = loadState();
-            const container = document.getElementById('dailyHabits');
-
-            const html = dailyHabits.map((habit, index) => {
-                // Priorizar estado do Notion se disponível
-                const isChecked = notionEnabled && notionHabitsMap[habit]
-                    ? notionHabitsMap[habit].concluido
-                    : (dailyState[habit] || false);
-                return `
-                    <div class="habit-item ${isChecked ? 'completed' : ''}">
-                        <input type="checkbox"
-                               class="habit-checkbox"
-                               id="daily-${index}"
-                               ${isChecked ? 'checked' : ''}
-                               onchange="toggleDaily('${habit}', this.checked)">
-                        <label class="habit-label" for="daily-${index}">${habit}</label>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `<div class="habits-grid">${html}</div>`;
-        }
-
-        // Renderizar hábitos semanais
-        function renderWeekly() {
-            const { weeklyState } = loadState();
-            const container = document.getElementById('weeklyHabits');
-
-            container.innerHTML = weeklyHabits.map((habit, index) => {
-                const isChecked = weeklyState[habit] || false;
-                return `
-                    <div class="habit-item ${isChecked ? 'completed' : ''}">
-                        <input type="checkbox"
-                               class="habit-checkbox"
-                               id="weekly-${index}"
-                               ${isChecked ? 'checked' : ''}
-                               onchange="toggleWeekly('${habit}', this.checked)">
-                        <label class="habit-label" for="weekly-${index}">${habit}</label>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Salvar no SQLite
-        async function saveToDatabase() {
-            try {
-                const { dailyState } = loadState();
-                const today = new Date().toISOString().split('T')[0];
-
-                const response = await fetch('/api/habits/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        date: today,
-                        habits: dailyState
-                    })
-                });
-
-                if (response.ok) {
-                    console.log(' Hábitos salvos no banco de dados');
-                    return true;
-                }
-            } catch (error) {
-                console.error('Erro ao salvar no banco:', error);
-            }
-            return false;
-        }
-
-        // Toggle hábito diário
-        async function toggleDaily(habit, checked) {
-            // Salvar em localStorage sempre
-            const { dailyState, weeklyState } = loadState();
-            dailyState[habit] = checked;
-            saveState(dailyState, weeklyState);
-
-            // Salvar no SQLite
-            await saveToDatabase();
-
-            // Tentar sincronizar com Notion
-            await syncWithNotion(habit, checked);
-
-            renderDaily();
-        }
-
-        // Toggle hábito semanal
-        async function toggleWeekly(habit, checked) {
-            // Salvar em localStorage sempre
-            const { dailyState, weeklyState } = loadState();
-            weeklyState[habit] = checked;
-            saveState(dailyState, weeklyState);
-
-            // Tentar sincronizar com Notion
-            await syncWithNotion(habit, checked);
-
-            renderWeekly();
-        }
-
-        // Carregar normas semanais do Notion
-        async function loadWeeklyNotionHabits() {
-            try {
-                const response = await fetch('/api/notion/weekly-habits');
-                if (response.ok) {
-                    const data = await response.json();
-                    weeklyNotionPageId = data.pageId;
-                    weeklyNotionHabits = {
-                        confissao: data.confissao,
-                        disciplina: data.disciplina,
-                        sabado: data.sabado
-                    };
-                    console.log(' Normas semanais do Notion carregadas');
-                    return true;
-                } else {
-                    throw new Error('Erro ao carregar');
-                }
-            } catch (error) {
-                console.warn(' Normas semanais do Notion não disponíveis:', error);
-                return false;
-            }
-        }
-
-        // Renderizar normas semanais do Notion
-        function renderWeeklyNotionHabits() {
-            const container = document.getElementById('weeklyNotionHabits');
-            const habitsMap = {
-                'Confissão': 'confissao',
-                'Disciplina': 'disciplina',
-                'Sábado': 'sabado'
-            };
-
-            const html = Object.entries(habitsMap).map(([label, key], index) => {
-                const isChecked = weeklyNotionHabits[key] || false;
-                return `
-                    <div class="habit-item ${isChecked ? 'completed' : ''}">
-                        <input type="checkbox"
-                               class="habit-checkbox"
-                               id="weekly-notion-${index}"
-                               ${isChecked ? 'checked' : ''}
-                               ${!weeklyNotionPageId ? 'disabled' : ''}
-                               onchange="toggleWeeklyNotion('${key}', '${label}', this.checked)">
-                        <label class="habit-label" for="weekly-notion-${index}">${label}</label>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = html;
-        }
-
-        // Toggle norma semanal do Notion
-        async function toggleWeeklyNotion(key, propertyName, checked) {
-            if (!weeklyNotionPageId) {
-                alert('Notion não configurado');
-                return;
-            }
-
-            weeklyNotionHabits[key] = checked;
-            renderWeeklyNotionHabits();
-
-            try {
-                const response = await fetch(`/api/notion/weekly-habits/${weeklyNotionPageId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        habitName: propertyName,
-                        checked: checked
-                    })
-                });
-
-                if (response.ok) {
-                    console.log(' Norma semanal atualizada no Notion');
-                } else {
-                    throw new Error('Erro ao atualizar');
-                }
-            } catch (error) {
-                console.error('Erro ao atualizar norma semanal:', error);
-                alert('Erro ao sincronizar com Notion');
-                // Reverter o estado
-                weeklyNotionHabits[key] = !checked;
-                renderWeeklyNotionHabits();
-            }
-        }
-
-        // Verificar se precisa resetar (mudança de dia)
-        function checkAutoReset() {
-            const today = new Date().toDateString();
-            const lastReset = localStorage.getItem('lastDailyReset');
-
-            // Se nunca foi resetado ou se mudou de dia
-            if (!lastReset || lastReset !== today) {
-                console.log(' Novo dia detectado! Resetando hábitos diários...');
-
-                // Reset automático (sem confirmação)
-                const { weeklyState } = loadState();
-                saveState({}, weeklyState);
-
-                // Salvar a data do reset
-                localStorage.setItem('lastDailyReset', today);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        // Inicializar
-        async function init() {
-            console.log(' Inicializando Plano Inclinado...');
-
-            // Carregar dados da nuvem (Google Sheets) primeiro
-            await loadFromSheets();
-
-            await loadFromNotion();
-            await loadWeeklyNotionHabits();
-
-            // Verificar e fazer auto-reset se necessário
-            const wasReset = checkAutoReset();
-
-            renderDaily();
-            // renderWeekly(); // Removido pois o container foi removido
-            renderWeeklyNotionHabits();
-
-            if (wasReset) {
-                console.log(' Hábitos diários resetados para o novo dia!');
-            }
-
-            // Sincronização periódica do Notion a cada 2 minutos
-            setInterval(async () => {
-                console.log(' Sincronização periódica do Notion...');
-                const previousMap = JSON.parse(JSON.stringify(notionHabitsMap));
-                await loadFromNotion();
-
-                // Verificar se houve mudanças e atualizar interface
-                let hasChanges = false;
-                for (const habitName in notionHabitsMap) {
-                    if (previousMap[habitName] && previousMap[habitName].concluido !== notionHabitsMap[habitName].concluido) {
-                        hasChanges = true;
-                        console.log(` Mudança detectada em '${habitName}': ${previousMap[habitName].concluido} → ${notionHabitsMap[habitName].concluido}`);
-                    }
-                }
-
-                if (hasChanges) {
-                    console.log(' Atualizando interface...');
-                    renderDaily();
-                }
-            }, 120000); // 2 minutos
-
-            // Verificar a cada minuto se mudou de dia
-            setInterval(() => {
-                const resetou = checkAutoReset();
-                if (resetou) {
-                    renderDaily();
-                    console.log(' Auto-reset executado!');
-                }
-            }, 60000); // 1 minuto
-
-            // Salvar no banco a cada 5 minutos (backup automático)
-            setInterval(() => {
-                saveToDatabase();
-            }, 300000); // 5 minutos
-        }
-
-        // ============= DADOS DAS ORAÇÕES =============
+        // ============= DADOS DAS ORACOES =============
         const oracoesDados = {
             cantico_tres_jovens: {
-                label: "Cântico 3 Jovens",
-                title_pt: "Cântico dos três jovens",
-                title_la: "Trium puerórum",
+                label: "Cantico 3 Jovens",
+                title_pt: "Cantico dos tres jovens",
+                title_la: "Trium puerorum",
                 html_pt: `
-                    <p><span class="rub">Ant.</span> Cantemos o hino dos três jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
-                    <p class="rub" style="text-align:center;">Cântico dos Três Jovens (Dan. 3, 57-88 e 56)</p>
+                    <p><span class="rub">Ant.</span> Cantemos o hino dos tres jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
+                    <p class="rub" style="text-align:center;">Cantico dos Tres Jovens (Dan. 3, 57-88 e 56)</p>
                     <p><span class="rub">1.</span> Obras do Senhor, bendizei todas o Senhor, louvai-O e exaltai-O para sempre.</p>
-                    <p><span class="rub">2.</span> Céus, bendizei o Senhor, Anjos do Senhor, bendizei o Senhor.</p>
-                    <p><span class="rub">3.</span> Águas que estais por cima dos céus, bendizei todas o Senhor; todos os poderes bendigam o Senhor.</p>
-                    <p><span class="rub">4.</span> Sol e lua, bendizei o Senhor, estrelas do céu, bendizei o Senhor.</p>
-                    <p><span class="rub">5.</span> Chuvas e orvalhos, bendizei o Senhor; e vós, todos os ventos, bendizei o Senhor.</p>
+                    <p><span class="rub">2.</span> Ceus, bendizei o Senhor, Anjos do Senhor, bendizei o Senhor.</p>
+                    <p><span class="rub">3.</span> Aguas que estais por cima dos ceus, bendizei todas o Senhor; todos os poderes bendigam o Senhor.</p>
+                    <p><span class="rub">4.</span> Sol e lua, bendizei o Senhor, estrelas do ceu, bendizei o Senhor.</p>
+                    <p><span class="rub">5.</span> Chuvas e orvalhos, bendizei o Senhor; e vos, todos os ventos, bendizei o Senhor.</p>
                     <p><span class="rub">6.</span> Fogo e calor, bendizei o Senhor; frio e calor, bendizei o Senhor.</p>
                     <p><span class="rub">7.</span> Orvalhos e geadas, bendizei o Senhor; gelo e frio, bendizei o Senhor.</p>
                     <p><span class="rub">8.</span> Gelos e neves, bendizei o Senhor; noites e dias, bendizei o Senhor.</p>
-                    <p><span class="rub">9.</span> Luz e trevas, bendizei o Senhor; relâmpagos e nuvens, bendizei o Senhor.</p>
+                    <p><span class="rub">9.</span> Luz e trevas, bendizei o Senhor; relampagos e nuvens, bendizei o Senhor.</p>
                     <p><span class="rub">10.</span> Que a terra bendiga o Senhor; louve-O e exalte-O para sempre.</p>
                     <p><span class="rub">11.</span> Montes e colinas, bendizei o Senhor; plantas que brotais da terra, bendizei o Senhor.</p>
                     <p><span class="rub">12.</span> Mares e rios, bendizei o Senhor; fontes, bendizei o Senhor.</p>
-                    <p><span class="rub">13.</span> Cetáceos e animais que viveis nas águas, bendizei o Senhor; pássaros todos do céu, bendizei o Senhor.</p>
+                    <p><span class="rub">13.</span> Cetaceos e animais que viveis nas aguas, bendizei o Senhor; passaros todos do ceu, bendizei o Senhor.</p>
                     <p><span class="rub">14.</span> Animais selvagens e rebanhos, bendizei o Senhor; filhos dos homens, bendizei o Senhor.</p>
                     <p><span class="rub">15.</span> Bendiga Israel o Senhor; louve-O e exalte-O para sempre.</p>
                     <p><span class="rub">16.</span> Sacerdotes do Senhor, bendizei o Senhor; servos do Senhor, bendizei o Senhor.</p>
-                    <p><span class="rub">17.</span> Espíritos e almas dos justos, bendizei o Senhor; santos e humildes de coração, bendizei o Senhor.</p>
+                    <p><span class="rub">17.</span> Espiritos e almas dos justos, bendizei o Senhor; santos e humildes de coracao, bendizei o Senhor.</p>
                     <p><span class="rub">18.</span> Ananias, Azarias e Misael, bendizei o Senhor; louvai-O e exaltai-O para sempre.</p>
-                    <p><span class="rub">19.</span> Bendigamos o Pai, o Filho e o Espírito Santo; louvemo-Lo e exaltemo-Lo para sempre.</p>
-                    <p><span class="rub">20.</span> Senhor, Vós sois bendito no firmamento dos céus; sois digno de louvor e glória para sempre.</p>
-                    <p class="rub">Aqui não se reza o Glória, nem se diz Amém.</p>
+                    <p><span class="rub">19.</span> Bendigamos o Pai, o Filho e o Espirito Santo; louvemo-Lo e exaltemo-Lo para sempre.</p>
+                    <p><span class="rub">20.</span> Senhor, Vos sois bendito no firmamento dos ceus; sois digno de louvor e gloria para sempre.</p>
+                    <p class="rub">Aqui nao se reza o Gloria, nem se diz Amem.</p>
                     <br>
                     <p class="rub" style="text-align:center;">Salmo 150</p>
-                    <p><span class="rub">1.</span> Louvai o Senhor no seu santuário, louvai-O no seu augusto firmamento.</p>
+                    <p><span class="rub">1.</span> Louvai o Senhor no seu santuario, louvai-O no seu augusto firmamento.</p>
                     <p><span class="rub">2.</span> Louvai-O por suas obras grandiosas, louvai-O por sua excelsa majestade.</p>
-                    <p><span class="rub">3.</span> Louvai-O ao som da trombeta, louvai-O com o saltério e a cítara.</p>
-                    <p><span class="rub">4.</span> Louvai-O com tímpanos e danças, louvai-O com a harpa e a flauta.</p>
-                    <p><span class="rub">5.</span> Louvai-O com címbalos sonoros, louvai-O com címbalos de júbilo: tudo o que respira louve o Senhor</p>
-                    <p>Glória ao Pai e ao Filho e ao Espírito Santo. Como era no princípio, agora e sempre. Amém.</p>
+                    <p><span class="rub">3.</span> Louvai-O ao som da trombeta, louvai-O com o salterio e a citara.</p>
+                    <p><span class="rub">4.</span> Louvai-O com timpanos e dancas, louvai-O com a harpa e a flauta.</p>
+                    <p><span class="rub">5.</span> Louvai-O com cimbalos sonoros, louvai-O com cimbalos de jubilo: tudo o que respira louve o Senhor</p>
+                    <p>Gloria ao Pai e ao Filho e ao Espirito Santo. Como era no principio, agora e sempre. Amem.</p>
                     <br>
-                    <p><span class="rub">Ant.</span> Cantemos o hino dos três jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
-                    <p class="rub">Todos se levantam e quem dirige as orações diz:</p>
-                    <p><span class="rub">V.</span> Senhor, tende piedade de nós. </p>
-                    <p><span class="rub">R.</span> Cristo, tende piedade de nós. Senhor, tende piedade de nós.</p>
-                    <p>Pai Nosso <span class="rub">(em silêncio)</span>...</p>
-                    <p><span class="rub">V.</span> E não nos deixeis cair em tentação. </p>
+                    <p><span class="rub">Ant.</span> Cantemos o hino dos tres jovens, o mesmo que esses santos cantavam na fornalha ardente bendizendo o Senhor <span class="rub">(T. P. Aleluia)</span>.</p>
+                    <p class="rub">Todos se levantam e quem dirige as oracoes diz:</p>
+                    <p><span class="rub">V.</span> Senhor, tende piedade de nos. </p>
+                    <p><span class="rub">R.</span> Cristo, tende piedade de nos. Senhor, tende piedade de nos.</p>
+                    <p>Pai Nosso <span class="rub">(em silencio)</span>...</p>
+                    <p><span class="rub">V.</span> E nao nos deixeis cair em tentacao. </p>
                     <p><span class="rub">R.</span> Mas livrai-nos do mal.</p>
                     <p><span class="rub">V.</span> Todas as Vossas obras Vos louvem, Senhor. </p>
                     <p><span class="rub">R.</span> E os Vossos santos Vos bendigam.</p>
-                    <p><span class="rub">V.</span> Os santos exultarão na glória. </p>
-                    <p><span class="rub">R.</span> E alegrar-se-ão nas suas moradas.</p>
-                    <p><span class="rub">V.</span> Não a nós, Senhor, não a nós. </p>
-                    <p><span class="rub">R.</span> Mas ao Vosso nome dai glória.</p>
-                    <p><span class="rub">V.</span> Ouvi, Senhor, a minha oração. </p>
-                    <p><span class="rub">R.</span> E chegue a Vós o meu clamor.</p>
+                    <p><span class="rub">V.</span> Os santos exultarao na gloria. </p>
+                    <p><span class="rub">R.</span> E alegrar-se-ao nas suas moradas.</p>
+                    <p><span class="rub">V.</span> Nao a nos, Senhor, nao a nos. </p>
+                    <p><span class="rub">R.</span> Mas ao Vosso nome dai gloria.</p>
+                    <p><span class="rub">V.</span> Ouvi, Senhor, a minha oracao. </p>
+                    <p><span class="rub">R.</span> E chegue a Vos o meu clamor.</p>
                     <p class="rub">Os sacerdotes acrescentam:</p>
                     <p><span class="rub">V.</span> O Senhor esteja convosco. </p>
-                    <p><span class="rub">R.</span> Ele está no meio de nós.</p>
+                    <p><span class="rub">R.</span> Ele esta no meio de nos.</p>
                     <p class="rub" style="text-align:center; text-transform: uppercase;">Oremos</p>
-                    <p>Ó Deus, que suavizastes as chamas do fogo aos três jovens, concedei-nos, pela Vossa misericórdia, que não nos deixemos abrasar pelos vícios.</p>
-                    <p>Nós vos rogamos, Senhor, que prepareis as nossas ações com a vossa inspiração, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e orações em Vós comecem sempre e convosco acabem.</p>
-                    <p>Dai-nos, Senhor, a graça de extinguir o ardor dos vícios, Vós que concedestes a São Lourenço a virtude de vencer o fogo de seu martírio. Por Cristo Senhor Nosso.</p>
-                    <p><span class="rub">R.</span> Amém.</p>
+                    <p>O Deus, que suavizastes as chamas do fogo aos tres jovens, concedei-nos, pela Vossa misericordia, que nao nos deixemos abrasar pelos vicios.</p>
+                    <p>Nos vos rogamos, Senhor, que prepareis as nossas acoes com a vossa inspiracao, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e oracoes em Vos comecem sempre e convosco acabem.</p>
+                    <p>Dai-nos, Senhor, a graca de extinguir o ardor dos vicios, Vos que concedestes a Sao Lourenco a virtude de vencer o fogo de seu martirio. Por Cristo Senhor Nosso.</p>
+                    <p><span class="rub">R.</span> Amem.</p>
                 `,
                 html_la: `
-                    <p><span class="rub">Antíphona.</span> Trium puerórum cantémus hymnum, quem cantábant sancti in camíno ignis, benedicéntes Dóminum (<span class="rub">T. P.</span> Allelúia).</p>
-                    <p class="rub" style="text-align:center;">Cánticum Trium Puerórum (Dan. 3, 57-88 et 56)</p>
-                    <p><span class="rub">1.</span> Benedícite, ómnia ópera Dómini, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
-                    <p><span class="rub">2.</span> Benedícite, cæli, Dómino, benedícite, ángeli Dómini, Dómino.</p>
-                    <p><span class="rub">3.</span> Benedícite, aquæ omnes, quæ super cælos sunt, Dómino, benedícat omnis virtus, Dómino.</p>
-                    <p><span class="rub">4.</span> Benedícite, sol et luna, Dómino, benedícite, stellæ cæli, Dómino.</p>
-                    <p><span class="rub">5.</span> Benedícite, omnis imber et ros, Dómino, benedícite, omnes venti, Dómino.</p>
-                    <p><span class="rub">6.</span> Benedícite, ignis et æstus, Dómino, benedícite, frigus et æstus, Dómino.</p>
-                    <p><span class="rub">7.</span> Benedícite, rores et prúina, Dómino, benedícite, gelu et frigus, Dómino.</p>
-                    <p><span class="rub">8.</span> Benedícite, glácies et nives, Dómino, benedícite, noctes et dies, Dómino.</p>
-                    <p><span class="rub">9.</span> Benedícite, lux et ténebræ, Dómino, benedícite, fúlgura et nubes, Dómino.</p>
-                    <p><span class="rub">10.</span> Benedícat terra Dóminum, laudet et superexáltet eum in sǽcula.</p>
-                    <p><span class="rub">11.</span> Benedícite montes et colles, Dómino, benedícite, univérsa germinántia in terra, Dómino.</p>
-                    <p><span class="rub">12.</span> Benedícite, mária et flúmina, Dómino, benedícite, fontes, Dómino.</p>
-                    <p><span class="rub">13.</span> Benedícite, cete et ómnia, quæ movéntur in aquis, Dómino, benedícite, omnes vólucres cæli, Dómino.</p>
-                    <p><span class="rub">14.</span> Benedícite, omnes béstiæ et pécora, Dómino, benedícite, fílii hóminum, Dómino.</p>
-                    <p><span class="rub">15.</span> Bénedic, Ísraël, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
-                    <p><span class="rub">16.</span> Benedícite, sacerdótes Dómini, Dómino, benedícite, servi Dómini, Dómino.</p>
-                    <p><span class="rub">17.</span> Benedícite, spíritus et ánimæ iustórum, Dómino, benedícite, sancti et húmiles corde, Dómino.</p>
-                    <p><span class="rub">18.</span> Benedícite, Ananía, Azaría, Mísaël, Dómino, laudáte et superexaltáte eum in sǽcula.</p>
-                    <p><span class="rub">19.</span> Benedicámus Patrem et Fílium cum Sancto Spíritu; laudémus et superexaltémus eum in sǽcula.</p>
-                    <p><span class="rub">20.</span> Benedíctus es in firmaménto cæli et laudábilis et gloriósus in sǽcula.</p>
-                    <p class="rub">Hic non dícitur Glória Patri, neque Amen.</p>
+                    <p><span class="rub">Antiphona.</span> Trium puerorum cantemus hymnum, quem cantabant sancti in camino ignis, benedicentes Dominum (<span class="rub">T. P.</span> Alleluia).</p>
+                    <p class="rub" style="text-align:center;">Canticum Trium Puerorum (Dan. 3, 57-88 et 56)</p>
+                    <p><span class="rub">1.</span> Benedicite, omnia opera Domini, Domino, laudate et superexaltate eum in saecula.</p>
+                    <p><span class="rub">2.</span> Benedicite, caeli, Domino, benedicite, angeli Domini, Domino.</p>
+                    <p><span class="rub">3.</span> Benedicite, aquae omnes, quae super caelos sunt, Domino, benedicat omnis virtus, Domino.</p>
+                    <p><span class="rub">4.</span> Benedicite, sol et luna, Domino, benedicite, stellae caeli, Domino.</p>
+                    <p><span class="rub">5.</span> Benedicite, omnis imber et ros, Domino, benedicite, omnes venti, Domino.</p>
+                    <p><span class="rub">6.</span> Benedicite, ignis et aestus, Domino, benedicite, frigus et aestus, Domino.</p>
+                    <p><span class="rub">7.</span> Benedicite, rores et pruina, Domino, benedicite, gelu et frigus, Domino.</p>
+                    <p><span class="rub">8.</span> Benedicite, glacies et nives, Domino, benedicite, noctes et dies, Domino.</p>
+                    <p><span class="rub">9.</span> Benedicite, lux et tenebrae, Domino, benedicite, fulgura et nubes, Domino.</p>
+                    <p><span class="rub">10.</span> Benedicat terra Dominum, laudet et superexaltet eum in saecula.</p>
+                    <p><span class="rub">11.</span> Benedicite montes et colles, Domino, benedicite, universa germinantia in terra, Domino.</p>
+                    <p><span class="rub">12.</span> Benedicite, maria et flumina, Domino, benedicite, fontes, Domino.</p>
+                    <p><span class="rub">13.</span> Benedicite, cete et omnia, quae moventur in aquis, Domino, benedicite, omnes volucres caeli, Domino.</p>
+                    <p><span class="rub">14.</span> Benedicite, omnes bestiae et pecora, Domino, benedicite, filii hominum, Domino.</p>
+                    <p><span class="rub">15.</span> Benedic, Israel, Domino, laudate et superexaltate eum in saecula.</p>
+                    <p><span class="rub">16.</span> Benedicite, sacerdotes Domini, Domino, benedicite, servi Domini, Domino.</p>
+                    <p><span class="rub">17.</span> Benedicite, spiritus et animae iustorum, Domino, benedicite, sancti et humiles corde, Domino.</p>
+                    <p><span class="rub">18.</span> Benedicite, Anania, Azaria, Misael, Domino, laudate et superexaltate eum in saecula.</p>
+                    <p><span class="rub">19.</span> Benedicamus Patrem et Filium cum Sancto Spiritu; laudemus et superexaltemus eum in saecula.</p>
+                    <p><span class="rub">20.</span> Benedictus es in firmamento caeli et laudabilis et gloriosus in saecula.</p>
+                    <p class="rub">Hic non dicitur Gloria Patri, neque Amen.</p>
                     <br>
                     <p class="rub" style="text-align:center;">Psalmus 150</p>
-                    <p><span class="rub">1.</span> Laudáte Dóminum in sanctuário eius, laudáte eum in firmaménto virtútis eius.</p>
-                    <p><span class="rub">2.</span> Laudáte eum in magnálibus eius, laudáte eum secúndum multitúdinem magnitúdinis eius.</p>
-                    <p><span class="rub">3.</span> Laudáte eum in sono tubæ, laudáte eum in psaltério et cíthara.</p>
-                    <p><span class="rub">4.</span> Laudáte eum in týmpano et choro, laudáte eum in chordis et órgano.</p>
-                    <p><span class="rub">5.</span> Laudáte eum in cýmbalis benesonántibus, laudáte eum in cýmbalis iubilatiónis: omne quod spirat, laudet Dóminum.</p>
-                    <p>Glória Patri, et Fílio, et Spirítui Sancto. Sicut erat in princípio, et nunc, et semper, et in sǽcula sæculórum. Amen.</p>
+                    <p><span class="rub">1.</span> Laudate Dominum in sanctuario eius, laudate eum in firmamento virtutis eius.</p>
+                    <p><span class="rub">2.</span> Laudate eum in magnalibus eius, laudate eum secundum multitudinem magnitudinis eius.</p>
+                    <p><span class="rub">3.</span> Laudate eum in sono tubae, laudate eum in psalterio et cithara.</p>
+                    <p><span class="rub">4.</span> Laudate eum in tympano et choro, laudate eum in chordis et organo.</p>
+                    <p><span class="rub">5.</span> Laudate eum in cymbalis benesonantibus, laudate eum in cymbalis iubilationis: omne quod spirat, laudet Dominum.</p>
+                    <p>Gloria Patri, et Filio, et Spiritui Sancto. Sicut erat in principio, et nunc, et semper, et in saecula saeculorum. Amen.</p>
                     <br>
-                    <p><span class="rub">Antíphona.</span> Trium puerórum cantémus hymnum, quem cantábant sancti in camíno ignis, benedicéntes Dóminum (<span class="rub">T. P.</span> Allelúia).</p>
-                    <p class="rub">Omnes exsúrgunt, et qui preces moderátur dicit:</p>
-                    <p><span class="rub">V.</span> Kyrie, eléison. </p>
-                    <p><span class="rub">R.</span> Christe, eléison. Kyrie, eléison.</p>
+                    <p><span class="rub">Antiphona.</span> Trium puerorum cantemus hymnum, quem cantabant sancti in camino ignis, benedicentes Dominum (<span class="rub">T. P.</span> Alleluia).</p>
+                    <p class="rub">Omnes exsurgunt, et qui preces moderatur dicit:</p>
+                    <p><span class="rub">V.</span> Kyrie, eleison. </p>
+                    <p><span class="rub">R.</span> Christe, eleison. Kyrie, eleison.</p>
                     <p>Pater noster...</p>
-                    <p><span class="rub">V.</span> Et ne nos indúcas in tentatiónem. </p>
-                    <p><span class="rub">R.</span> Sed líbera nos a malo.</p>
-                    <p><span class="rub">V.</span> Confiteántur tibi, Dómine, ómnia ópera tua. </p>
-                    <p><span class="rub">R.</span> Et Sancti tui benedícant tibi.</p>
-                    <p><span class="rub">V.</span> Exsultábunt sancti in glória. </p>
-                    <p><span class="rub">R.</span> Lætabúntur in cubílibus suis.</p>
-                    <p><span class="rub">V.</span> Non nobis, Dómine, non nobis. </p>
-                    <p><span class="rub">R.</span> Sed nómini tuo da glóriam.</p>
-                    <p><span class="rub">V.</span> Dómine, exáudi oratiónem meam. </p>
-                    <p><span class="rub">R.</span> Et clamor meus ad te véniat.</p>
+                    <p><span class="rub">V.</span> Et ne nos inducas in tentationem. </p>
+                    <p><span class="rub">R.</span> Sed libera nos a malo.</p>
+                    <p><span class="rub">V.</span> Confiteantur tibi, Domine, omnia opera tua. </p>
+                    <p><span class="rub">R.</span> Et Sancti tui benedicant tibi.</p>
+                    <p><span class="rub">V.</span> Exsultabunt sancti in gloria. </p>
+                    <p><span class="rub">R.</span> Laetabuntur in cubilibus suis.</p>
+                    <p><span class="rub">V.</span> Non nobis, Domine, non nobis. </p>
+                    <p><span class="rub">R.</span> Sed nomini tuo da gloriam.</p>
+                    <p><span class="rub">V.</span> Domine, exaudi orationem meam. </p>
+                    <p><span class="rub">R.</span> Et clamor meus ad te veniat.</p>
                     <p class="rub">Sacerdotes addunt:</p>
-                    <p><span class="rub">V.</span> Dóminus vobíscum. </p>
-                    <p><span class="rub">R.</span> Et cum spíritu tuo.</p>
-                    <p class="rub" style="text-align:center; text-transform: uppercase;">Orémus</p>
-                    <p>Deus, qui tribus púeris mitigásti flammas ígnium, concéde propítius; ut nos fámulos tuos non exúrat flamma vitiórum.</p>
-                    <p>Actiónes nostras, quǽsumus, Dómine, aspirándo prǽveni et adiuvándo proséquere: ut cuncta nostra orátio et operátio a te semper incípiat, et per te cœpta finiátur.</p>
-                    <p>Da nobis, quǽsumus, Dómine, vitiórum nostrórum flammas extínguere; qui beato Lauréntio tribuísti tormentórum suórum incéndia superáre. Per Christum Dóminum nostrum.</p>
+                    <p><span class="rub">V.</span> Dominus vobiscum. </p>
+                    <p><span class="rub">R.</span> Et cum spiritu tuo.</p>
+                    <p class="rub" style="text-align:center; text-transform: uppercase;">Oremus</p>
+                    <p>Deus, qui tribus pueris mitigasti flammas ignium, concede propitius; ut nos famulos tuos non exurat flamma vitiorum.</p>
+                    <p>Actiones nostras, quaesumus, Domine, aspirando praeveni et adiuvando prosequere: ut cuncta nostra oratio et operatio a te semper incipiat, et per te coepta finiatur.</p>
+                    <p>Da nobis, quaesumus, Domine, vitiorum nostrorum flammas extinguere; qui beato Laurentio tribuisti tormentorum suorum incendia superare. Per Christum Dominum nostrum.</p>
                     <p><span class="rub">R.</span> Amen.</p>
                 `
             },
@@ -983,44 +389,44 @@
                 title_pt: "Salmo 2",
                 title_la: "Psalmus II",
                 html_la: `
-                    <p><span class="rub">Antiphona.</span> Regnum eius regnum sempitérnum est, et omnes reges sérvient ei et obœdient. (T. P. Allelúia).</p>
-                    <p><span class="rub">1.</span> Quare fremuérunt gentes, et pópuli meditáti sunt inánia?</p>
-                    <p><span class="rub">2.</span> Astitérunt reges terræ, et príncipes convenérunt in unum advérsus Dóminum et advérsus Christum eius:</p>
-                    <p><span class="rub">3.</span> «Dirumpámus víncula eórum et proiciámus a nobis iugum ipsórum!».</p>
-                    <p><span class="rub">4.</span> Qui hábitat in cælis, irridébit eos, Dóminus subsannábit eos.</p>
-                    <p><span class="rub">5.</span> Tunc loquétur ad eos in ira sua et in furóre suo conturbábit eos:</p>
-                    <p><span class="rub">6.</span> «Ego autem constítui regem meum super Sion, montem sanctum meum!».</p>
-                    <p><span class="rub">7.</span> Prædicábo decrétum eius. Dóminus dixit ad me: «Fílius meus es tu; ego hódie génui te.</p>
-                    <p><span class="rub">8.</span> Póstula a me, et dabo tibi gentes hereditátem tuam et possessiónem tuam términos terræ.</p>
-                    <p><span class="rub">9.</span> Reges eos in virga férrea et tamquam vas fíguli confrínges eos».</p>
-                    <p><span class="rub">10.</span> Et nunc, reges, intellégite, erudímini, qui iudicátis terram.</p>
-                    <p><span class="rub">11.</span> Servíte Dómino in timóre et exsultáte ei cum tremóre.</p>
-                    <p><span class="rub">12.</span> Apprehéndite disciplínam, ne quando irascátur, et pereátis de via, cum exárserit in brevi ira eius. Beati omnes, qui confídunt in eo.</p>
-                    <p><span class="rub">13.</span> Glória Patri, et Fílio, et Spirítui Sancto.</p>
-                    <p><span class="rub">14.</span> Sicut erat in princípio, et nunc, et semper, et in sǽcula sæculórum. Amen.</p>
-                    <p><span class="rub">Antiphona.</span> Regnum eius regnum sempitérnum est, et omnes reges sérvient ei et obœdient. (T. P. Allelúia).</p>
-                    <p><span class="rub">V/.</span> Dómine, exáudi oratiónem meam.</p>
-                    <p><span class="rub">R/.</span> Et clamor meus ad te véniat.</p>
+                    <p><span class="rub">Antiphona.</span> Regnum eius regnum sempiternum est, et omnes reges servient ei et oboedient. (T. P. Alleluia).</p>
+                    <p><span class="rub">1.</span> Quare fremuerunt gentes, et populi meditati sunt inania?</p>
+                    <p><span class="rub">2.</span> Astiterunt reges terrae, et principes convenerunt in unum adversus Dominum et adversus Christum eius:</p>
+                    <p><span class="rub">3.</span> «Dirumpamus vincula eorum et proiciamus a nobis iugum ipsorum!».</p>
+                    <p><span class="rub">4.</span> Qui habitat in caelis, irridebit eos, Dominus subsannabit eos.</p>
+                    <p><span class="rub">5.</span> Tunc loquetur ad eos in ira sua et in furore suo conturbabit eos:</p>
+                    <p><span class="rub">6.</span> «Ego autem constitui regem meum super Sion, montem sanctum meum!».</p>
+                    <p><span class="rub">7.</span> Praedicabo decretum eius. Dominus dixit ad me: «Filius meus es tu; ego hodie genui te.</p>
+                    <p><span class="rub">8.</span> Postula a me, et dabo tibi gentes hereditatem tuam et possessionem tuam terminos terrae.</p>
+                    <p><span class="rub">9.</span> Reges eos in virga ferrea et tamquam vas figuli confringes eos».</p>
+                    <p><span class="rub">10.</span> Et nunc, reges, intellegite, erudimini, qui iudicatis terram.</p>
+                    <p><span class="rub">11.</span> Servite Domino in timore et exsultate ei cum tremore.</p>
+                    <p><span class="rub">12.</span> Apprehendite disciplinam, ne quando irascatur, et pereatis de via, cum exarserit in brevi ira eius. Beati omnes, qui confidunt in eo.</p>
+                    <p><span class="rub">13.</span> Gloria Patri, et Filio, et Spiritui Sancto.</p>
+                    <p><span class="rub">14.</span> Sicut erat in principio, et nunc, et semper, et in saecula saeculorum. Amen.</p>
+                    <p><span class="rub">Antiphona.</span> Regnum eius regnum sempiternum est, et omnes reges servient ei et oboedient. (T. P. Alleluia).</p>
+                    <p><span class="rub">V/.</span> Domine, exaudi orationem meam.</p>
+                    <p><span class="rub">R/.</span> Et clamor meus ad te veniat.</p>
                     <p class="rub" style="text-align:center; text-transform: uppercase;">Sacerdotes addunt:</p>
-                    <p><span class="rub">V/.</span> Dóminus vobíscum.</p>
-                    <p><span class="rub">R/.</span> Et cum spíritu tuo.</p>
-                    <p class="rub" style="text-align:center; text-transform: uppercase;">Orémus</p>
-                    <p> Omnípotens sempitérne Deus, qui in dilécto Fílio tuo, universórum Rege ómnia instauráre voluísti: concéde propítius; ut cunctæ famíliæ géntium, peccáti vúlnere disgregátæ, eius suavíssimo subdántur império: Qui tecum vivit et regnat in unitáte Spíritus Sancti Deus: per ómnia sǽcula sæculórum.</p>
+                    <p><span class="rub">V/.</span> Dominus vobiscum.</p>
+                    <p><span class="rub">R/.</span> Et cum spiritu tuo.</p>
+                    <p class="rub" style="text-align:center; text-transform: uppercase;">Oremus</p>
+                    <p> Omnipotens sempiterne Deus, qui in dilecto Filio tuo, universorum Rege omnia instaurare voluisti: concede propitius; ut cunctae familiae gentium, peccati vulnere disgregatae, eius suavissimo subdantur imperio: Qui tecum vivit et regnat in unitate Spiritus Sancti Deus: per omnia saecula saeculorum.</p>
                     <p><span class="rub">R.</span> Amen.</p>
                 `
             },
             adoro_te_devote: {
                 label: "Adoro te devote",
                 title_pt: "Adoro te devote",
-                title_la: "Adóro te devóte",
+                title_la: "Adoro te devote",
                 html_la: `
-                    <p><span class="rub">1.</span> Adóro te devóte, latens Déitas, quæ sub his figúris vere látitas. Tibi se cor meum totum súbiicit, quia, te contémplans, totum déficit.</p>
-                    <p><span class="rub">2.</span> Visus, tactus, gustus in te fállitur, sed audítu solo tuto créditur. Credo quidquid dixit Dei Fílius: nil hoc verbo veritátis vérius.</p>
-                    <p><span class="rub">3.</span> In Cruce latébat sola Déitas; at hic latet simul et humánitas. Ambo tamen credens atque cónfitens, peto quod petívit latro pœnitens.</p>
-                    <p><span class="rub">4.</span> Plagas, sicut Thomas, non intúeor; Deum tamen meum te confíteor. Fac me tibi semper magis crédere, in te spem habére, te dilígere.</p>
-                    <p><span class="rub">5.</span> O memoriále mortis Dómini! Panis vivus vitam præstans hómini, præsta meæ menti de te vívere, et te illi semper dulce sápere.</p>
-                    <p><span class="rub">6.</span> Pie pellicáne, Iesu Dómine, me immúndum munda tuo sánguine: cuius una stilla salvum fácere totum mundum quit ab omni scélere.</p>
-                    <p><span class="rub">7.</span> Iesu, quem velátum nunc aspício, oro, fiat illud quod tam sítio; ut te reveláta cernens fácie, visu sim beátus tuæ glóriæ.</p>
+                    <p><span class="rub">1.</span> Adoro te devote, latens Deitas, quae sub his figuris vere latitas. Tibi se cor meum totum subiicit, quia, te contemplans, totum deficit.</p>
+                    <p><span class="rub">2.</span> Visus, tactus, gustus in te fallitur, sed auditu solo tuto creditur. Credo quidquid dixit Dei Filius: nil hoc verbo veritatis verius.</p>
+                    <p><span class="rub">3.</span> In Cruce latebat sola Deitas; at hic latet simul et humanitas. Ambo tamen credens atque confitens, peto quod petivit latro poenitens.</p>
+                    <p><span class="rub">4.</span> Plagas, sicut Thomas, non intueor; Deum tamen meum te confiteor. Fac me tibi semper magis credere, in te spem habere, te diligere.</p>
+                    <p><span class="rub">5.</span> O memoriale mortis Domini! Panis vivus vitam praestans homini, praesta meae menti de te vivere, et te illi semper dulce sapere.</p>
+                    <p><span class="rub">6.</span> Pie pellicane, Iesu Domine, me immundum munda tuo sanguine: cuius una stilla salvum facere totum mundum quit ab omni scelere.</p>
+                    <p><span class="rub">7.</span> Iesu, quem velatum nunc aspicio, oro, fiat illud quod tam sitio; ut te revelata cernens facie, visu sim beatus tuae gloriae.</p>
                     <p>Amen.</p>
                 `
             },
@@ -1030,145 +436,145 @@
                 title_la: "Preces",
                 html_pt: `
                     <p>Servirei!</p>
-                    <p><span class="rub">V.</span> À Santíssima Trindade.</p>
-                    <p><span class="rub">R.</span> Graças a vós, Senhor Deus, graças a vós. Verdadeira e única Trindade, divindade suprema e única, indivisa e Santa Trindade.</p>
+                    <p><span class="rub">V.</span> A Santissima Trindade.</p>
+                    <p><span class="rub">R.</span> Gracas a vos, Senhor Deus, gracas a vos. Verdadeira e unica Trindade, divindade suprema e unica, indivisa e Santa Trindade.</p>
                     <p><span class="rub">V.</span> A Jesus Cristo, Rei.</p>
-                    <p><span class="rub">R.</span> O Senhor é nosso Juiz, nosso Legislador e nosso Rei. Ele nos salvará.</p>
-                    <p><span class="rub">V.</span> Cristo, Filho de Deus vivo, tende misericórdia de nós.</p>
-                    <p><span class="rub">R.</span> Cristo, Filho de Deus vivo, tende misericórdia de nós.</p>
-                    <p><span class="rub">V.</span> Levantai-Vos, ó Cristo, vinde em nosso auxílio.</p>
+                    <p><span class="rub">R.</span> O Senhor e nosso Juiz, nosso Legislador e nosso Rei. Ele nos salvara.</p>
+                    <p><span class="rub">V.</span> Cristo, Filho de Deus vivo, tende misericordia de nos.</p>
+                    <p><span class="rub">R.</span> Cristo, Filho de Deus vivo, tende misericordia de nos.</p>
+                    <p><span class="rub">V.</span> Levantai-Vos, o Cristo, vinde em nosso auxilio.</p>
                     <p><span class="rub">R.</span> Libertai-nos pelo vosso nome.</p>
-                    <p><span class="rub">V.</span> O Senhor é a minha luz e salvação, a quem temerei?</p>
-                    <p><span class="rub">R.</span> Se os inimigos vierem contra mim, não temerá meu coração; se me combaterem, em Deus esperarei.</p>
-                    <p><span class="rub">V.</span> À Bem-aventurada Virgem Maria, Medianeira.</p>
-                    <p><span class="rub">R.</span> Lembrai-vos, ó Virgem Mãe de Deus, de falar coisas boas de nós quando estiverdes na presença do Senhor.</p>
-                    <p><span class="rub">V.</span> A São José, esposo da Santíssima Virgem Maria.</p>
-                    <p><span class="rub">R.</span> Deus colocou-vos no lugar de Pai do Rei e de senhor da sua casa: rogai por nós.</p>
+                    <p><span class="rub">V.</span> O Senhor e a minha luz e salvacao, a quem temerei?</p>
+                    <p><span class="rub">R.</span> Se os inimigos vierem contra mim, nao temera meu coracao; se me combaterem, em Deus esperarei.</p>
+                    <p><span class="rub">V.</span> A Bem-aventurada Virgem Maria, Medianeira.</p>
+                    <p><span class="rub">R.</span> Lembrai-vos, o Virgem Mae de Deus, de falar coisas boas de nos quando estiverdes na presenca do Senhor.</p>
+                    <p><span class="rub">V.</span> A Sao Jose, esposo da Santissima Virgem Maria.</p>
+                    <p><span class="rub">R.</span> Deus colocou-vos no lugar de Pai do Rei e de senhor da sua casa: rogai por nos.</p>
                     <p><span class="rub">V.</span> Aos Anjos da Guarda.</p>
-                    <p><span class="rub">R.</span> Ó nossos Santos Anjos da Guarda, defendei-nos no combate, para que não pereçamos no tremendo juízo.</p>
-                    <p><span class="rub">V.</span> A São Josemaria, nosso Fundador.</p>
-                    <p><span class="rub">R.</span> Intercedei pelos vossos filhos, para que, fiéis ao espírito do Opus Dei, santifiquemos o trabalho e ganhemos almas para Cristo.</p>
+                    <p><span class="rub">R.</span> O nossos Santos Anjos da Guarda, defendei-nos no combate, para que nao perecamos no tremendo juizo.</p>
+                    <p><span class="rub">V.</span> A Sao Josemaria, nosso Fundador.</p>
+                    <p><span class="rub">R.</span> Intercedei pelos vossos filhos, para que, fieis ao espirito do Opus Dei, santifiquemos o trabalho e ganhemos almas para Cristo.</p>
                     <p><span class="rub">V.</span> Oremos pelo nosso Santo Padre, o Papa N.</p>
-                    <p><span class="rub">R.</span> Que Deus o conserve e lhe dê vida e o faça santo na terra, e não o entregue nas mãos dos seus inimigos.</p>
-                    <p><span class="rub">V.</span> Oremos também pelo Bispo desta diocese.</p>
+                    <p><span class="rub">R.</span> Que Deus o conserve e lhe de vida e o faca santo na terra, e nao o entregue nas maos dos seus inimigos.</p>
+                    <p><span class="rub">V.</span> Oremos tambem pelo Bispo desta diocese.</p>
                     <p><span class="rub">R.</span> Senhor, que ele apascente, vigilante, o seu rebanho, com a vossa fortaleza e na grandeza do vosso Nome.</p>
                     <p><span class="rub">V.</span> Oremos pela unidade do apostolado.</p>
-                    <p><span class="rub">R.</span> Que todos sejam um, como tu, Pai, estás em mim, e eu em ti: para que eles sejam um, assim como nós somos um.</p>
-                    <p><span class="rub">V.</span> Todo reino dividido contra si mesmo será destruído.</p>
-                    <p><span class="rub">R.</span> E toda cidade ou casa internamente dividida não se manterá.</p>
+                    <p><span class="rub">R.</span> Que todos sejam um, como tu, Pai, estas em mim, e eu em ti: para que eles sejam um, assim como nos somos um.</p>
+                    <p><span class="rub">V.</span> Todo reino dividido contra si mesmo sera destruido.</p>
+                    <p><span class="rub">R.</span> E toda cidade ou casa internamente dividida nao se mantera.</p>
                     <p><span class="rub">V.</span> Oremos pelos nossos benfeitores.</p>
-                    <p><span class="rub">R.</span> Dignai-vos, Senhor, recompensar com a vida eterna todos aqueles que nos fazem o bem pelo vosso nome. Amém.</p>
+                    <p><span class="rub">R.</span> Dignai-vos, Senhor, recompensar com a vida eterna todos aqueles que nos fazem o bem pelo vosso nome. Amem.</p>
                     <p><span class="rub">V.</span> Oremos pelo Padre.</p>
-                    <p><span class="rub">R.</span> Que a misericórdia do Senhor esteja sobre ele desde sempre e para sempre, pois o Senhor protege todos os que o amam.</p>
-                    <p><span class="rub">V.</span> Oremos pelos nossos irmãos do Opus Dei, vivos e defuntos.</p>
-                    <p><span class="rub">R.</span> Salvai, meu Deus, os vossos servos, que em vós esperam.</p>
-                    <p><span class="rub">V.</span> Enviai-lhes, Senhor, o auxílio do céu.</p>
-                    <p><span class="rub">R.</span> E, do santo monte Sião, protegei-os.</p>
+                    <p><span class="rub">R.</span> Que a misericordia do Senhor esteja sobre ele desde sempre e para sempre, pois o Senhor protege todos os que o amam.</p>
+                    <p><span class="rub">V.</span> Oremos pelos nossos irmaos do Opus Dei, vivos e defuntos.</p>
+                    <p><span class="rub">R.</span> Salvai, meu Deus, os vossos servos, que em vos esperam.</p>
+                    <p><span class="rub">V.</span> Enviai-lhes, Senhor, o auxilio do ceu.</p>
+                    <p><span class="rub">R.</span> E, do santo monte Siao, protegei-os.</p>
                     <p><span class="rub">V.</span> Dai-lhes, Senhor, o descanso eterno.</p>
                     <p><span class="rub">R.</span> E brilhe sobre eles a vossa luz.</p>
                     <p><span class="rub">V.</span> Descansem em paz.</p>
-                    <p><span class="rub">R.</span> Amém.</p>
-                    <p><span class="rub">V.</span> Ouvi, Senhor, minha oração.</p>
-                    <p><span class="rub">R.</span> E chegue até vós o meu clamor.</p>
-                    <p class="rub">Se é um sacerdote quem dirige as Preces, levanta-se e acrescenta: <em>O Senhor esteja convosco</em>, permanecendo de pé enquanto reza a oração.</p>
+                    <p><span class="rub">R.</span> Amem.</p>
+                    <p><span class="rub">V.</span> Ouvi, Senhor, minha oracao.</p>
+                    <p><span class="rub">R.</span> E chegue ate vos o meu clamor.</p>
+                    <p class="rub">Se e um sacerdote quem dirige as Preces, levanta-se e acrescenta: <em>O Senhor esteja convosco</em>, permanecendo de pe enquanto reza a oracao.</p>
                     <p><span class="rub">V.</span> O Senhor esteja convosco.</p>
-                    <p><span class="rub">R.</span> Ele está no meio de nós.</p>
+                    <p><span class="rub">R.</span> Ele esta no meio de nos.</p>
                     <p>Oremos.</p>
-                    <p>Ó Deus, de quem é próprio ter misericórdia sempre e perdoar: recebei as nossas humildes súplicas. Inflamai, Senhor, as nossas entranhas e o nosso coração com o fogo do Espirito Santo: para que vos sirvamos com um corpo casto, e vos agrademos com o coração limpo.</p>
-                    <p>Nós Vos pedimos, Senhor, que prepareis as nossas ações com a vossa inspiração, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e orações em vós comecem sempre e por vós acabem. Por Cristo, Senhor Nosso.</p>
-                    <p><span class="rub">R.</span> Amém.</p>
+                    <p>O Deus, de quem e proprio ter misericordia sempre e perdoar: recebei as nossas humildes suplicas. Inflamai, Senhor, as nossas entranhas e o nosso coracao com o fogo do Espirito Santo: para que vos sirvamos com um corpo casto, e vos agrademos com o coracao limpo.</p>
+                    <p>Nos Vos pedimos, Senhor, que prepareis as nossas acoes com a vossa inspiracao, e as acompanheis com a vossa ajuda, a fim de que todos os nossos trabalhos e oracoes em vos comecem sempre e por vos acabem. Por Cristo, Senhor Nosso.</p>
+                    <p><span class="rub">R.</span> Amem.</p>
                     <p class="rub">Todos dizem:</p>
-                    <p>Que o Senhor onipotente e misericordioso nos conceda a alegria e a paz, a conversão da nossa vida, um tempo de verdadeira penitência, a graça e o consolo do Espírito Santo e a perseverança no Opus Dei.</p>
-                    <p><span class="rub">V.</span> São Miguel. </p>
-                    <p><span class="rub">R.</span> Rogai por nós.</p>
-                    <p><span class="rub">V.</span> São Gabriel. </p>
-                    <p><span class="rub">R.</span> Rogai por nós.</p>
-                    <p><span class="rub">V.</span> São Rafael. </p>
-                    <p><span class="rub">R.</span> Rogai por nós.</p>
-                    <p><span class="rub">V.</span> São Pedro. </p>
-                    <p><span class="rub">R.</span> Rogai por nós.</p>
-                    <p><span class="rub">V.</span> São Paulo. </p>
-                    <p><span class="rub">R.</span> Rogai por nós.</p>
-                    <p><span class="rub">V.</span> São João. </p>
-                    <p><span class="rub">R.</span> Rogai por nós.</p>
+                    <p>Que o Senhor onipotente e misericordioso nos conceda a alegria e a paz, a conversao da nossa vida, um tempo de verdadeira penitencia, a graca e o consolo do Espirito Santo e a perseveranca no Opus Dei.</p>
+                    <p><span class="rub">V.</span> Sao Miguel. </p>
+                    <p><span class="rub">R.</span> Rogai por nos.</p>
+                    <p><span class="rub">V.</span> Sao Gabriel. </p>
+                    <p><span class="rub">R.</span> Rogai por nos.</p>
+                    <p><span class="rub">V.</span> Sao Rafael. </p>
+                    <p><span class="rub">R.</span> Rogai por nos.</p>
+                    <p><span class="rub">V.</span> Sao Pedro. </p>
+                    <p><span class="rub">R.</span> Rogai por nos.</p>
+                    <p><span class="rub">V.</span> Sao Paulo. </p>
+                    <p><span class="rub">R.</span> Rogai por nos.</p>
+                    <p><span class="rub">V.</span> Sao Joao. </p>
+                    <p><span class="rub">R.</span> Rogai por nos.</p>
                     <p class="rub">Quando estiver presente um sacerdote, o diretor ou quem o substitua diz:</p>
-                    <p><span class="rub">V.</span> Dignai-vos, padre, abençoar-nos.</p>
-                    <p class="rub">O sacerdote abençoa:</p>
-                    <p>Que o Senhor esteja em vossos corações e em vossos lábios, em nome do Pai † e do Filho e do Espírito Santo.</p>
-                    <p><span class="rub">R.</span> Amém.</p>
+                    <p><span class="rub">V.</span> Dignai-vos, padre, abencoar-nos.</p>
+                    <p class="rub">O sacerdote abencoa:</p>
+                    <p>Que o Senhor esteja em vossos coracoes e em vossos labios, em nome do Pai e do Filho e do Espirito Santo.</p>
+                    <p><span class="rub">R.</span> Amem.</p>
                     <p><span class="rub">V.</span> Paz.</p>
                     <p><span class="rub">R.</span> Para sempre.</p>
                 `,
                 html_la: `
-                    <p>Sérviam!</p>
-                    <p><span class="rub">V.</span> Ad Trinitátem Beatíssimam.</p>
-                    <p><span class="rub">R.</span> Grátias tibi, Deus, grátias tibi: vera et una Trínitas, una et summa Déitas, sancta et una Únitas.</p>
+                    <p>Serviam!</p>
+                    <p><span class="rub">V.</span> Ad Trinitatem Beatissimam.</p>
+                    <p><span class="rub">R.</span> Gratias tibi, Deus, gratias tibi: vera et una Trinitas, una et summa Deitas, sancta et una Unitas.</p>
                     <p><span class="rub">V.</span> Ad Iesum Christum Regem.</p>
-                    <p><span class="rub">R.</span> Dóminus Iudex noster; Dóminus Légifer noster; Dóminus Rex noster. Ipse salvábit nos.</p>
-                    <p><span class="rub">V.</span> Christe, Fili Dei vivi, miserére nobis.</p>
-                    <p><span class="rub">R.</span> Christe, Fili Dei vivi, miserére nobis.</p>
-                    <p><span class="rub">V.</span> Exsúrge, Christe, ádiuva nos.</p>
-                    <p><span class="rub">R.</span> Et líbera nos propter nomen tuum.</p>
-                    <p><span class="rub">V.</span> Dóminus illuminátio mea et salus mea: quem timébo?</p>
-                    <p><span class="rub">R.</span> Si consístant advérsum me castra, non timébit cor meum; si exsúrgat advérsum me prœlium, in hoc ego sperábo.</p>
-                    <p><span class="rub">V.</span> Ad Beátam Vírginem Maríam Mediatrícem.</p>
-                    <p><span class="rub">R.</span> Recordáre, Virgo Mater Dei, dum stéteris in conspéctu Dómini, ut loquáris pro nobis bona.</p>
-                    <p><span class="rub">V.</span> Ad Sanctum Ioseph Sponsum Beátæ Maríæ Vírginis.</p>
-                    <p><span class="rub">R.</span> Fecit te Deus quasi Patrem Regis, et dóminum univérsæ domus eius: ora pro nobis.</p>
-                    <p><span class="rub">V.</span> Ad Ángelos Custódes.</p>
-                    <p><span class="rub">R.</span> Sancti Ángeli Custódes nostri, deféndite nos in prœlio ut non pereámus in treméndo iudício.</p>
-                    <p><span class="rub">V.</span> Ad Sanctum Iosephmaríam Conditórem nostrum.</p>
-                    <p><span class="rub">R.</span> Intercéde pro fíliis tuis ut, fidéles spirítui Óperis Dei, labórem sanctificémus et ánimas Christo lucrifácere quærámus.</p>
-                    <p><span class="rub">V.</span> Orémus pro Beatíssimo Papa nostro N.</p>
-                    <p><span class="rub">R.</span> Dóminus consérvet eum, et vivíficet eum, et beátum fáciat eum in terra, et non tradat eum in ánimam inimicórum eius.</p>
-                    <p><span class="rub">V.</span> Orémus et pro Antístite huius diœcésis.</p>
-                    <p><span class="rub">R.</span> Stet et pascat in fortitúdine tua, Dómine, in sublimitáte nóminis tui.</p>
-                    <p><span class="rub">V.</span> Orémus pro unitáte apostolátus.</p>
+                    <p><span class="rub">R.</span> Dominus Iudex noster; Dominus Legifer noster; Dominus Rex noster. Ipse salvabit nos.</p>
+                    <p><span class="rub">V.</span> Christe, Fili Dei vivi, miserere nobis.</p>
+                    <p><span class="rub">R.</span> Christe, Fili Dei vivi, miserere nobis.</p>
+                    <p><span class="rub">V.</span> Exsurge, Christe, adiuva nos.</p>
+                    <p><span class="rub">R.</span> Et libera nos propter nomen tuum.</p>
+                    <p><span class="rub">V.</span> Dominus illuminatio mea et salus mea: quem timebo?</p>
+                    <p><span class="rub">R.</span> Si consistant adversum me castra, non timebit cor meum; si exsurgat adversum me proelium, in hoc ego sperabo.</p>
+                    <p><span class="rub">V.</span> Ad Beatam Virginem Mariam Mediatricem.</p>
+                    <p><span class="rub">R.</span> Recordare, Virgo Mater Dei, dum steteris in conspectu Domini, ut loquaris pro nobis bona.</p>
+                    <p><span class="rub">V.</span> Ad Sanctum Ioseph Sponsum Beatae Mariae Virginis.</p>
+                    <p><span class="rub">R.</span> Fecit te Deus quasi Patrem Regis, et dominum universae domus eius: ora pro nobis.</p>
+                    <p><span class="rub">V.</span> Ad Angelos Custodes.</p>
+                    <p><span class="rub">R.</span> Sancti Angeli Custodes nostri, defendite nos in proelio ut non pereamus in tremendo iudicio.</p>
+                    <p><span class="rub">V.</span> Ad Sanctum Iosephmariam Conditorem nostrum.</p>
+                    <p><span class="rub">R.</span> Intercede pro filiis tuis ut, fideles spiritui Operis Dei, laborem sanctificemus et animas Christo lucrifacere quaeramus.</p>
+                    <p><span class="rub">V.</span> Oremus pro Beatissimo Papa nostro N.</p>
+                    <p><span class="rub">R.</span> Dominus conservet eum, et vivificet eum, et beatum faciat eum in terra, et non tradat eum in animam inimicorum eius.</p>
+                    <p><span class="rub">V.</span> Oremus et pro Antistite huius dioecesis.</p>
+                    <p><span class="rub">R.</span> Stet et pascat in fortitudine tua, Domine, in sublimitate nominis tui.</p>
+                    <p><span class="rub">V.</span> Oremus pro unitate apostolatus.</p>
                     <p><span class="rub">R.</span> Ut omnes unum sint, sicut tu Pater in me et ego in te: ut sint unum, sicut et nos unum sumus.</p>
-                    <p><span class="rub">V.</span> Omne regnum divísum contra se, desolábitur.</p>
-                    <p><span class="rub">R.</span> Et omnis cívitas vel domus divísa contra se non stabit.</p>
-                    <p><span class="rub">V.</span> Orémus pro benefactóribus nostris.</p>
-                    <p><span class="rub">R.</span> Retribúere dignáre, Dómine, ómnibus nobis bona faciéntibus propter nomen tuum, vitam ætérnam. Amen.</p>
-                    <p><span class="rub">V.</span> Orémus pro Patre.</p>
-                    <p><span class="rub">R.</span> Misericórdia Dómini ab ætérno et usque in ætérnum super eum: custódit enim Dóminus omnes diligéntes se.</p>
-                    <p><span class="rub">V.</span> Orémus et pro frátribus nostris Óperis Dei, vivis atque defúnctis.</p>
-                    <p><span class="rub">R.</span> Salvos fac servos tuos, Deus meus, sperántes in te.</p>
-                    <p><span class="rub">V.</span> Mitte eis, Dómine, auxílium de sancto.</p>
-                    <p><span class="rub">R.</span> Et de Sion tuére eos.</p>
-                    <p><span class="rub">V.</span> Réquiem ætérnam dona eis, Dómine.</p>
-                    <p><span class="rub">R.</span> Et lux perpétua lúceat eis.</p>
-                    <p><span class="rub">V.</span> Requiéscant in pace.</p>
+                    <p><span class="rub">V.</span> Omne regnum divisum contra se, desolabitur.</p>
+                    <p><span class="rub">R.</span> Et omnis civitas vel domus divisa contra se non stabit.</p>
+                    <p><span class="rub">V.</span> Oremus pro benefactoribus nostris.</p>
+                    <p><span class="rub">R.</span> Retribuere dignare, Domine, omnibus nobis bona facientibus propter nomen tuum, vitam aeternam. Amen.</p>
+                    <p><span class="rub">V.</span> Oremus pro Patre.</p>
+                    <p><span class="rub">R.</span> Misericordia Domini ab aeterno et usque in aeternum super eum: custodit enim Dominus omnes diligentes se.</p>
+                    <p><span class="rub">V.</span> Oremus et pro fratribus nostris Operis Dei, vivis atque defunctis.</p>
+                    <p><span class="rub">R.</span> Salvos fac servos tuos, Deus meus, sperantes in te.</p>
+                    <p><span class="rub">V.</span> Mitte eis, Domine, auxilium de sancto.</p>
+                    <p><span class="rub">R.</span> Et de Sion tuere eos.</p>
+                    <p><span class="rub">V.</span> Requiem aeternam dona eis, Domine.</p>
+                    <p><span class="rub">R.</span> Et lux perpetua luceat eis.</p>
+                    <p><span class="rub">V.</span> Requiescant in pace.</p>
                     <p><span class="rub">R.</span> Amen.</p>
-                    <p><span class="rub">V.</span> Dómine, exáudi oratiónem meam.</p>
-                    <p><span class="rub">R.</span> Et clamor meus ad te véniat.</p>
-                    <p class="rub">Sacerdos, si Preces moderatur, exsurgit et addit <em>Dóminus vobíscum</em>, stans etiam dum recitat orationem.</p>
-                    <p><span class="rub">V.</span> Dóminus vobíscum.</p>
-                    <p><span class="rub">R.</span> Et cum spíritu tuo.</p>
-                    <p>Orémus.</p>
-                    <p>Deus, cui próprium est miseréri semper et párcere: súscipe deprecatiónem nostram. Ure igne Sancti Spíritus renes nostros et cor nostrum, Dómine: ut tibi casto córpore serviámus, et mundo corde placeámus.</p>
-                    <p>Actiónes nostras, quǽsumus Dómine, aspirándo prǽveni et adiuvándo proséquere: ut cuncta nostra orátio et operátio a te semper incípiat, et per te cœpta finiátur. Per Christum Dóminum nostrum.</p>
+                    <p><span class="rub">V.</span> Domine, exaudi orationem meam.</p>
+                    <p><span class="rub">R.</span> Et clamor meus ad te veniat.</p>
+                    <p class="rub">Sacerdos, si Preces moderatur, exsurgit et addit <em>Dominus vobiscum</em>, stans etiam dum recitat orationem.</p>
+                    <p><span class="rub">V.</span> Dominus vobiscum.</p>
+                    <p><span class="rub">R.</span> Et cum spiritu tuo.</p>
+                    <p>Oremus.</p>
+                    <p>Deus, cui proprium est misereri semper et parcere: suscipe deprecationem nostram. Ure igne Sancti Spiritus renes nostros et cor nostrum, Domine: ut tibi casto corpore serviamus, et mundo corde placeamus.</p>
+                    <p>Actiones nostras, quaesumus Domine, aspirando praeveni et adiuvando prosequere: ut cuncta nostra oratio et operatio a te semper incipiat, et per te coepta finiatur. Per Christum Dominum nostrum.</p>
                     <p><span class="rub">R.</span> Amen.</p>
                     <p class="rub">Omnes dicunt:</p>
-                    <p>Gáudium cum pace, emendatiónem vitæ, spátium veræ pœniténtiæ, grátiam et consolatiónem Sancti Spíritus atque in Ópere Dei perseverántiam, tríbuat nobis Omnípotens et Miséricors Dóminus.</p>
-                    <p><span class="rub">V.</span> Sancte Míchaël. </p>
+                    <p>Gaudium cum pace, emendationem vitae, spatium verae poenitentiae, gratiam et consolationem Sancti Spiritus atque in Opere Dei perseverantiam, tribuat nobis Omnipotens et Misericors Dominus.</p>
+                    <p><span class="rub">V.</span> Sancte Michael. </p>
                     <p><span class="rub">R.</span> Ora pro nobis.</p>
-                    <p><span class="rub">V.</span> Sancte Gábriel. </p>
+                    <p><span class="rub">V.</span> Sancte Gabriel. </p>
                     <p><span class="rub">R.</span> Ora pro nobis.</p>
-                    <p><span class="rub">V.</span> Sancte Ráphaël. </p>
+                    <p><span class="rub">V.</span> Sancte Raphael. </p>
                     <p><span class="rub">R.</span> Ora pro nobis.</p>
                     <p><span class="rub">V.</span> Sancte Petre. </p>
                     <p><span class="rub">R.</span> Ora pro nobis.</p>
                     <p><span class="rub">V.</span> Sancte Paule. </p>
                     <p><span class="rub">R.</span> Ora pro nobis.</p>
-                    <p><span class="rub">V.</span> Sancte Ioánnes. </p>
+                    <p><span class="rub">V.</span> Sancte Ioannes. </p>
                     <p><span class="rub">R.</span> Ora pro nobis.</p>
                     <p class="rub">Cum adsit aliquis Sacerdos, dignior ait:</p>
-                    <p>Iube, Domne, benedícere.</p>
+                    <p>Iube, Domne, benedicere.</p>
                     <p class="rub">Sacerdos benedicit:</p>
-                    <p>Dóminus sit in córdibus vestris, et in lábiis vestris, in nómine Patris † et Fílii et Spíritus Sancti.</p>
+                    <p>Dominus sit in cordibus vestris, et in labiis vestris, in nomine Patris et Filii et Spiritus Sancti.</p>
                     <p><span class="rub">R.</span> Amen.</p>
                     <p><span class="rub">V.</span> Pax.</p>
-                    <p><span class="rub">R.</span> In ætérnum.</p>
+                    <p><span class="rub">R.</span> In aeternum.</p>
                 `
             }
         };
@@ -1179,79 +585,57 @@
         let clickCount = 0;
         let lastClickTime = 0;
 
-        // Determinar qual oração mostrar baseado no dia da semana
+        // Determinar qual oracao mostrar baseado no dia da semana
         function getOracaoDoDia() {
-            const hoje = new Date().getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
-
-            // Terça-feira (2) = Salmo 2
-            if (hoje === 2) {
-                return 'salmo_2';
-            }
-            // Quinta-feira (4) = Adoro te devote
-            else if (hoje === 4) {
-                return 'adoro_te_devote';
-            }
-            // Segunda (1), Quarta (3), Sexta (5), Sábado (6), Domingo (0) = Cântico 3 Jovens
-            else {
-                return 'cantico_tres_jovens';
-            }
+            const hoje = new Date().getDay();
+            if (hoje === 2) return 'salmo_2';
+            else if (hoje === 4) return 'adoro_te_devote';
+            else return 'cantico_tres_jovens';
         }
 
-        // Controle de clique no título (detecta duplo clique)
+        // Controle de clique no titulo (detecta duplo clique)
         function handleTitleClick() {
             const currentTime = new Date().getTime();
             const timeDiff = currentTime - lastClickTime;
 
-            // Se o tempo entre cliques for menor que 400ms, é duplo clique
             if (timeDiff < 400 && clickCount === 1) {
-                // Duplo clique detectado
                 clearTimeout(clickTimeout);
                 clickTimeout = null;
                 clickCount = 0;
                 lastClickTime = 0;
                 abrirPreces();
             } else {
-                // Primeiro clique
                 clickCount = 1;
                 lastClickTime = currentTime;
 
-                // Aguarda para ver se haverá segundo clique
-                if (clickTimeout) {
-                    clearTimeout(clickTimeout);
-                }
+                if (clickTimeout) clearTimeout(clickTimeout);
 
                 clickTimeout = setTimeout(() => {
                     clickTimeout = null;
                     clickCount = 0;
                     abrirOracaoDoDia();
-                }, 400); // 400ms de espera
+                }, 400);
             }
         }
 
-        // Abrir oração do dia (clique simples)
         function abrirOracaoDoDia() {
             oracaoAtual = getOracaoDoDia();
             abrirOracao();
         }
 
-        // Abrir Preces (duplo clique)
         function abrirPreces() {
             oracaoAtual = 'preces_opus_dei';
             abrirOracao();
         }
 
-        // Função genérica para abrir oração
         function abrirOracao() {
             const oracaoView = document.getElementById('oracaoView');
             const btnVoltarTopo = document.getElementById('btnVoltarTopoOracao');
 
-            // Configurar idioma e visibilidade dos botões
             if (oracaoAtual === 'salmo_2' || oracaoAtual === 'adoro_te_devote' || oracaoAtual === 'preces_opus_dei') {
-                // Somente latim
                 idiomaAtualOracao = 'la';
                 document.getElementById('botoesIdioma').style.display = 'none';
             } else {
-                // Português e Latim
                 idiomaAtualOracao = 'pt';
                 document.getElementById('botoesIdioma').style.display = 'block';
             }
@@ -1260,7 +644,6 @@
             oracaoView.classList.add('ativo');
             oracaoView.scrollTop = 0;
 
-            // Anexar listener de scroll
             oracaoView.onscroll = function() {
                 if (oracaoView.scrollTop > 300) {
                     btnVoltarTopo.classList.add('visivel');
@@ -1270,38 +653,29 @@
             };
         }
 
-        // Fechar view de oração
         function fecharOracao() {
             const oracaoView = document.getElementById('oracaoView');
             const btnVoltarTopo = document.getElementById('btnVoltarTopoOracao');
-
             oracaoView.classList.remove('ativo');
             btnVoltarTopo.classList.remove('visivel');
         }
 
-        // Mudar idioma da oração
         function mudarIdiomaOracao(lang) {
             idiomaAtualOracao = lang;
-
-            // Atualizar botões
             document.getElementById('btnPtOracao').classList.toggle('ativo', lang === 'pt');
             document.getElementById('btnLaOracao').classList.toggle('ativo', lang === 'la');
-
             renderOracao();
         }
 
-        // Renderizar oração
         function renderOracao() {
             const oracao = oracoesDados[oracaoAtual];
             const tituloElement = document.getElementById('oracaoTitulo');
             const textoElement = document.getElementById('oracaoTexto');
 
-            // Atualizar título
             tituloElement.textContent = idiomaAtualOracao === 'pt'
                 ? (oracao.title_pt || oracao.title_la)
                 : oracao.title_la;
 
-            // Atualizar texto
             const html = idiomaAtualOracao === 'pt'
                 ? (oracao.html_pt || oracao.html_la)
                 : oracao.html_la;
@@ -1309,13 +683,10 @@
             textoElement.innerHTML = html;
         }
 
-        // Scroll to top para oração
         function scrollToTopOracao() {
             const oracaoView = document.getElementById('oracaoView');
             oracaoView.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        init();
     </script>
 </body>
 </html>
