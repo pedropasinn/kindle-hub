@@ -110,6 +110,23 @@
         .stat-value { font-size: 1.8rem; font-weight: 700; }
         .stat-label { font-size: var(--font-size-xs); color: var(--muted-foreground); text-transform: uppercase; }
         .book-type { font-size: var(--font-size-xs); padding: 2px 8px; border-radius: 4px; font-weight: 600; background: #ccc; color: #333; }
+        /* Week View */
+        .week-grid { display: flex; flex-direction: column; gap: 12px; }
+        .week-row { display: flex; gap: 12px; }
+        .week-day { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; min-height: 150px; }
+        .week-day.weekend { flex: 0.5; min-height: 120px; }
+        .week-day-header { font-weight: 700; font-size: var(--font-size-sm); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .week-day-header .day-number { background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: var(--font-size-xs); }
+        .week-day.today .week-day-header { border-bottom-color: #16a34a; }
+        .week-day.today .week-day-header .day-number { background: #16a34a; }
+        .week-entry { font-size: var(--font-size-xs); padding: 4px 0; border-bottom: 1px dotted var(--border); display: flex; gap: 6px; align-items: flex-start; }
+        .week-entry:last-child { border-bottom: none; }
+        .week-entry-symbol { flex-shrink: 0; }
+        .week-entry-text { flex: 1; word-break: break-word; }
+        .week-entry-text.done { text-decoration: line-through; color: var(--muted-foreground); }
+        .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .week-nav-title { font-weight: 700; font-size: var(--font-size-lg); }
+        .weekend-container { display: flex; flex: 1; gap: 12px; }
     </style>
 </head>
 <body>
@@ -126,6 +143,7 @@
         </div>
         <div class="nav-tabs" id="nav-tabs">
             <span class="nav-tab active" data-view="dia">Dia</span>
+            <span class="nav-tab" data-view="semana">Semana</span>
             <span class="nav-tab" data-view="mes">Mês</span>
             <span class="nav-tab" data-view="plano">Plano</span>
             <span class="nav-tab" data-view="estudo">Estudo</span>
@@ -546,6 +564,7 @@ function render() {
     var main = document.getElementById('main-content');
     var view = BuJo.state.currentView;
     if (view === 'dia') main.innerHTML = renderDayView();
+    else if (view === 'semana') main.innerHTML = renderWeekView();
     else if (view === 'mes') main.innerHTML = renderMonthView();
     else if (view === 'plano') main.innerHTML = renderPlanoVida();
     else if (view === 'estudo') main.innerHTML = renderEstudo();
@@ -592,9 +611,6 @@ function bindViewEvents() {
     });
     document.querySelectorAll('.entry-edit').forEach(function(el) {
         el.onclick = function() { showEditEntryModal(el.getAttribute('data-id')); };
-    });
-    document.querySelectorAll('.entry-delete').forEach(function(el) {
-        el.onclick = function() { deleteEntry(el.getAttribute('data-id')); };
     });
     document.querySelectorAll('.event-clickable').forEach(function(el) {
         el.onclick = function() { showEventDetails(el.getAttribute('data-event-date'), parseInt(el.getAttribute('data-event-idx'))); };
@@ -710,8 +726,86 @@ function renderEntry(entry) {
     var symbol = entry.type === 'note' ? BuJo.symbols.note : entry.type === 'event' ? BuJo.symbols.event : entry.status === 'done' ? BuJo.symbols.taskDone : entry.status === 'migrated' ? BuJo.symbols.taskMigrated : BuJo.symbols.task;
     return '<div class="entry"><span class="entry-symbol" data-id="' + entry.id + '">' + symbol + '</span>' +
         '<span class="entry-text' + (entry.status === 'done' ? ' done' : '') + '">' + entry.text + '</span>' +
-        '<span class="btn entry-edit" data-id="' + entry.id + '" style="padding:4px 10px;">✎</span>' +
-        '<span class="btn entry-delete" data-id="' + entry.id + '" style="padding:4px 10px;">×</span></div>';
+        '<span class="btn entry-edit" data-id="' + entry.id + '" style="padding:4px 10px;">✎</span></div>';
+}
+
+function renderWeekView() {
+    var date = BuJo.state.selectedDate;
+    var dayOfWeek = date.getDay();
+    // Ajusta para começar na segunda (0=dom, 1=seg, etc)
+    var mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    var monday = new Date(date);
+    monday.setDate(date.getDate() + mondayOffset);
+
+    var weekDays = [];
+    for (var i = 0; i < 7; i++) {
+        var d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        weekDays.push(d);
+    }
+
+    var weekStart = monday.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    var sunday = weekDays[6];
+    var weekEnd = sunday.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+
+    var html = '<div class="week-nav">';
+    html += '<span class="btn" id="prev-week">← Semana</span>';
+    html += '<span class="week-nav-title">' + weekStart + ' - ' + weekEnd + '</span>';
+    html += '<span class="btn" id="next-week">Semana →</span>';
+    html += '</div>';
+    html += '<div style="text-align:center;margin-bottom:12px;"><span class="btn" id="today-btn">Hoje</span></div>';
+
+    html += '<div class="week-grid">';
+
+    // Linha 1: Seg | Ter | Qua
+    html += '<div class="week-row">';
+    for (var i = 0; i < 3; i++) {
+        html += renderWeekDayCard(weekDays[i]);
+    }
+    html += '</div>';
+
+    // Linha 2: Qui | Sex | (Sab & Dom)
+    html += '<div class="week-row">';
+    for (var i = 3; i < 5; i++) {
+        html += renderWeekDayCard(weekDays[i]);
+    }
+    // Sab & Dom dividindo espaço de um
+    html += '<div class="weekend-container">';
+    html += renderWeekDayCard(weekDays[5], true); // Sábado
+    html += renderWeekDayCard(weekDays[6], true); // Domingo
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+}
+
+function renderWeekDayCard(date, isWeekend) {
+    var dateStr = formatDateKey(date);
+    var dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+    var dayNum = date.getDate();
+    var isTodayDate = isToday(date);
+
+    var entries = BuJo.state.entries.filter(function(e) { return e.date === dateStr; });
+
+    var cardClass = 'week-day' + (isWeekend ? ' weekend' : '') + (isTodayDate ? ' today' : '');
+    var html = '<div class="' + cardClass + '">';
+    html += '<div class="week-day-header"><span>' + dayName + '</span><span class="day-number">' + dayNum + '</span></div>';
+
+    if (entries.length === 0) {
+        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-xs);font-style:italic;">Sem registros</div>';
+    } else {
+        entries.forEach(function(entry) {
+            var symbol = entry.type === 'note' ? BuJo.symbols.note : entry.type === 'event' ? BuJo.symbols.event : entry.status === 'done' ? BuJo.symbols.taskDone : entry.status === 'migrated' ? BuJo.symbols.taskMigrated : BuJo.symbols.task;
+            html += '<div class="week-entry">';
+            html += '<span class="week-entry-symbol">' + symbol + '</span>';
+            html += '<span class="week-entry-text' + (entry.status === 'done' ? ' done' : '') + '">' + entry.text + '</span>';
+            html += '</div>';
+        });
+    }
+
+    html += '</div>';
+    return html;
 }
 
 function renderMonthView() {
@@ -1074,7 +1168,10 @@ function showEditEntryModal(id) {
     showModal('<div class="modal-title">Editar Registro</div>' +
         '<div class="form-group"><label>Tipo</label><select id="edit-entry-type">' + typeOptions + '</select></div>' +
         '<div class="form-group"><label>Texto</label><textarea id="edit-entry-text" rows="3">' + entry.text + '</textarea></div>' +
-        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="editEntry(\'' + id + '\')">Salvar</span></div>');
+        '<div class="form-group"><label>Data</label><input type="date" id="edit-entry-date" value="' + entry.date + '"></div>' +
+        '<div class="modal-actions" style="justify-content:space-between;">' +
+        '<span class="btn" style="background:#dc2626;color:#fff;border-color:#dc2626;" onclick="deleteEntry(\'' + id + '\');closeModal();">Excluir</span>' +
+        '<div style="display:flex;gap:10px;"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="editEntry(\'' + id + '\')">Salvar</span></div></div>');
 }
 
 function editEntry(id) {
@@ -1082,13 +1179,16 @@ function editEntry(id) {
     if (!entry) return;
     var newText = document.getElementById('edit-entry-text').value.trim();
     var newType = document.getElementById('edit-entry-type').value;
+    var newDate = document.getElementById('edit-entry-date').value;
     if (!newText) return;
     var oldText = entry.text;
     var oldType = entry.type;
+    var oldDate = entry.date;
     entry.text = newText;
     entry.type = newType;
+    entry.date = newDate;
     if (newType !== 'task') entry.status = 'pending';
-    recordEvent('entry_edited', { id: id, oldText: oldText, newText: newText, oldType: oldType, newType: newType }, entry.date);
+    recordEvent('entry_edited', { id: id, oldText: oldText, newText: newText, oldType: oldType, newType: newType, oldDate: oldDate, newDate: newDate }, entry.date);
     saveState(); closeModal(); render();
 }
 
