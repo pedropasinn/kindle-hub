@@ -25,9 +25,33 @@
       transform:rotate(90deg) translateY(-100%);
       width:100vh; height:100vw;
     }
-    .viewport.rotated .relogio{
-      font-size:50px;
-    }
+
+
+/* Widget de clima - centralizado e alinhado com o relógio */
+#weatherWidget{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  margin:10px auto 5px;
+  transform-origin:top center;
+}
+/* Portrait (vertical): desce um pouco para ficar "abaixo do relógio" */
+#vp:not(.rotated) #weatherWidget{
+  margin-top:18px;
+}
+/* Tamanhos do widget conforme a agenda */
+body.eventos-visiveis #weatherWidget{
+  transform:scale(0.9);
+}
+body.eventos-visiveis #vp:not(.rotated) #weatherWidget{
+  transform:scale(0.85);
+  margin-top:22px;
+}
+body.eventos-ocultos #weatherWidget{
+  transform:scale(1.2);
+}
+
 
     /* Proporção dinâmica via variáveis CSS */
     .secao-relogio{
@@ -872,7 +896,7 @@
         </div>
 
         <!-- Widget de Previsão do Tempo -->
-        <div id="weatherWidget" style="margin: 10px auto 5px; transform: scale(1.2); transform-origin: top center;">
+        <div id="weatherWidget">
           <div id="ww_024836fa03d7b" v='1.3' loc='id' a='{"t":"horizontal","lang":"pt","sl_lpl":1,"ids":["wl1583"],"font":"Arial","sl_ics":"one","sl_sot":"celsius","cl_bkg":"#FFFFFF00","cl_font":"rgba(31,27,27,1)","cl_cloud":"rgba(81,77,77,1)","cl_persp":"rgba(0,0,0,1)","cl_sun":"rgba(30,29,26,1)","cl_moon":"rgba(40,38,34,1)","cl_thund":"rgba(34,31,29,1)","el_nme":3,"el_cwt":3,"el_phw":3}'>Mais previsões: <a href="https://tempolongo.com/rio_de_janeiro_tempo_25_dias/" id="ww_024836fa03d7b_u" target="_blank">Rio de Janeiro 30 day forecast</a></div><script async src="https://app3.weatherwidget.org/js/?id=ww_024836fa03d7b"></script>
         </div>
       </div>
@@ -1009,33 +1033,35 @@
     }
   }
 
-  function estaNaVertical(){
-    var vp = document.getElementById('vp');
-    // Se "vertical" for quando NÃO está rotated, deixe assim.
-    // Se no seu caso "vertical" for quando ESTÁ rotated, troque para: return vp.classList.contains('rotated');
-    return !vp.classList.contains('rotated');
-  }
+function estaNaVertical(){
+  // "vertical" aqui = modo retrato (sem a classe .rotated).
+  // Se no seu caso for o contrário, inverta para: return document.getElementById('vp').classList.contains('rotated');
+  return !document.getElementById('vp').classList.contains('rotated');
+}
 
-  function aplicarTamanhoRelogio(){
-    var base = parseInt(localStorage.getItem('tamanhoRelogio') || '110', 10);
+function aplicarTamanhoRelogio(){
+  var base = parseInt(localStorage.getItem('tamanhoRelogio') || '110', 10);
 
-    // fator de redução na vertical (ajuste como quiser: 0.6, 0.7, etc.)
-    var fatorVertical = 0.80;
+  // Reduz só no modo vertical
+  var fatorVertical = 0.85;
+  var size = estaNaVertical() ? Math.round(base * fatorVertical) : base;
 
-    var size = estaNaVertical() ? Math.round(base * fatorVertical) : base;
+  var rel = document.getElementById('relogio');
+  if(rel) rel.style.fontSize = size + 'px';
 
-    var rel = document.getElementById('relogio');
-    if (rel) rel.style.fontSize = size + 'px';
+  var v = document.getElementById('valorTamanho');
+  if(v) v.textContent = base + 'px';
+}
 
-    // (opcional) mantém o texto do controle mostrando o "base"
-    var v = document.getElementById('valorTamanho');
-    if (v) v.textContent = base + 'px';
-  }
+function ajustarTamanho(valor){
+  var base = parseInt(valor, 10) || 110;
 
-  function ajustarTamanho(valor){
-    localStorage.setItem('tamanhoRelogio', String(parseInt(valor, 10) || 110));
-    aplicarTamanhoRelogio();
-  }
+  // Salvar preferência (sempre como base)
+  localStorage.setItem('tamanhoRelogio', String(base));
+
+  // Aplica (considerando vertical/horizontal)
+  aplicarTamanhoRelogio();
+}
 
   function ajustarProporcao(valor){
     var relogioPercent = parseInt(valor);
@@ -1074,8 +1100,9 @@
 
     // Salvar preferência
     localStorage.setItem('rotacao', vp.className);
+  
 
-    // Reaplicar tamanho do relógio com base na orientação
+    // Reaplica tamanho do relógio conforme orientação
     aplicarTamanhoRelogio();
   }
 
@@ -1083,7 +1110,6 @@
     var secaoEventos = document.querySelector('.secao-eventos');
     var secaoRelogio = document.querySelector('.secao-relogio');
     var abaAgenda = document.getElementById('abaAgenda');
-    var weatherWidget = document.getElementById('weatherWidget');
 
     if(flag){
       secaoEventos.classList.remove('oculto');
@@ -1095,11 +1121,6 @@
       var s = document.getElementById('sliderTamanho');
       if(s) s.value = 130;
       if(abaAgenda) abaAgenda.classList.add('aberta');
-
-      // Reduzir widget de clima quando aba aberta
-      if(weatherWidget) {
-        weatherWidget.style.transform = 'scale(0.9)';
-      }
     } else {
       secaoEventos.classList.add('oculto');
       secaoRelogio.classList.add('expandido');
@@ -1110,11 +1131,6 @@
       var s2 = document.getElementById('sliderTamanho');
       if(s2) s2.value = 200;
       if(abaAgenda) abaAgenda.classList.remove('aberta');
-
-      // Restaurar tamanho original do widget quando aba fechada
-      if(weatherWidget) {
-        weatherWidget.style.transform = 'scale(1.2)';
-      }
     }
     localStorage.setItem('mostrarEventos', flag ? 'true' : 'false');
   }
@@ -1196,6 +1212,49 @@
     return 'passado';
   }
 
+// ====== AUTO-ROLAGEM (EVENTOS DE HOJE) ======
+var ultimoAutoScrollIndex = null;
+
+function autoScrollEventosHoje(key, hj){
+  // Só para "Hoje"
+  if(key !== hj){
+    ultimoAutoScrollIndex = null;
+    return;
+  }
+
+  // Se a agenda estiver escondida, não rola
+  if(localStorage.getItem('mostrarEventos') === 'false') return;
+
+  var lista = document.getElementById('lista');
+  if(!lista) return;
+
+  var itens = lista.querySelectorAll('.evento');
+  if(!itens.length) return;
+
+  var alvo = lista.querySelector('.evento.atual') || lista.querySelector('.evento.futuro');
+
+  // Se todos já passaram, vai para o último
+  if(!alvo){
+    var passados = lista.querySelectorAll('.evento.passado');
+    if(passados.length) alvo = passados[passados.length - 1];
+  }
+
+  if(!alvo) return;
+
+  var idx = Array.prototype.indexOf.call(itens, alvo);
+  if(idx === ultimoAutoScrollIndex) return;
+
+  ultimoAutoScrollIndex = idx;
+
+  // Rolagem "seca" (melhor para e-ink do Kindle)
+  try{
+    alvo.scrollIntoView({behavior:'auto', block:'start'});
+  } catch(e){
+    // fallback simples
+    lista.scrollTop = Math.max(0, alvo.offsetTop - lista.offsetTop);
+  }
+}
+
   function desenharEventos(){
     var key = ymd(dataSel);
     var evts = eventosData[key] || [];
@@ -1234,6 +1293,8 @@
       html += '</div>';
     }
     lista.innerHTML = html;
+  
+    autoScrollEventosHoje(key, hj);
   }
 
   // Variável global para rastrear estado anterior do contador
@@ -1473,11 +1534,10 @@
       document.getElementById('vp').className = rotSalva;
     }
 
-    // Carregar estado do menu
-    var menuAberto = localStorage.getItem('menuAberto');
-    if(menuAberto === 'true'){
-      document.getElementById('painelMenu').className = 'painel-controles';
-    }
+
+    // Menu sempre começa fechado
+    document.getElementById('painelMenu').className = 'painel-controles minimizado';
+    localStorage.setItem('menuAberto', 'false');
 
     // Carregar estado de mostrar eventos
     var mostrarEventos = localStorage.getItem('mostrarEventos');
@@ -1501,8 +1561,8 @@
       document.getElementById('contadorEvento').classList.add('oculto');
       document.getElementById('abaContador').classList.add('visivel');
     }
-
-    // Aplicar tamanho do relógio com base na orientação atual
+  
+    // Aplica tamanho do relógio considerando a orientação
     aplicarTamanhoRelogio();
   }
 
