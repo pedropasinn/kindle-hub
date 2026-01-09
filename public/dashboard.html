@@ -1009,13 +1009,32 @@
     }
   }
 
-  function ajustarTamanho(valor){
-    var tamanho = parseInt(valor);
-    document.getElementById('relogio').style.fontSize = tamanho + 'px';
-    document.getElementById('valorTamanho').textContent = tamanho + 'px';
+  function estaNaVertical(){
+    var vp = document.getElementById('vp');
+    // Se "vertical" for quando NÃO está rotated, deixe assim.
+    // Se no seu caso "vertical" for quando ESTÁ rotated, troque para: return vp.classList.contains('rotated');
+    return !vp.classList.contains('rotated');
+  }
 
-    // Salvar preferência
-    localStorage.setItem('tamanhoRelogio', valor);
+  function aplicarTamanhoRelogio(){
+    var base = parseInt(localStorage.getItem('tamanhoRelogio') || '110', 10);
+
+    // fator de redução na vertical (ajuste como quiser: 0.6, 0.7, etc.)
+    var fatorVertical = 0.65;
+
+    var size = estaNaVertical() ? Math.round(base * fatorVertical) : base;
+
+    var rel = document.getElementById('relogio');
+    if (rel) rel.style.fontSize = size + 'px';
+
+    // (opcional) mantém o texto do controle mostrando o "base"
+    var v = document.getElementById('valorTamanho');
+    if (v) v.textContent = base + 'px';
+  }
+
+  function ajustarTamanho(valor){
+    localStorage.setItem('tamanhoRelogio', String(parseInt(valor, 10) || 110));
+    aplicarTamanhoRelogio();
   }
 
   function ajustarProporcao(valor){
@@ -1055,6 +1074,9 @@
 
     // Salvar preferência
     localStorage.setItem('rotacao', vp.className);
+
+    // Reaplicar tamanho do relógio com base na orientação
+    aplicarTamanhoRelogio();
   }
 
   function setMostrarEventos(flag){
@@ -1479,6 +1501,9 @@
       document.getElementById('contadorEvento').classList.add('oculto');
       document.getElementById('abaContador').classList.add('visivel');
     }
+
+    // Aplicar tamanho do relógio com base na orientação atual
+    aplicarTamanhoRelogio();
   }
 
   // ====== TIMER FUNCTIONS ======
