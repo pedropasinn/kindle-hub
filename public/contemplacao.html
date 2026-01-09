@@ -2,12 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Contemplação - Hub Kindle</title>
-    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="timer.js" defer></script>
-    <script src="points-popup.js"></script>
     <style>
         /* --- RESET & VARIÁVEIS --- */
         :root {
@@ -19,491 +16,565 @@
             --spacing: 16px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+        }
 
         body {
             font-family: var(--font-main);
             background-color: var(--bg-color);
             color: var(--text-color);
             height: 100vh;
-            overflow: auto;
+            width: 100vw;
+            overflow: hidden; /* Impede rolagem no Kindle */
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-        /* --- CABEÇALHO GERAL --- */
+        /* --- CABEÇALHO --- */
         header {
-            padding: var(--spacing);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid transparent;
+            padding: 10px var(--spacing);
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
         }
-        header h1 { font-size: 26px; font-weight: bold; margin: 0; }
+        header h1 { font-size: 22px; font-weight: bold; }
 
-        /* --- ESTILOS ESPECÍFICOS DA CONTEMPLAÇÃO --- */
-        .contemplacao-container {
+        /* --- CONTAINER PRINCIPAL (ÁREA DE TOQUE) --- */
+        .viewport-main {
+            flex-grow: 1;
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px 20px;
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
+            justify-content: flex-start;
+            padding: 3px;
         }
 
-        /* --- BOTÕES DE MISTÉRIOS (MENORES) --- */
+        /* --- INFORMAÇÕES DO TÍTULO --- */
+        .imagem-info {
+            margin: 10px;
+            text-align: center;
+            margin-bottom: 3px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            height: 22px;
+        
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* --- ÁREA DE CONTEÚDO (IMAGEM OU TEXTO) --- */
+        .conteudo-wrapper {
+            width: 100%;
+            height: calc(100% - 28px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #fff;
+            padding: 3px;
+        }
+
+        .imagem-display {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: var(--radius);
+            box-shadow: 2px 2px 0px #000;
+            display: block;
+            object-fit: contain;
+            border: 2px solid #000;
+        }
+
+        .texto-display {
+            display: none;
+            position: relative;
+            z-index: 15;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            margin: 10px;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px;
+            font-size: 19px;
+            line-height: 1.6;
+            text-align: justify;
+            background: #fafafa;
+            border: 2px solid #000;
+            border-radius: var(--radius);
+        }
+
+        .texto-display.ativo { display: block; }
+        .imagem-display.oculto { display: none; }
+
+        /* --- ZONAS DE TOQUE INVISÍVEIS --- */
+        .touch-zones {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: 25% 50% 25%;
+            grid-template-rows: 80% 20%;
+            z-index: 10;
+        }
+
+        .zone { cursor: pointer; }
+
+        .touch-zones.oculto { display: none; }
+
+        .btn-fechar-texto{
+            position:absolute;
+            top:10px;
+            right:10px;
+            width:32px;
+            height:32px;
+            border:none;
+            background:#000;
+            color:#fff;
+            border-radius:50%;
+            font-size:20px;
+            line-height:1;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            z-index: 20;
+        }
+        .btn-fechar-texto.visivel{ display:flex; }
+
+        .menu-arrow{
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0 0 12px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            line-height: 1;
+        }
+        .menu-arrow:focus{ outline:none; }
+
+        /* .zone:active { background: rgba(0,0,0,0.05); } Descomente para testar áreas */
+
+        /* --- MENU INFERIOR (POPUP) --- */
+        .menu-popup {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 3px solid #000;
+            padding: 2px;
+            transition: bottom 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .menu-popup.open { bottom: 0; }
+
         .misterios-selector {
             display: flex;
-            margin-bottom: 15px;
             flex-wrap: wrap;
             justify-content: center;
-            width: 100%;
+            margin-bottom: 20px;
         }
-        .misterio-btn {
-            margin-right: 8px;
-            margin-bottom: 8px;
+        .misterios-selector > * {
+            margin-right: 10px;
+            margin-bottom: 10px;
         }
-        .misterio-btn:last-child {
+        .misterios-selector > *:last-child {
             margin-right: 0;
         }
 
         .misterio-btn {
-            padding: 8px 16px; /* Reduzido para caber lado a lado */
+            padding: 10px 20px;
             background: #fff;
             border: 2px solid #000;
             border-radius: 50px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 17px; /* Fonte menor */
+            font-size: 16px;
             font-family: inherit;
-            transition: all 0.2s;
-            flex-shrink: 0; /* Evita que amassem demais */
         }
 
-        .misterio-btn:hover { background: #f0f0f0; }
         .misterio-btn.ativo { background: #000; color: #fff; }
 
-        .galeria-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* --- ÁREA DA IMAGEM (CLICÁVEL) --- */
-        .imagem-atual {
-            width: 100%;
-            max-width: 600px; /* Limite para não ficar gigante no desktop */
-            /* Altura dinâmica baseada na proporção, mas com limite */
-            min-height: 300px; 
-            border: 2px solid #000;
-            border-radius: var(--radius);
-            box-shadow: 4px 4px 0px #000;
-            margin-bottom: 20px;
-            background: #f5f5f5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer; 
-            position: relative;
-            overflow: hidden;
-            user-select: none; 
-            -webkit-user-select: none;
-            /* Tira o highlight azul do toque no Android/Kindle */
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .imagem-atual:active {
-            transform: scale(0.99);
-            transition: transform 0.1s;
-        }
-
-        .imagem-atual img {
-            width: 100%;
-            height: auto;
-            display: block;
-            pointer-events: none;
-        }
-
-        .sem-imagem {
-            padding: 40px;
-            color: #666;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        .imagem-info {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        /* Spinner */
-        .loading-spinner {
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #000;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-text { color: #666; font-size: 14px; }
-
-        /* Texto da Meditação */
-        #textoMisterio {
-            width: 100%;
-            max-width: 700px;
-            margin-top: 10px;
-            font-size: 18px; /* Bom para leitura no Kindle */
-            line-height: 1.5;
-        }
-
-        /* Ladainha */
-        .ladainha-view {
+        /* --- LADAINHA VIEW --- */
+        .ladainha-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            z-index: 200;
             display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
         }
-        .ladainha-view.ativo {
-            display: block;
-        }
+        .ladainha-overlay.ativo { display: flex; }
+
         .ladainha-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
         }
-        .ladainha-header h2 {
-            font-size: 24px;
-            margin: 0;
+
+        .ladainha-controles{
+            display:flex;
+            align-items:center;
         }
-        .ladainha-controles {
-            display: flex;
-            align-items: center;
+        .ladainha-controles > * {
+            margin-right: 8px;
         }
-        .ladainha-controles button {
-            margin-left: 8px;
+        .ladainha-controles > *:last-child {
+            margin-right: 0;
         }
-        .btn-fechar, .btn-idioma {
-            padding: 8px 16px;
-            background: #000;
-            color: #fff;
+        .btn-idioma{
+            padding: 6px 10px;
             border: 2px solid #000;
-            border-radius: 20px;
+            background: #fff;
+            color: #000;
             font-weight: bold;
+            border-radius: 16px;
             cursor: pointer;
             font-size: 14px;
         }
-        .btn-idioma {
-            background: #fff;
-            color: #000;
+        .btn-idioma.ativo{
+            background:#000;
+            color:#fff;
         }
-        .btn-idioma.ativo {
-            background: #000;
-            color: #fff;
-        }
-        .ladainha-texto {
+        .btn-fechar-ladainha{
+            margin-left: 6px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background:#000;
+            color:#fff;
+            border-radius:50%;
             font-size: 18px;
-            line-height: 1.6;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        .ladainha-texto p {
-            margin-bottom: 8px;
-        }
-        .ladainha-texto .rub {
-            font-weight: bold;
-            color: #c00;
+            cursor: pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
         }
 
-        /* Botão Voltar ao Topo */
-        #btnVoltarTopo {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 50px; height: 50px;
-            background: #000; color: #fff;
-            border: 3px solid #000; border-radius: 50%;
-            font-size: 24px; cursor: pointer;
-            opacity: 0; visibility: hidden;
-            transition: 0.3s;
-            display: flex; align-items: center; justify-content: center;
+
+        .ladainha-texto { font-size: 18px; line-height: 1.6; }
+        .ladainha-texto p{ margin-bottom: 8px; }
+        .ladainha-texto .rub { color: #c00; font-weight: bold; }
+
+        /* --- LOADING SPINNER --- */
+        .loading {
+            position: absolute;
+            display: none;
+            flex-direction: column;
+            align-items: center;
         }
-        #btnVoltarTopo.visivel { opacity: 1; visibility: visible; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
-    <div class="page-container">
-        <header>
-            <div style="display:flex;align-items:center;">
-                <a href="plano-inclinado.html" style="display:flex;align-items:center;margin-right:16px;">
-                    <img src="/icones/de-volta.png" alt="Voltar" style="width:36px;height:36px;">
-                </a>
-                <a href="javascript:void(0)" onclick="toggleLadainha()" style="display:flex;align-items:center;">
-                    <img src="/icones/virgem-maria.png" alt="Ladainha" style="width:36px;height:36px;">
-                </a>
+
+    <main class="viewport-main">
+        <div id="imagemInfo" class="imagem-info" onclick="toggleLadainha()" role="button" aria-label="Abrir Ladainha">Carregando...</div>
+        
+        <div class="conteudo-wrapper">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
             </div>
-            <h1>Contemplação</h1>
-            <div style="width: 52px"></div>
-        </header>
+            <img id="imgMain" class="imagem-display" src="" alt="Mistério">
+            <div id="txtMain" class="texto-display"></div>
 
-        <div class="contemplacao-container" id="contemplacaoView">
-            <div class="misterios-selector">
-                <button class="misterio-btn ativo" onclick="selecionarMisterio('gozosos')">Gozosos</button>
-                <button class="misterio-btn" onclick="selecionarMisterio('dolorosos')">Dolorosos</button>
-                <button class="misterio-btn" onclick="selecionarMisterio('gloriosos')">Gloriosos</button>
-                <button class="misterio-btn" onclick="selecionarMisterio('luminosos')">Luminosos</button>
-            </div>
+            <button id="btnFecharTexto" class="btn-fechar-texto" onclick="toggleTexto()" aria-label="Fechar texto">×</button>
 
-            <div class="galeria-container">
-                <div id="imagemInfo" class="imagem-info">—</div>
-
-                <div id="imagemAtual" class="imagem-atual" onclick="navegarPorToque(event)">
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <div class="loading-text">Carregando...</div>
-                    </div>
-                </div>
-
-                <div id="textoMisterio"></div>
+            <!-- Zonas de Toque (somente para a área de imagem) -->
+            <div class="touch-zones">
+                <!-- Linha superior (80%) -->
+                <div class="zone" onclick="anterior()" title="Voltar"></div>
+                <div class="zone" onclick="toggleTexto()" title="Ver texto"></div>
+                <div class="zone" onclick="proximo()" title="Próximo"></div>
+                <!-- Linha inferior (20%) -->
+                <div class="zone" onclick="toggleMenu()" title="Menu"></div>
+                <div class="zone" onclick="toggleMenu()" title="Menu"></div>
+                <div class="zone" onclick="toggleMenu()" title="Menu"></div>
             </div>
         </div>
+    </main>
 
-        <div class="contemplacao-container ladainha-view" id="ladainhaView">
-            <div class="ladainha-header">
-                <h2 id="ladainhaTitulo">Ladainha a Nossa Senhora</h2>
-                <div class="ladainha-controles">
-                    <button class="btn-idioma ativo" id="btnPt" onclick="mudarIdioma('pt')">PT</button>
-                    <button class="btn-idioma" id="btnLa" onclick="mudarIdioma('la')">LA</button>
-                </div>
-            </div>
-            <div class="ladainha-texto" id="ladainhaTexto"></div>
+    <!-- Menu de Navegação Inferior -->
+    <div id="menuPopup" class="menu-popup">
+        <button class="menu-arrow" onclick="toggleMenu()" aria-label="Fechar menu">
+            <i class="ph ph-caret-down"></i>
+        </button>
+        <div class="misterios-selector">
+            <button class="misterio-btn" onclick="selecionarMisterio('gozosos', this)">Gozosos</button>
+            <button class="misterio-btn" onclick="selecionarMisterio('dolorosos', this)">Dolorosos</button>
+            <button class="misterio-btn" onclick="selecionarMisterio('gloriosos', this)">Gloriosos</button>
+            <button class="misterio-btn" onclick="selecionarMisterio('luminosos', this)">Luminosos</button>
         </div>
     </div>
 
-    <button id="btnVoltarTopo" onclick="scrollToTop()">↑</button>
+    <!-- Overlay da Ladainha -->
+    <div id="ladainhaOverlay" class="ladainha-overlay">
+        <div class="ladainha-header">
+            <h2 id="ladainhaTitulo">Ladainha a Nossa Senhora</h2>
+            <div class="ladainha-controles">
+                <button class="btn-idioma ativo" id="btnPt" onclick="mudarIdiomaLadainha('pt')">PT</button>
+                <button class="btn-idioma" id="btnLa" onclick="mudarIdiomaLadainha('la')">LA</button>
+                <button class="btn-fechar-ladainha" onclick="fecharLadainha()" aria-label="Fechar ladainha">×</button>
+            </div>
+        </div>
+        <div id="ladainhaContent" class="ladainha-texto"></div>
+    </div>
 
     <script>
         let misterioAtual = 'gozosos';
         let indiceAtual = 0;
         let imagens = [];
-        let imagensPreCarregadas = {};
-        let textosCarregados = {}; 
-        let preCarregamentoTimeout = null;
+        let modoTexto = false;
+        let textosCache = {};
 
-        const mapeamentoMisteriosAPI = {
-            gozosos: [141, 142, 143, 144, 145],
-            dolorosos: [146, 147, 148, 149, 150],
-            gloriosos: [151, 152, 153, 154, 155],
-            luminosos: [619, 620, 621, 622, 623]
+        function forcarReflow(el){
+            // Força o navegador a recalcular tamanhos (resolve borda/box “travado” em algumas transições)
+            el.style.transform = 'translateZ(0)';
+            el.getBoundingClientRect();
+            el.style.transform = '';
+        }
+
+        const misteriosInfo = {
+            gozosos: { nome: 'Mistérios Gozosos', ids: [141, 142, 143, 144, 145], titulos: ['A Anunciação', 'Visitação', 'Nascimento', 'Apresentação', 'O Menino Perdido'] },
+            dolorosos: { nome: 'Mistérios Dolorosos', ids: [146, 147, 148, 149, 150], titulos: ['Agonia no Horto', 'Flagelação', 'Coroação de Espinhos', 'Cruz às Costas', 'Crucificação'] },
+            gloriosos: { nome: 'Mistérios Gloriosos', ids: [151, 152, 153, 154, 155], titulos: ['Ressurreição', 'Ascensão', 'Pentecostes', 'Assunção', 'Coroação'] },
+            luminosos: { nome: 'Mistérios Luminosos', ids: [619, 620, 621, 622, 623], titulos: ['Batismo', 'Bodas de Caná', 'Anúncio do Reino', 'Transfiguração', 'Eucaristia'] }
         };
 
-        const misterios = {
-            gozosos: { nome: 'Mistérios Gozosos', titulos: ['A Anunciação', 'Visitação', 'Nascimento', 'Apresentação', 'O Menino Perdido'] },
-            dolorosos: { nome: 'Mistérios Dolorosos', titulos: ['Agonia no Horto', 'Flagelação', 'Coroação de Espinhos', 'Cruz às Costas', 'Crucificação'] },
-            gloriosos: { nome: 'Mistérios Gloriosos', titulos: ['Ressurreição', 'Ascensão', 'Pentecostes', 'Assunção', 'Coroação'] },
-            luminosos: { nome: 'Mistérios Luminosos', titulos: ['Batismo', 'Bodas de Caná', 'Anúncio do Reino', 'Transfiguração', 'Eucaristia'] }
-        };
-
-        function carregarPreferencias() {
-            const m = localStorage.getItem('misterioAtual');
-            const i = localStorage.getItem('indiceAtual');
-            if (m && misterios[m]) misterioAtual = m;
-            if (i !== null) indiceAtual = parseInt(i) || 0;
-        }
-
-        function salvarPreferencias() {
-            localStorage.setItem('misterioAtual', misterioAtual);
-            localStorage.setItem('indiceAtual', indiceAtual);
-        }
-
-        function navegarPorToque(event) {
-            if (imagens.length === 0) return;
-            const larguraTotal = event.currentTarget.offsetWidth;
-            const posicaoX = event.offsetX;
-            
-            // Toque na direita avança, esquerda volta
-            if (posicaoX > larguraTotal / 2) {
-                proximo();
-            } else {
-                anterior();
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            const salvo = localStorage.getItem('contemplacao_prefs');
+            if (salvo) {
+                const prefs = JSON.parse(salvo);
+                misterioAtual = prefs.misterio || 'gozosos';
+                indiceAtual = prefs.indice || 0;
             }
-        }
-
-        async function carregarImagens() {
-            try {
-                const response = await fetch(`/api/imagens/${misterioAtual}`);
-                if (response.ok) {
-                    imagens = await response.json();
-                } else {
-                    imagens = [];
-                    for (let i = 1; i <= 5; i++) imagens.push(`/cont/${misterioAtual}/${i}.jpg`);
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                imagens = [];
-                for (let i = 1; i <= 5; i++) imagens.push(`/cont/${misterioAtual}/${i}.jpg`);
-            }
-            if (indiceAtual >= imagens.length) indiceAtual = 0;
-            exibirImagem();
-        }
-
-        function exibirImagem() {
-            const container = document.getElementById('imagemAtual');
-            const info = document.getElementById('imagemInfo');
-
-            if (imagens.length === 0) {
-                container.innerHTML = '<div class="sem-imagem">Nenhuma imagem encontrada.</div>';
-                info.textContent = '—';
-                return;
-            }
-
-            const imagemPath = imagens[indiceAtual];
-            const misterio = misterios[misterioAtual];
-            const titulo = misterio.titulos[indiceAtual] || `Imagem ${indiceAtual + 1}`;
-
-            info.textContent = `${misterio.nome} - ${titulo} (${indiceAtual + 1}/${imagens.length})`;
-
-            if (imagensPreCarregadas[imagemPath] && imagensPreCarregadas[imagemPath].complete) {
-                container.innerHTML = '';
-                container.appendChild(imagensPreCarregadas[imagemPath].cloneNode());
-            } else {
-                container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Carregando...</div></div>';
-                const img = new Image();
-                img.onload = function() {
-                    container.innerHTML = '';
-                    container.appendChild(img);
-                    imagensPreCarregadas[imagemPath] = img;
-                };
-                img.onerror = function() {
-                    container.innerHTML = `<div class="sem-imagem">Erro ao carregar</div>`;
-                };
-                img.src = imagemPath;
-            }
-
-            salvarPreferencias();
-            exibirTextoMisterio();
-            
-            clearTimeout(preCarregamentoTimeout);
-            preCarregamentoTimeout = setTimeout(preCarregarInteligente, 500);
-        }
-
-        function preCarregarInteligente() {
-            if (imagens.length === 0) return;
-            const proxima = (indiceAtual + 1) % imagens.length;
-            carregarNoCache(imagens[proxima]);
-            const anterior = (indiceAtual - 1 + imagens.length) % imagens.length;
-            carregarNoCache(imagens[anterior]);
-        }
-
-        function carregarNoCache(src) {
-            if (!imagensPreCarregadas[src]) {
-                const img = new Image();
-                img.src = src;
-                imagensPreCarregadas[src] = img;
-            }
-        }
-
-        async function carregarTextoMisterio(tipo, indice) {
-            const chave = `${tipo}-${indice}`;
-            if (textosCarregados[chave]) return textosCarregados[chave];
-
-            try {
-                const misterioId = mapeamentoMisteriosAPI[tipo][indice];
-                const response = await fetch(`https://escriva.org/api/v1/mysteries/${misterioId}/`);
-                if (!response.ok) throw new Error('Erro na API');
-                const data = await response.json();
-                textosCarregados[chave] = data.text || 'Texto não disponível';
-                return textosCarregados[chave];
-            } catch (error) {
-                return `(Texto offline ou erro de conexão)`;
-            }
-        }
-
-        async function exibirTextoMisterio() {
-            const containerTexto = document.getElementById('textoMisterio');
-            if (!containerTexto) return;
-            containerTexto.innerHTML = '<div style="color:#999;text-align:center;font-size:14px;">Carregando meditação...</div>';
-            const texto = await carregarTextoMisterio(misterioAtual, indiceAtual);
-            containerTexto.innerHTML = `<div style="padding:15px;background:#f9f9f9;border:2px solid #ddd;border-radius:8px;text-align:justify;">${texto}</div>`;
-        }
-
-        function selecionarMisterio(tipo) {
-            misterioAtual = tipo;
-            indiceAtual = 0;
-            document.querySelectorAll('.misterio-btn').forEach(btn => btn.classList.remove('ativo'));
-            event.target.classList.add('ativo');
+            atualizarBotoesAtivos();
             carregarImagens();
+            mudarIdiomaLadainha('pt');
+        };
+
+        function salvarProgresso() {
+            localStorage.setItem('contemplacao_prefs', JSON.stringify({
+                misterio: misterioAtual,
+                indice: indiceAtual
+            }));
         }
 
-        function anterior() {
-            if (imagens.length === 0) return;
-            indiceAtual--;
-            if (indiceAtual < 0) {
-                // Voltar para sessão anterior
-                const ordemMisterios = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
-                const indiceAtualMisterio = ordemMisterios.indexOf(misterioAtual);
-                const proximoIndice = (indiceAtualMisterio - 1 + ordemMisterios.length) % ordemMisterios.length;
-                misterioAtual = ordemMisterios[proximoIndice];
-                indiceAtual = 4; // Última imagem (índice 4)
-                atualizarBotoesAtivos();
-                carregarImagens();
-                return;
+        // --- NAVEGAÇÃO ---
+        async function carregarImagens() {
+            // Fallback manual caso a API de listagem não exista no ambiente atual
+            imagens = [];
+            for (let i = 1; i <= 5; i++) {
+                imagens.push(`/cont/${misterioAtual}/${i}.jpg`);
             }
-            exibirImagem();
+            exibirConteudo();
+        }
+
+        function exibirConteudo() {
+            const imgElement = document.getElementById('imgMain');
+            const infoElement = document.getElementById('imagemInfo');
+            const loading = document.getElementById('loading');
+            const txtElement = document.getElementById('txtMain');
+            const touchZones = document.querySelector('.touch-zones');
+            const btnFecharTexto = document.getElementById('btnFecharTexto');
+
+            const info = misteriosInfo[misterioAtual];
+            const titulo = info.titulos[indiceAtual];
+
+            infoElement.textContent = `${info.nome}: ${titulo} (${indiceAtual + 1}/5)`;
+
+            // Sempre volta para o modo imagem ao trocar
+            modoTexto = false;
+            txtElement.classList.remove('ativo');
+            imgElement.classList.remove('oculto');
+            touchZones.classList.remove('oculto');
+            btnFecharTexto.classList.remove('visivel');
+
+            loading.style.display = 'flex';
+
+            // Importante: definir handlers ANTES do src (para não perder onload em cache)
+            imgElement.onload = () => {
+                loading.style.display = 'none';
+                forcarReflow(imgElement);
+            };
+            imgElement.onerror = () => {
+                loading.style.display = 'none';
+                imgElement.src = 'https://via.placeholder.com/400x300?text=Imagem+Indisponível';
+            };
+
+            // Reset explícito (ajuda alguns navegadores a recalcular o box)
+            imgElement.removeAttribute('width');
+            imgElement.removeAttribute('height');
+
+            imgElement.src = imagens[indiceAtual];
+
+            // Se já veio do cache e completou antes, garante reflow
+            if (imgElement.complete) {
+                imgElement.onload();
+            }
+
+            salvarProgresso();
         }
 
         function proximo() {
-            if (imagens.length === 0) return;
             indiceAtual++;
-            if (indiceAtual >= imagens.length) {
-                // Avançar para próxima sessão
-                const ordemMisterios = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
-                const indiceAtualMisterio = ordemMisterios.indexOf(misterioAtual);
-                const proximoIndice = (indiceAtualMisterio + 1) % ordemMisterios.length;
-                misterioAtual = ordemMisterios[proximoIndice];
-                indiceAtual = 0; // Primeira imagem
+            if (indiceAtual >= 5) {
+                const ord = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
+                let nextIdx = (ord.indexOf(misterioAtual) + 1) % ord.length;
+                misterioAtual = ord[nextIdx];
+                indiceAtual = 0;
                 atualizarBotoesAtivos();
                 carregarImagens();
                 return;
             }
-            exibirImagem();
+            exibirConteudo();
+        }
+
+        function anterior() {
+            indiceAtual--;
+            if (indiceAtual < 0) {
+                const ord = ['gozosos', 'dolorosos', 'gloriosos', 'luminosos'];
+                let prevIdx = (ord.indexOf(misterioAtual) - 1 + ord.length) % ord.length;
+                misterioAtual = ord[prevIdx];
+                indiceAtual = 4;
+                atualizarBotoesAtivos();
+                carregarImagens();
+                return;
+            }
+            exibirConteudo();
+        }
+
+        // --- TEXTO (CENTRO) ---
+        async function toggleTexto() {
+            const txtElement = document.getElementById('txtMain');
+            const imgElement = document.getElementById('imgMain');
+            const touchZones = document.querySelector('.touch-zones');
+            const btnFecharTexto = document.getElementById('btnFecharTexto');
+
+            modoTexto = !modoTexto;
+
+            if (modoTexto) {
+                // libera o scroll do texto
+                touchZones.classList.add('oculto');
+                btnFecharTexto.classList.add('visivel');
+
+                imgElement.classList.add('oculto');
+                txtElement.classList.add('ativo');
+                txtElement.innerHTML = 'Carregando meditação...';
+
+                const idApi = misteriosInfo[misterioAtual].ids[indiceAtual];
+                if (textosCache[idApi]) {
+                    txtElement.innerHTML = textosCache[idApi];
+                } else {
+                    try {
+                        const res = await fetch(`https://escriva.org/api/v1/mysteries/${idApi}/`);
+                        const data = await res.json();
+                        textosCache[idApi] = data.text || 'Texto não disponível.';
+                        txtElement.innerHTML = textosCache[idApi];
+                    } catch (e) {
+                        txtElement.innerHTML = 'Erro ao carregar texto. Verifique sua conexão.';
+                    }
+                }
+                // volta o texto pro topo ao abrir
+                txtElement.scrollTop = 0;
+            } else {
+                btnFecharTexto.classList.remove('visivel');
+                touchZones.classList.remove('oculto');
+
+                imgElement.classList.remove('oculto');
+                txtElement.classList.remove('ativo');
+                forcarReflow(imgElement);
+            }
+        }
+
+        
+// --- MENU (INFERIOR) ---
+        function toggleMenu() {
+            document.getElementById('menuPopup').classList.toggle('open');
+        }
+
+        function selecionarMisterio(tipo, btn) {
+            misterioAtual = tipo;
+            indiceAtual = 0;
+            atualizarBotoesAtivos();
+            carregarImagens();
+            toggleMenu();
         }
 
         function atualizarBotoesAtivos() {
-            document.querySelectorAll('.misterio-btn').forEach(btn => {
-                btn.classList.remove('ativo');
-                if(btn.getAttribute('onclick').includes(misterioAtual)) {
-                    btn.classList.add('ativo');
-                }
+            document.querySelectorAll('.misterio-btn').forEach(b => {
+                b.classList.remove('ativo');
+                if (b.textContent.toLowerCase() === misterioAtual) b.classList.add('ativo');
             });
         }
 
-        // Atalhos de teclado (Setas)
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft') anterior();
-            else if (e.key === 'ArrowRight') proximo();
-        });
+        // --- LADAINHA ---
+        function abrirLadainha() {
+            document.getElementById('ladainhaOverlay').classList.add('ativo');
+            // se o menu estiver aberto, fecha
+            document.getElementById('menuPopup').classList.remove('open');
+            document.getElementById('ladainhaOverlay').scrollTop = 0;
+        }
 
-        // Dados da Ladainha
-        let idiomaLadainha = 'pt';
+        function fecharLadainha() {
+            document.getElementById('ladainhaOverlay').classList.remove('ativo');
+        }
 
-        const ladainhaData = {
-            pt: {
-                titulo: 'Ladainha a Nossa Senhora',
-                texto: `
-                    <p><span class="rub">V.</span> Senhor, tende piedade de nós.</p>
+        function toggleLadainha() {
+            const overlay = document.getElementById('ladainhaOverlay');
+            if (overlay.classList.contains('ativo')) fecharLadainha();
+            else abrirLadainha();
+        }
+
+        function mudarIdiomaLadainha(lang) {
+            document.getElementById('btnPt').classList.toggle('ativo', lang === 'pt');
+            document.getElementById('btnLa').classList.toggle('ativo', lang === 'la');
+            carregarLadainha(lang);
+        }
+
+        function carregarLadainha(lang) {
+            const content = document.getElementById('ladainhaContent');
+            const titulo = document.getElementById('ladainhaTitulo');
+            titulo.textContent = lang === 'pt' ? 'Ladainha a Nossa Senhora' : 'Litaniæ Lauretanæ';
+            const textos = {
+                pt: `<h3>Ladainha de Nossa Senhora</h3><br><p><span class="rub">V.</span> Senhor, tende piedade de nós.<br><span class="rub">R.</span> Senhor, tende piedade de nós.</p><p><span class="rub">V.</span> Jesus Cristo, tende piedade de nós.<br><span class="rub">R.</span> Jesus Cristo, tende piedade de nós.</p>... (Conteúdo da Ladainha em PT) ...`,
+                la: `<h3>Litaniæ Lauretanæ</h3><br><p><span class="rub">V.</span> Kyrie, eleison.<br><span class="rub">R.</span> Kyrie, eleison.</p><p><span class="rub">V.</span> Christe, eleison.<br><span class="rub">R.</span> Christe, eleison.</p>... (Conteúdo da Ladainha em LA) ...`
+            };
+            // Note: Adicionei apenas o início por brevidade, mas o script mantém a lógica de troca.
+            content.innerHTML = lang === 'pt' ? getLadainhaPT() : getLadainhaLA();
+        }
+
+        // Funções auxiliares para retornar o texto longo da ladainha
+        function getLadainhaPT() {
+            return `                    <p><span class="rub">V.</span> Senhor, tende piedade de nós.</p>
                     <p><span class="rub">R.</span> Senhor, tende piedade de nós.</p>
                     <p><span class="rub">V.</span> Jesus Cristo, tende piedade de nós.</p>
                     <p><span class="rub">R.</span> Jesus Cristo, tende piedade de nós.</p>
@@ -590,12 +661,11 @@
                     <br>
                     <p style="text-align:center;font-weight:bold;">Oremos</p>
                     <p>Infundi, Senhor, nós vos pedimos, em nossas almas a vossa graça, para que nós, que conhecemos pela Anunciação do Anjo a Encarnação de Jesus Cristo, vosso Filho, cheguemos por sua Paixão e sua Cruz à glória da ressurreição. Pelo mesmo Jesus Cristo, Senhor Nosso. Amém.</p>
-                `
-            },
-            la: {
-                titulo: 'Litaniarum Lauretanarum',
-                texto: `
-                    <p><span class="rub">V.</span> Kýrie, eléison.</p>
+                `;
+        }
+
+        function getLadainhaLA() {
+            return `                    <p><span class="rub">V.</span> Kýrie, eléison.</p>
                     <p><span class="rub">R.</span> Kýrie, eléison.</p>
                     <p><span class="rub">V.</span> Christe, eléison.</p>
                     <p><span class="rub">R.</span> Christe, eléison.</p>
@@ -687,70 +757,15 @@
                     <p>– Pro necessitatibus Ecclésiæ et Status: <em>Pater noster. Ave Maria. Gloria Patri.</em></p>
                     <p>– Pro persona et intentionibus Excellentissimi ac Reverendissimi Domini Episcopi huius diœcesis: <em>Pater noster. Ave Maria. Gloria Patri.</em></p>
                     <p>– Pro animabus benedictis in Purgatorio: <em>Pater noster. Ave Maria. Requiescant in pace. Amen.</em></p>
-                `
-            }
-        };
-
-        // Funções da Ladainha
-        function toggleLadainha() {
-            const ladainhaView = document.getElementById('ladainhaView');
-            const contemplacaoView = document.getElementById('contemplacaoView');
-
-            if (ladainhaView.classList.contains('ativo')) {
-                // Fechar ladainha
-                ladainhaView.classList.remove('ativo');
-                contemplacaoView.style.display = 'block';
-            } else {
-                // Abrir ladainha
-                contemplacaoView.classList.remove('ativo');
-                contemplacaoView.style.display = 'none';
-                ladainhaView.classList.add('ativo');
-                atualizarLadainha();
-            }
-            window.scrollTo(0, 0);
+                `;
         }
 
-        function mudarIdioma(idioma) {
-            idiomaLadainha = idioma;
-            document.getElementById('btnPt').classList.remove('ativo');
-            document.getElementById('btnLa').classList.remove('ativo');
-            document.getElementById('btn' + idioma.toUpperCase().slice(0,1) + idioma.slice(1)).classList.add('ativo');
-            atualizarLadainha();
-        }
-
-        function atualizarLadainha() {
-            const dados = ladainhaData[idiomaLadainha];
-            document.getElementById('ladainhaTitulo').textContent = dados.titulo;
-            document.getElementById('ladainhaTexto').innerHTML = dados.texto;
-        }
-
-        // Botão Voltar ao Topo
-        const btnVoltarTopo = document.getElementById('btnVoltarTopo');
-
-        window.addEventListener('scroll', function() {
-            const ladainhaView = document.getElementById('ladainhaView');
-            const isLadainhaAtiva = ladainhaView.classList.contains('ativo');
-
-            if (isLadainhaAtiva && window.scrollY > 300) {
-                btnVoltarTopo.classList.add('visivel');
-            } else {
-                btnVoltarTopo.classList.remove('visivel');
-            }
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') proximo();
+            if (e.key === 'ArrowLeft') anterior();
+            if (e.key === ' ') toggleTexto();
         });
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Inicialização
-        carregarPreferencias();
-        document.querySelectorAll('.misterio-btn').forEach(btn => {
-            btn.classList.remove('ativo');
-            if(btn.getAttribute('onclick').includes(misterioAtual)) {
-                btn.classList.add('ativo');
-            }
-        });
-        carregarImagens();
     </script>
 </body>
 </html>
