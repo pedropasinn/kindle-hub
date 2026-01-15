@@ -273,6 +273,22 @@
         .ladainha-texto { font-size: 18px; line-height: 1.6; }
         .ladainha-texto p{ margin-bottom: 8px; }
         .ladainha-texto .rub { color: #c00; font-weight: bold; }
+        .imagens-lagrimas {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .imagens-lagrimas img {
+            max-width: 45%;
+            height: auto;
+            border: 2px solid #000;
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+        .imagens-lagrimas img:last-child {
+            margin-right: 0;
+        }
 
         /* --- LOADING SPINNER --- */
         .loading {
@@ -341,6 +357,7 @@
             <div class="ladainha-controles">
                 <button class="btn-idioma ativo" id="btnPt" onclick="mudarIdiomaLadainha('pt')">PT</button>
                 <button class="btn-idioma" id="btnLa" onclick="mudarIdiomaLadainha('la')">LA</button>
+                <button class="btn-idioma" id="btnCl" onclick="mudarIdiomaLadainha('cl')">CL</button>
                 <button class="btn-fechar-ladainha" onclick="fecharLadainha()" aria-label="Fechar ladainha">×</button>
             </div>
         </div>
@@ -557,19 +574,23 @@
         function mudarIdiomaLadainha(lang) {
             document.getElementById('btnPt').classList.toggle('ativo', lang === 'pt');
             document.getElementById('btnLa').classList.toggle('ativo', lang === 'la');
+            document.getElementById('btnCl').classList.toggle('ativo', lang === 'cl');
             carregarLadainha(lang);
         }
 
         function carregarLadainha(lang) {
             const content = document.getElementById('ladainhaContent');
             const titulo = document.getElementById('ladainhaTitulo');
-            titulo.textContent = lang === 'pt' ? 'Ladainha a Nossa Senhora' : 'Litaniæ Lauretanæ';
-            const textos = {
-                pt: `<h3>Ladainha de Nossa Senhora</h3><br><p><span class="rub">V.</span> Senhor, tende piedade de nós.<br><span class="rub">R.</span> Senhor, tende piedade de nós.</p><p><span class="rub">V.</span> Jesus Cristo, tende piedade de nós.<br><span class="rub">R.</span> Jesus Cristo, tende piedade de nós.</p>... (Conteúdo da Ladainha em PT) ...`,
-                la: `<h3>Litaniæ Lauretanæ</h3><br><p><span class="rub">V.</span> Kyrie, eleison.<br><span class="rub">R.</span> Kyrie, eleison.</p><p><span class="rub">V.</span> Christe, eleison.<br><span class="rub">R.</span> Christe, eleison.</p>... (Conteúdo da Ladainha em LA) ...`
-            };
-            // Note: Adicionei apenas o início por brevidade, mas o script mantém a lógica de troca.
-            content.innerHTML = lang === 'pt' ? getLadainhaPT() : getLadainhaLA();
+            if (lang === 'pt') {
+                titulo.textContent = 'Ladainha a Nossa Senhora';
+                content.innerHTML = getLadainhaPT();
+            } else if (lang === 'la') {
+                titulo.textContent = 'Litaniæ Lauretanæ';
+                content.innerHTML = getLadainhaLA();
+            } else if (lang === 'cl') {
+                titulo.textContent = 'Coroa das Lágrimas';
+                content.innerHTML = getLadainhaCL();
+            }
         }
 
         // Funções auxiliares para retornar o texto longo da ladainha
@@ -757,6 +778,37 @@
                     <p>– Pro necessitatibus Ecclésiæ et Status: <em>Pater noster. Ave Maria. Gloria Patri.</em></p>
                     <p>– Pro persona et intentionibus Excellentissimi ac Reverendissimi Domini Episcopi huius diœcesis: <em>Pater noster. Ave Maria. Gloria Patri.</em></p>
                     <p>– Pro animabus benedictis in Purgatorio: <em>Pater noster. Ave Maria. Requiescant in pace. Amen.</em></p>
+                `;
+        }
+
+        function getLadainhaCL() {
+            return `                    <h3 style="text-align:center;">Coroa ou Rosário de Nossa Senhora das Lágrimas</h3>
+                    <br>
+                    <p style="text-align:center;font-weight:bold;">Oração inicial:</p>
+                    <p>Eis-nos aqui aos Vossos pés, ó dulcíssimo Jesus Crucificado, para Vos oferecermos as lágrimas d'Aquela que, com tanto amor, Vos acompanhou no caminho doloroso do Calvário. Fazei, ó bom Mestre, que nós saibamos aproveitar da lição que elas nos dão, para que, na Terra, realizando a Vossa Santíssima Vontade, possamos um dia, no Céu, Vos louvar por toda a eternidade.</p>
+                    <br>
+                    <p style="font-weight:bold;">Nas contas brancas (grandes, que separam os grupos de 7 contas):</p>
+                    <p>Vêde, ó Jesus, que são as lágrimas d'Aquela que mais Vos amou na Terra, e que mais Vos ama no Céu.</p>
+                    <br>
+                    <p style="font-weight:bold;">Nas contas brancas (grupos de 7 contas):</p>
+                    <p>Meu Jesus, ouvi os nossos rogos, pelas Lágrimas de Vossa Mãe Santíssima.</p>
+                    <br>
+                    <p style="font-weight:bold;">No fim, repete-se três vezes, nas três contas brancas finais:</p>
+                    <p>Vêde, ó Jesus, que são as lágrimas d'Aquela que mais Vos amou na Terra, e que mais Vos ama no Céu.</p>
+                    <br>
+                    <p style="text-align:center;font-weight:bold;">Oração final:</p>
+                    <p>Virgem Santíssima e Mãe das Dores, nós Vos pedimos que junteis os Vossos rogos aos nossos, a fim de que Jesus, Vosso Divino Filho, a quem nos dirigimos em nome das Vossas lágrimas de Mãe, ouça as nossas preces e nos conceda, com as graças que desejamos, a coroa da vida eterna. Amém.</p>
+                    <br>
+                    <p style="text-align:center;font-weight:bold;">Jaculatórias finais (para rezar contemplando e beijando a medalha):</p>
+                    <p>– Por Vossa mansidão divina, ó Jesus Manietado, salvai o mundo do erro que o ameaça!</p>
+                    <p>– Ó Virgem Dolorosíssima, as Vossas Lágrimas derrubaram o império infernal!</p>
+                    <br>
+                    <p style="text-align:center;font-style:italic;">Imprima-se – com 50 dias de indulgência cada vez que se repetirem as orações e jaculatórias acima mencionadas. † F., Bispo Diocesano.</p>
+                    <br>
+                    <div class="imagens-lagrimas">
+                        <img src="/cont/lagrimas/manietado.jpeg" alt="Jesus Manietado">
+                        <img src="/cont/lagrimas/virgem.jpeg" alt="Virgem das Lágrimas">
+                    </div>
                 `;
         }
 
