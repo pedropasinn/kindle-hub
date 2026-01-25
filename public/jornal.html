@@ -133,8 +133,8 @@
         .library-item .item-status { font-size: var(--font-size-xs); color: var(--muted-foreground); }
         @media (max-width: 600px) { .reading-grid { flex-direction: column; } }
         /* Week View */
-        .week-grid { display: flex; flex-direction: column; gap: 12px; }
-        .week-row { display: flex; gap: 12px; }
+        .week-grid { display: flex; flex-direction: column; }
+        .week-row { display: flex; margin-bottom: 12px; }
         .week-day { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; min-height: 150px; }
         .week-day.weekend { flex: 1; min-height: 80px; }
         .week-day-header { font-weight: 700; font-size: var(--font-size-sm); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
@@ -1082,96 +1082,8 @@ function renderSpiritualSummary(weekDays) {
     return html;
 }
 
-function renderEstudo() {
-    var weekDays = getWeekDays(BuJo.state.selectedDate);
-    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week">←</span>';
-    html += '<span style="flex:1;text-align:center;">Metas de Estudo</span><span class="btn" id="next-week">→</span></div>';
-    html += '<p style="font-size:0.95rem;color:var(--muted-foreground);margin-bottom:14px;">Marque cada meta alcançada. Cada quadrado = 1 sessão/meta.</p>';
-
-    BuJo.studyGoalsList.forEach(function(goal) {
-        html += '<div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">';
-        html += '<div style="font-weight:600;font-size:1.1rem;margin-bottom:4px;">' + goal.name + '</div>';
-        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-bottom:10px;">' + goal.description + '</div>';
-        html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><tr>';
-        weekDays.forEach(function(d) {
-            var style = isToday(d) ? ' style="background:var(--primary);color:#fff;padding:6px;font-weight:600;"' : ' style="padding:6px;background:var(--secondary);"';
-            html += '<th' + style + '>' + BuJo.dayNamesShort[d.getDay()] + ' ' + d.getDate() + '</th>';
-        });
-        html += '</tr><tr>';
-        weekDays.forEach(function(d) {
-            var dateStr = formatDateKey(d);
-            var isApplicable = !goal.weekDays || goal.weekDays.indexOf(d.getDay()) !== -1;
-            html += '<td style="padding:8px;text-align:center;">';
-            if (!isApplicable) html += '<span style="color:var(--muted-foreground);">–</span>';
-            else {
-                html += '<div style="display:flex;gap:4px;justify-content:center;">';
-                for (var g = 0; g < goal.dailyGoal; g++) {
-                    var dayGoals = BuJo.state.studyGoals[dateStr] || {};
-                    var goalChecks = dayGoals[goal.id] || [];
-                    var checked = goalChecks[g] || false;
-                    html += '<span class="study-check' + (checked ? ' checked' : '') + '" data-habit="' + goal.id + '" data-date="' + dateStr + '" data-index="' + g + '">' + (checked ? '✓' : '') + '</span>';
-                }
-                html += '</div>';
-            }
-            html += '</td>';
-        });
-        html += '</tr></table></div></div>';
-    });
-    html += '</div>';
-
-    html += '<div class="card"><div class="card-title">Resumo Semanal</div>';
-    BuJo.studyGoalsList.forEach(function(goal) {
-        var completed = 0, total = 0;
-        weekDays.forEach(function(d) {
-            var isApplicable = !goal.weekDays || goal.weekDays.indexOf(d.getDay()) !== -1;
-            if (!isApplicable) return;
-            var dateStr = formatDateKey(d);
-            var dayGoals = BuJo.state.studyGoals[dateStr] || {};
-            var goalChecks = dayGoals[goal.id] || [];
-            for (var g = 0; g < goal.dailyGoal; g++) { total++; if (goalChecks[g]) completed++; }
-        });
-        var percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-        html += '<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px dotted var(--border);">';
-        html += '<span style="flex:1;">' + goal.name + '</span><span style="width:60px;text-align:right;font-weight:600;">' + percent + '%</span>';
-        html += '<div style="width:80px;height:8px;background:var(--secondary);border-radius:4px;margin-left:10px;overflow:hidden;">';
-        html += '<div style="width:' + percent + '%;height:100%;background:var(--primary);"></div></div></div>';
-    });
-    html += '</div>';
-    return html;
-}
-
-function renderFutureLog() {
-    var now = new Date();
-    var months = [];
-    for (var i = 0; i < 12; i++) {
-        var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        months.push({ key: getMonthKey(d), name: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) });
-    }
-
-    var html = '<div class="card"><div class="card-title">Future Log <span class="btn" id="add-future-btn">+ Add</span></div>';
-    html += '<div style="font-size:0.95rem;color:var(--muted-foreground);margin-bottom:16px;padding:12px;background:var(--secondary);border-radius:0.5rem;">';
-    html += '<strong>O que é o Future Log?</strong><br>Espaço para eventos, compromissos e objetivos futuros. Use para: aniversários, viagens, prazos importantes, metas trimestrais.</div>';
-
-    months.forEach(function(month) {
-        var entries = BuJo.state.futureLog.filter(function(e) { return e.month === month.key; });
-        html += '<div class="future-month"><div class="future-month-header">' + month.name + '</div>';
-        html += '<div class="future-month-content">';
-        if (entries.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;margin:0;">Nenhum evento</p>';
-        else entries.forEach(function(e) {
-            html += '<div class="entry" style="border-bottom:none;padding:6px 0;">';
-            html += '<span style="font-weight:600;min-width:30px;">' + (e.day || '–') + '</span>';
-            html += '<span class="entry-text">' + e.text + '</span>';
-            html += '<span class="btn" onclick="deleteFutureEntry(\'' + e.id + '\')" style="padding:2px 8px;">×</span></div>';
-        });
-        html += '</div></div>';
-    });
-    html += '</div>';
-    return html;
-}
-
 function renderNotas() {
     var html = '<div class="card"><div class="card-title">Notas Salvas <span class="btn" id="add-note-btn">+ Nova</span></div>';
-    html += '<p style="font-size:0.95rem;color:var(--muted-foreground);margin-bottom:16px;">Notas e reflexões consolidadas.</p>';
     html += '<div style="margin-bottom:16px;"><span class="btn" id="save-notes-btn">Importar notas do Registro</span></div>';
 
     if (BuJo.state.notes.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;text-align:center;padding:20px;">Nenhuma nota salva.</p>';
@@ -1187,25 +1099,6 @@ function renderNotas() {
         });
     }
     html += '</div>';
-    return html;
-}
-
-function renderProjects() {
-    var html = '<div class="card"><div class="card-title">Projetos <span class="btn" id="add-project-btn">+ Novo</span></div>';
-    if (BuJo.state.projects.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhum projeto ativo.</p>';
-    else BuJo.state.projects.forEach(function(p) {
-        html += '<div style="border-left:4px solid var(--primary);padding-left:14px;margin-bottom:16px;">';
-        html += '<div style="font-weight:600;font-size:1.1rem;">' + p.name + '</div>';
-        html += '<div style="font-size:0.9rem;color:var(--muted-foreground);">' + (p.status || 'Em andamento') + '</div>';
-        if (p.nextAction) html += '<p style="margin-top:6px;">→ ' + p.nextAction + '</p>';
-        html += '</div>';
-    });
-    html += '</div>';
-    html += '<div class="card"><div class="card-title">Plano 2026</div>';
-    html += '<p style="margin-bottom:10px;"><strong>Línguas:</strong> Gradus Primus + Japonês N5→N4</p>';
-    html += '<p style="margin-bottom:10px;"><strong>Acadêmico:</strong> Mestrado IME-USP</p>';
-    html += '<p style="margin-bottom:10px;"><strong>Literatura:</strong> Machado de Assis</p>';
-    html += '<p><strong>Físico:</strong> Tênis de Mesa Seg/Sex + Sáb</p></div>';
     return html;
 }
 
