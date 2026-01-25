@@ -26,21 +26,21 @@
         .app-shell { display: flex; flex-direction: column; height: 100vh; }
         .app-header { border-bottom: 1px solid var(--border); padding: 12px 1.25rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 50; flex-shrink: 0; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .app-title { font-size: var(--font-size-xl); font-weight: 700; }
-        .header-date { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        .header-date { font-size: var(--font-size-xl); font-weight: 700; text-transform:capitalize; cursor: pointer; padding: 4px 8px; border-radius: 0.5rem; }
+        .header-date:active { background: var(--secondary); }
         .btn-icon { background: transparent; border: 1px solid var(--border); border-radius: 0.5rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .btn-icon:active { background: var(--secondary); transform: scale(0.96); }
         .nav-tabs { display: -webkit-box; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-box-pack: center; justify-content: center; }
         .nav-tab { font-size: var(--font-size-sm); text-transform: uppercase; padding: 8px 14px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; margin-right: 6px; margin-bottom: 6px; }
         .nav-tab:active { transform: scale(0.96); }
         .nav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .main { flex: 1; overflow-y: auto; padding: 1.25rem; padding-bottom: 3rem; max-width: 700px; margin: 0 auto; width: 100%; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .main {flex: 1; overflow-y: auto; padding: 0.7rem; padding-bottom: 1rem; max-width: 700px; margin: 0 auto; width: 100%; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1.25rem 1.25rem 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .card-title { font-size: var(--font-size-lg); font-weight: 700; border-bottom: 1px solid var(--secondary); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
         .btn { font-size: var(--font-size-sm); padding: 8px 16px; border: 1px solid var(--border); background: var(--secondary); cursor: pointer; border-radius: 0.5rem; font-weight: 500; }
         .btn:active { transform: scale(0.96); background: var(--border); }
         .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .special-day { background: var(--secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 10px 14px; margin-bottom: 14px; font-size: var(--font-size-sm); }
+        .special-day { background: var(--secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 10px 14px; font-size: var(--font-size-sm); }
         .schedule-item { display: flex; padding: 8px 0; border-bottom: 1px dotted var(--border); }
         .schedule-time { width: 70px; font-size: var(--font-size-sm); color: var(--muted-foreground); flex-shrink: 0; }
         .schedule-event { flex: 1; }
@@ -78,7 +78,7 @@
         .summary-percent { font-size: 2.5rem; font-weight: 700; }
         .summary-bar { height: 10px; background: var(--secondary); margin-top: 10px; border-radius: 5px; overflow: hidden; }
         .summary-fill { height: 100%; background: var(--primary); border-radius: 5px; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; }
         .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
         .modal { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; width: 90%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .modal-title { font-weight: 700; font-size: var(--font-size-lg); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
@@ -110,11 +110,33 @@
         .stat-value { font-size: 1.8rem; font-weight: 700; }
         .stat-label { font-size: var(--font-size-xs); color: var(--muted-foreground); text-transform: uppercase; }
         .book-type { font-size: var(--font-size-xs); padding: 2px 8px; border-radius: 4px; font-weight: 600; background: #ccc; color: #333; }
+        .book-type.espiritual { background: #4a5568; color: #fff; }
+        .book-type.cultural { background: #718096; color: #fff; }
+        /* Reading Grid Layout */
+        .reading-grid { display: flex; gap: 16px; }
+        .reading-col-left { flex: 1.2; }
+        .reading-col-right { flex: 0.8; }
+        .reading-col-title { font-size: var(--font-size-lg); font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); }
+        .reading-book-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+        .reading-book-card .book-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .reading-book-card .book-title { font-weight: 700; font-size: var(--font-size-base); }
+        .reading-book-card .book-author { font-size: var(--font-size-sm); color: var(--muted-foreground); }
+        .reading-book-card .book-pages { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        .reading-book-card .book-meta { font-size: var(--font-size-xs); color: var(--muted-foreground); margin-top: 4px; }
+        .reading-book-card .week-goal { background: var(--secondary); padding: 8px 10px; border-radius: 6px; margin-top: 10px; font-size: var(--font-size-sm); }
+        .reading-book-card .week-goal-complete { background: #dcfce7; border: 1px solid #22c55e; }
+        .library-section { margin-bottom: 16px; }
+        .library-section-title { font-size: var(--font-size-xs); text-transform: uppercase; color: var(--muted-foreground); font-weight: 600; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .library-item { padding: 10px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .library-item:active { background: var(--secondary); }
+        .library-item .item-title { font-size: var(--font-size-sm); font-weight: 500; }
+        .library-item .item-status { font-size: var(--font-size-xs); color: var(--muted-foreground); }
+        @media (max-width: 600px) { .reading-grid { flex-direction: column; } }
         /* Week View */
         .week-grid { display: flex; flex-direction: column; gap: 12px; }
         .week-row { display: flex; gap: 12px; }
         .week-day { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; min-height: 150px; }
-        .week-day.weekend { flex: 0.5; min-height: 120px; }
+        .week-day.weekend { flex: 1; min-height: 80px; }
         .week-day-header { font-weight: 700; font-size: var(--font-size-sm); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
         .week-day-header .day-number { background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: var(--font-size-xs); }
         .week-day.today .week-day-header { border-bottom-color: #16a34a; }
@@ -126,7 +148,21 @@
         .week-entry-text.done { text-decoration: line-through; color: var(--muted-foreground); }
         .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .week-nav-title { font-weight: 700; font-size: var(--font-size-lg); }
-        .weekend-container { display: flex; flex: 1; gap: 12px; }
+        .weekend-container { display: flex; flex-direction: column; flex: 1; gap: 8px; }
+        /* Day View Buttons */
+        .day-buttons-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+        .day-btn { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; font-size: var(--font-size-lg); font-weight: 600; transition: all 0.1s ease; }
+        .day-btn:active { transform: scale(0.98); background: var(--secondary); }
+        .day-btn-icon { font-size: 1.5rem; margin-right: 12px; }
+        .day-btn-label { flex: 1; text-align: left; }
+        .day-btn-arrow { color: var(--muted-foreground); }
+        .day-btn-badge { background: var(--primary); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: var(--font-size-sm); margin-right: 8px; }
+        /* Full Modal for Day Sections */
+        .modal-full { background: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 101; overflow-y: auto; padding: 1rem; }
+        .modal-full-header { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 2px solid var(--primary); margin-bottom: 16px; position: sticky; top: 0; background: #fff; z-index: 10; }
+        .modal-full-title { font-size: var(--font-size-xl); font-weight: 700; }
+        .modal-full-close { background: var(--secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 10px 20px; font-size: var(--font-size-base); cursor: pointer; font-weight: 600; }
+        .modal-full-close:active { background: var(--border); }
     </style>
 </head>
 <body>
@@ -134,7 +170,6 @@
     <header class="app-header">
         <div class="header-top">
             <div>
-                <div class="app-title">BULLET JOURNAL</div>
                 <div class="header-date" id="header-date"></div>
             </div>
             <button class="btn-icon" onclick="window.location.href='dashboard.html'">
@@ -146,11 +181,8 @@
             <span class="nav-tab" data-view="semana">Semana</span>
             <span class="nav-tab" data-view="mes">Mês</span>
             <span class="nav-tab" data-view="plano">Plano</span>
-            <span class="nav-tab" data-view="estudo">Estudo</span>
             <span class="nav-tab leituras" data-view="leituras">Leituras</span>
-            <span class="nav-tab" data-view="future">Future</span>
             <span class="nav-tab" data-view="notas">Notas</span>
-            <span class="nav-tab" data-view="projetos">Projetos</span>
         </div>
     </header>
     <div class="main" id="main-content"></div>
@@ -543,7 +575,11 @@ function getEventsForDate(dateStr) {
 }
 
 function init() { loadState(); updateHeaderDate(); bindNavEvents(); loadCalendarEvents(); syncFromCloud(); }
-function updateHeaderDate() { document.getElementById('header-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+function updateHeaderDate() {
+    var headerDate = document.getElementById('header-date');
+    headerDate.textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    headerDate.onclick = function() { goToToday(); };
+}
 function bindNavEvents() {
     document.getElementById('nav-tabs').onclick = function(e) {
         if (e.target.className.indexOf('nav-tab') !== -1) setView(e.target.getAttribute('data-view'));
@@ -567,11 +603,8 @@ function render() {
     else if (view === 'semana') main.innerHTML = renderWeekView();
     else if (view === 'mes') main.innerHTML = renderMonthView();
     else if (view === 'plano') main.innerHTML = renderPlanoVida();
-    else if (view === 'estudo') main.innerHTML = renderEstudo();
     else if (view === 'leituras') main.innerHTML = renderLeituras();
-    else if (view === 'future') main.innerHTML = renderFutureLog();
     else if (view === 'notas') main.innerHTML = renderNotas();
-    else if (view === 'projetos') main.innerHTML = renderProjects();
     bindViewEvents();
 }
 
@@ -646,45 +679,122 @@ function renderDayView() {
     var calendarEvents = getEventsForDate(dateStr);
     var todayBadge = isToday(date) ? ' <span style="background:var(--primary);color:#fff;padding:4px 10px;font-size:0.8rem;border-radius:4px;margin-left:8px;">HOJE</span>' : '';
 
+    // Contadores para badges
+    var entriesCount = dayEntries.length;
+    var eventsCount = calendarEvents.length;
+    var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
+    var habitsChecked = 0;
+    var habitsTotal = BuJo.dailySpiritualHabits.length;
+    BuJo.dailySpiritualHabits.forEach(function(h) { if (dayHabits[h.id]) habitsChecked++; });
+    var morts = BuJo.state.mortifications[dateStr] || [];
+    var mortsCount = morts.length;
+
+    // Verifica se o dia possui conteúdo especial
+    var hasSpecial = specialHabits.length > 0 || thirdSunday;
+    var titleStyle = hasSpecial ? '' : ' style="border-bottom:none;margin-bottom:0;padding-bottom:0;"';
+
+    // Encontrar evento atual ou próximo
+    var currentOrNextEvent = getCurrentOrNextEvent(calendarEvents);
+
+    // Encontrar registro estrela
+    var starEntry = dayEntries.find(function(e) { return e.starred; });
+
+    // Obter resumo de leituras
+    var readingSummary = getReadingSummary();
+
     var html = '<div class="card">';
-    html += '<div class="card-title"><span class="btn" id="prev-date">←</span>';
+    html += '<div class="card-title"' + titleStyle + '><span class="btn" id="prev-date">←</span>';
     html += '<span style="flex:1;text-align:center;text-transform:capitalize;">' + formatDateDisplay(date) + todayBadge + '</span>';
     html += '<span class="btn" id="next-date">→</span></div>';
 
-    if (specialHabits.length > 0 || thirdSunday) {
+    if (hasSpecial) {
         html += '<div class="special-day"><strong>★ Especial:</strong> ';
         var sp = specialHabits.map(function(h) { return h.name; });
         if (thirdSunday) sp.push('Sýmbolum Athanasiánum');
         html += sp.join(' • ') + '</div>';
     }
-
-    if (calendarEvents.length > 0) {
-        html += '<div style="margin-bottom:14px;"><div style="font-size:0.85rem;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:8px;">Agenda do Dia</div>';
-        calendarEvents.forEach(function(ev, idx) {
-            html += '<div class="schedule-item event-clickable" data-event-idx="' + idx + '" data-event-date="' + dateStr + '" style="cursor:pointer;"><span class="schedule-time">' + (ev.allDay ? 'Dia' : ev.startTime) + '</span>';
-            html += '<span class="schedule-event">' + (ev.summary || 'Sem título') + '</span></div>';
-        });
-        html += '</div>';
-    }
     html += '</div>';
 
-    html += '<div class="card"><div class="card-title">Registro</div>';
-    html += '<div style="font-size:0.9rem;color:var(--muted-foreground);padding:8px 0;border-bottom:1px dotted var(--border);margin-bottom:10px;">';
-    html += BuJo.symbols.task + ' tarefa &nbsp;&nbsp;' + BuJo.symbols.taskDone + ' feito &nbsp;&nbsp;' + BuJo.symbols.taskMigrated + ' migrado &nbsp;&nbsp;' + BuJo.symbols.event + ' evento &nbsp;&nbsp;' + BuJo.symbols.note + ' nota</div>';
-    if (dayEntries.length === 0) html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhuma entrada...</p>';
-    else dayEntries.forEach(function(e) { html += renderEntry(e); });
-    html += '<div class="add-entry"><select id="add-entry-type"><option value="task">' + BuJo.symbols.task + ' Tarefa</option><option value="event">' + BuJo.symbols.event + ' Evento</option><option value="note">' + BuJo.symbols.note + ' Nota</option></select>';
-    html += '<input type="text" id="add-entry-input" placeholder="Digite..."><span class="btn btn-primary" id="add-entry-btn">+</span></div></div>';
+    // Botões
+    html += '<div class="day-buttons-grid">';
 
-    html += '<div class="card"><div class="card-title">Plano de Vida</div>';
-    html += renderDaySpiritualHabits(dateStr, dow, thirdSunday) + '</div>';
+    // EVENTOS
+    html += '<div class="day-btn" onclick="openDaySection(\'eventos\')">';
+    html += '<div style="flex:1;"><div class="day-btn-label">Eventos</div>';
+    if (currentOrNextEvent) {
+        html += '<div style="font-size:var(--font-size-xs);color:var(--muted-foreground);margin-top:2px;">' + currentOrNextEvent + '</div>';
+    }
+    html += '</div>';
+    if (eventsCount > 0) html += '<span class="day-btn-badge">' + eventsCount + '</span>';
+    html += '</div>';
 
-    html += '<div class="card"><div class="card-title">Mortificações <span class="btn" id="add-mort-btn">+ Add</span></div>';
-    html += renderMortifications(dateStr) + '</div>';
+    // REGISTROS
+    html += '<div class="day-btn" onclick="openDaySection(\'registros\')">';
+    html += '<div style="flex:1;"><div class="day-btn-label">Registros</div>';
+    if (starEntry) {
+        html += '<div style="font-size:var(--font-size-xs);color:var(--muted-foreground);margin-top:2px;">★ ' + starEntry.text.substring(0, 30) + (starEntry.text.length > 30 ? '...' : '') + '</div>';
+    }
+    html += '</div>';
+    if (entriesCount > 0) html += '<span class="day-btn-badge">' + entriesCount + '</span>';
+    html += '</div>';
 
-    html += '<div class="card"><div class="card-title">Leituras do Dia</div>';
-    html += renderDayReading() + '</div>';
+    // PLANO DE VIDA
+    html += '<div class="day-btn" onclick="openDaySection(\'plano\')">';
+    html += '<span class="day-btn-label">Plano de Vida</span>';
+    html += '<span class="day-btn-badge">' + habitsChecked + '/' + habitsTotal + '</span>';
+    html += '</div>';
+
+    // MORTIFICAÇÕES
+    html += '<div class="day-btn" onclick="openDaySection(\'mortificacoes\')">';
+    html += '<span class="day-btn-label">Mortificações</span>';
+    if (mortsCount > 0) html += '<span class="day-btn-badge">' + mortsCount + '</span>';
+    html += '</div>';
+
+    // LEITURAS DO DIA
+    html += '<div class="day-btn" onclick="openDaySection(\'leituras\')">';
+    html += '<div style="flex:1;"><div class="day-btn-label">Leituras do Dia</div>';
+    if (readingSummary) {
+        html += '<div style="font-size:var(--font-size-xs);color:var(--muted-foreground);margin-top:2px;">' + readingSummary + '</div>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>';
     return html;
+}
+
+function getCurrentOrNextEvent(events) {
+    if (!events || events.length === 0) return null;
+    var now = new Date();
+    var currentHour = now.getHours();
+    var currentMin = now.getMinutes();
+    var currentTime = currentHour * 60 + currentMin;
+
+    for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        if (ev.allDay) return ev.summary;
+        if (ev.startTime) {
+            var parts = ev.startTime.split(':');
+            var evTime = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+            if (evTime >= currentTime - 60) { // evento atual ou próximo (dentro de 1h)
+                return (evTime <= currentTime ? 'Agora: ' : '') + ev.summary;
+            }
+        }
+    }
+    return events[0].summary; // retorna o primeiro se nenhum for atual
+}
+
+function getReadingSummary() {
+    var cw = BuJo.state.readingProgress.currentWeek || 1;
+    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
+    if (!wd) return null;
+
+    var ek = 'sem' + cw + '_esp', sk = 'sem' + cw + '_sec';
+    var ep = BuJo.state.readingProgress.books[ek] || 0, sp = BuJo.state.readingProgress.books[sk] || 0;
+    var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1, st = wd.secular.pFim - wd.secular.pInicio + 1;
+    var ePct = Math.round((ep / et) * 100), sPct = Math.round((sp / st) * 100);
+
+    return 'Esp: ' + ePct + '% · Cul: ' + sPct + '%';
 }
 
 function renderDaySpiritualHabits(dateStr, dow, thirdSunday) {
@@ -749,11 +859,10 @@ function renderWeekView() {
     var weekEnd = sunday.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
 
     var html = '<div class="week-nav">';
-    html += '<span class="btn" id="prev-week">← Semana</span>';
+    html += '<span class="btn" id="prev-week">←</span>';
     html += '<span class="week-nav-title">' + weekStart + ' - ' + weekEnd + '</span>';
-    html += '<span class="btn" id="next-week">Semana →</span>';
+    html += '<span class="btn" id="next-week">→</span>';
     html += '</div>';
-    html += '<div style="text-align:center;margin-bottom:12px;"><span class="btn" id="today-btn">Hoje</span></div>';
 
     html += '<div class="week-grid">';
 
@@ -819,7 +928,6 @@ function renderMonthView() {
     var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-month">←</span>';
     html += '<span style="flex:1;text-align:center;text-transform:capitalize;">' + monthName + '</span>';
     html += '<span class="btn" id="next-month">→</span></div>';
-    html += '<div style="text-align:center;margin-bottom:12px;"><span class="btn" id="today-btn">Hoje</span></div>';
     html += '<div class="month-calendar"><div class="month-row">';
     BuJo.dayNamesShort.forEach(function(d) { html += '<div class="month-cell header">' + d + '</div>'; });
     html += '</div>';
@@ -1156,7 +1264,13 @@ function deleteEntry(id) {
     var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
     if (entry) recordEvent('entry_deleted', { id: id, entryType: entry.type, text: entry.text }, entry.date);
     BuJo.state.entries = BuJo.state.entries.filter(function(e) { return e.id !== id; });
-    saveState(); render();
+    saveState();
+    closeModal();
+    if (daySectionOverlay) {
+        refreshDaySection('registros');
+    } else {
+        render();
+    }
 }
 
 function showEditEntryModal(id) {
@@ -1170,7 +1284,7 @@ function showEditEntryModal(id) {
         '<div class="form-group"><label>Texto</label><textarea id="edit-entry-text" rows="3">' + entry.text + '</textarea></div>' +
         '<div class="form-group"><label>Data</label><input type="date" id="edit-entry-date" value="' + entry.date + '"></div>' +
         '<div class="modal-actions" style="justify-content:space-between;">' +
-        '<span class="btn" style="background:#dc2626;color:#fff;border-color:#dc2626;" onclick="deleteEntry(\'' + id + '\');closeModal();">Excluir</span>' +
+        '<span class="btn" style="background:#dc2626;color:#fff;border-color:#dc2626;" onclick="deleteEntry(\'' + id + '\')">Excluir</span>' +
         '<div style="display:flex;gap:10px;"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="editEntry(\'' + id + '\')">Salvar</span></div></div>');
 }
 
@@ -1189,7 +1303,13 @@ function editEntry(id) {
     entry.date = newDate;
     if (newType !== 'task') entry.status = 'pending';
     recordEvent('entry_edited', { id: id, oldText: oldText, newText: newText, oldType: oldType, newType: newType, oldDate: oldDate, newDate: newDate }, entry.date);
-    saveState(); closeModal(); render();
+    saveState();
+    closeModal();
+    if (daySectionOverlay) {
+        refreshDaySection('registros');
+    } else {
+        render();
+    }
 }
 
 function showEventDetails(dateStr, eventIdx) {
@@ -1269,6 +1389,302 @@ function saveAllNotes() {
 function showModal(content) { document.getElementById('modal-content').innerHTML = content; document.getElementById('modal-overlay').className = 'modal-overlay active'; }
 function closeModal() { document.getElementById('modal-overlay').className = 'modal-overlay'; }
 
+// ============= MODAIS DE SEÇÃO DO DIA =============
+var daySectionOverlay = null;
+
+function openDaySection(section) {
+    var date = BuJo.state.selectedDate;
+    var dateStr = formatDateKey(date);
+    var dow = date.getDay();
+    var thirdSunday = isThirdSunday(date);
+
+    var html = '<div class="modal-full" id="day-section-modal">';
+    html += '<div class="modal-full-header">';
+
+    var title = '';
+    if (section === 'eventos') title = 'Eventos';
+    else if (section === 'registros') title = 'Registros';
+    else if (section === 'plano') title = 'Plano de Vida';
+    else if (section === 'mortificacoes') title = 'Mortificações';
+    else if (section === 'leituras') title = 'Leituras do Dia';
+
+    html += '<span class="modal-full-title">' + title + '</span>';
+    html += '<button class="modal-full-close" onclick="closeDaySection()">Voltar</button>';
+    html += '</div>';
+
+    if (section === 'eventos') html += renderDaySectionEventos(dateStr);
+    else if (section === 'registros') html += renderDaySectionRegistros(dateStr);
+    else if (section === 'plano') html += renderDaySectionPlano(dateStr, dow, thirdSunday);
+    else if (section === 'mortificacoes') html += renderDaySectionMortificacoes(dateStr);
+    else if (section === 'leituras') html += renderDaySectionLeituras();
+
+    html += '</div>';
+
+    daySectionOverlay = document.createElement('div');
+    daySectionOverlay.innerHTML = html;
+    document.body.appendChild(daySectionOverlay);
+    bindDaySectionEvents(section, dateStr);
+}
+
+function closeDaySection() {
+    if (daySectionOverlay) {
+        daySectionOverlay.remove();
+        daySectionOverlay = null;
+    }
+}
+
+function bindDaySectionEvents(section, dateStr) {
+    if (section === 'registros') {
+        var addBtn = document.getElementById('section-add-entry-btn');
+        var addInput = document.getElementById('section-add-entry-input');
+        if (addBtn) addBtn.onclick = addEntryFromSection;
+        if (addInput) addInput.onkeypress = function(e) { if (e.key === 'Enter') addEntryFromSection(); };
+
+        document.querySelectorAll('.section-entry-symbol[data-id]').forEach(function(el) {
+            el.onclick = function() { cycleEntrySymbol(el.getAttribute('data-id')); refreshDaySection('registros'); };
+        });
+
+        // Clique no texto para editar
+        document.querySelectorAll('.section-entry-text[data-id]').forEach(function(el) {
+            el.onclick = function() {
+                showEditEntryModal(el.getAttribute('data-id'));
+            };
+        });
+
+        // Botão para duplicar migrado para próximo dia
+        document.querySelectorAll('.section-migrate-next[data-id]').forEach(function(el) {
+            el.onclick = function() { duplicateToNextDay(el.getAttribute('data-id')); };
+        });
+
+        // Clique na estrela para marcar/desmarcar
+        document.querySelectorAll('.section-entry-star[data-id]').forEach(function(el) {
+            el.onclick = function() { toggleEntryStar(el.getAttribute('data-id')); };
+        });
+    }
+
+    if (section === 'eventos') {
+        document.querySelectorAll('.section-event-clickable').forEach(function(el) {
+            el.onclick = function() {
+                showEventDetails(el.getAttribute('data-event-date'), parseInt(el.getAttribute('data-event-idx')));
+            };
+        });
+    }
+
+    if (section === 'plano' || section === 'mortificacoes') {
+        document.querySelectorAll('.section-spiritual-check').forEach(function(el) {
+            el.onclick = function() {
+                toggleSpiritualHabit(el.getAttribute('data-habit'), el.getAttribute('data-date'));
+                refreshDaySection('plano');
+            };
+        });
+        document.querySelectorAll('.section-mort-check').forEach(function(el) {
+            el.onclick = function() {
+                toggleMortification(el.getAttribute('data-date'), parseInt(el.getAttribute('data-index')));
+                refreshDaySection('mortificacoes');
+            };
+        });
+        var addMortBtn = document.getElementById('section-add-mort-btn');
+        if (addMortBtn) addMortBtn.onclick = function() { showAddMortModalFromSection(dateStr); };
+    }
+}
+
+function refreshDaySection(section) {
+    closeDaySection();
+    openDaySection(section);
+}
+
+function addEntryFromSection() {
+    var dateStr = formatDateKey(BuJo.state.selectedDate);
+    var type = document.getElementById('section-add-entry-type').value;
+    var text = document.getElementById('section-add-entry-input').value.trim();
+    if (!text) return;
+    var newEntry = { id: generateId(), date: dateStr, type: type, text: text, status: type === 'task' ? 'pending' : null };
+    BuJo.state.entries.push(newEntry);
+    recordEvent('entry_added', { id: newEntry.id, type: type, text: text }, dateStr);
+    saveState();
+    refreshDaySection('registros');
+}
+
+function showAddMortModalFromSection(dateStr) {
+    showAddMortModal();
+}
+
+function duplicateToNextDay(id) {
+    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
+    if (!entry) return;
+    var currentDate = new Date(entry.date + 'T12:00:00');
+    currentDate.setDate(currentDate.getDate() + 1);
+    var nextDateStr = formatDateKey(currentDate);
+    var newEntry = {
+        id: generateId(),
+        date: nextDateStr,
+        type: entry.type,
+        text: entry.text,
+        status: 'pending'
+    };
+    BuJo.state.entries.push(newEntry);
+    recordEvent('entry_duplicated', { originalId: id, newId: newEntry.id, text: entry.text, fromDate: entry.date, toDate: nextDateStr }, nextDateStr);
+    saveState();
+    refreshDaySection('registros');
+}
+
+function toggleEntryStar(id) {
+    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
+    if (!entry) return;
+    // Remove estrela de outros registros do mesmo dia
+    var dateStr = entry.date;
+    BuJo.state.entries.forEach(function(e) {
+        if (e.date === dateStr && e.id !== id) e.starred = false;
+    });
+    // Alterna a estrela deste registro
+    entry.starred = !entry.starred;
+    recordEvent('entry_starred', { id: id, starred: entry.starred }, dateStr);
+    saveState();
+    refreshDaySection('registros');
+}
+
+function renderDaySectionEventos(dateStr) {
+    var calendarEvents = getEventsForDate(dateStr);
+    var html = '<div class="card">';
+    if (calendarEvents.length === 0) {
+        html += '<p style="color:var(--muted-foreground);font-style:italic;text-align:center;padding:20px;">Nenhum evento agendado para este dia.</p>';
+    } else {
+        calendarEvents.forEach(function(ev, idx) {
+            html += '<div class="schedule-item section-event-clickable" data-event-idx="' + idx + '" data-event-date="' + dateStr + '" style="padding:12px 0;cursor:pointer;">';
+            html += '<span class="schedule-time" style="font-weight:600;">' + (ev.allDay ? 'Dia todo' : ev.startTime) + '</span>';
+            html += '<span class="schedule-event" style="font-size:var(--font-size-lg);">' + (ev.summary || 'Sem título') + '</span>';
+            html += '</div>';
+        });
+    }
+    html += '</div>';
+    return html;
+}
+
+function renderDaySectionRegistros(dateStr) {
+    var dayEntries = BuJo.state.entries.filter(function(e) { return e.date === dateStr; });
+    var html = '<div class="card">';
+    html += '<div style="font-size:0.9rem;color:var(--muted-foreground);padding:8px 0;border-bottom:1px dotted var(--border);margin-bottom:10px;">';
+    html += BuJo.symbols.task + ' tarefa &nbsp;&nbsp;' + BuJo.symbols.taskDone + ' feito &nbsp;&nbsp;' + BuJo.symbols.taskMigrated + ' migrado &nbsp;&nbsp;' + BuJo.symbols.event + ' evento &nbsp;&nbsp;' + BuJo.symbols.note + ' nota &nbsp;&nbsp;★ estrela</div>';
+
+    if (dayEntries.length === 0) {
+        html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhuma entrada...</p>';
+    } else {
+        dayEntries.forEach(function(e) {
+            var symbol = e.type === 'note' ? BuJo.symbols.note : e.type === 'event' ? BuJo.symbols.event : e.status === 'done' ? BuJo.symbols.taskDone : e.status === 'migrated' ? BuJo.symbols.taskMigrated : BuJo.symbols.task;
+            var starStyle = e.starred ? 'color:#f59e0b;' : 'color:var(--muted-foreground);opacity:0.4;';
+            html += '<div class="entry" style="padding:12px 0;">';
+            html += '<span class="section-entry-star" data-id="' + e.id + '" style="cursor:pointer;font-size:1rem;margin-right:6px;' + starStyle + '">★</span>';
+            html += '<span class="entry-symbol section-entry-symbol" data-id="' + e.id + '" style="font-size:1.2rem;">' + symbol + '</span>';
+            html += '<span class="entry-text section-entry-text' + (e.status === 'done' ? ' done' : '') + '" data-id="' + e.id + '" style="font-size:var(--font-size-lg);cursor:pointer;">' + e.text + '</span>';
+            if (e.status === 'migrated') {
+                html += '<span class="btn section-migrate-next" data-id="' + e.id + '" style="padding:6px 10px;font-size:0.8rem;margin-left:8px;">→+1</span>';
+            }
+            html += '</div>';
+        });
+    }
+
+    html += '<div class="add-entry" style="margin-top:20px;padding-top:20px;">';
+    html += '<select id="section-add-entry-type" style="padding:12px;font-size:var(--font-size-base);"><option value="task">' + BuJo.symbols.task + ' Tarefa</option><option value="event">' + BuJo.symbols.event + ' Evento</option><option value="note">' + BuJo.symbols.note + ' Nota</option></select>';
+    html += '<input type="text" id="section-add-entry-input" placeholder="Digite..." style="padding:12px;font-size:var(--font-size-base);">';
+    html += '<span class="btn btn-primary" id="section-add-entry-btn" style="padding:12px 20px;">+</span></div>';
+    html += '</div>';
+    return html;
+}
+
+function renderDaySectionPlano(dateStr, dow, thirdSunday) {
+    var dayHabits = BuJo.state.spiritualHabits[dateStr] || {};
+    var specialHabits = BuJo.weeklySpecialHabits[dow] || [];
+
+    var html = '<div class="card">';
+    html += '<div style="display:-webkit-box;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;">';
+    BuJo.dailySpiritualHabits.forEach(function(h) {
+        var checked = dayHabits[h.id] || false;
+        html += '<div class="habit-row" style="width:50%;-webkit-box-sizing:border-box;box-sizing:border-box;padding-right:8px;"><span class="habit-name">' + h.name + '</span>';
+        html += '<span class="habit-check section-spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + h.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
+    });
+    html += '</div>';
+
+    if (specialHabits.length > 0) {
+        html += '<div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--primary);"><strong>★ Especiais do dia</strong></div>';
+        specialHabits.forEach(function(h) {
+            var checked = dayHabits[h.id] || false;
+            html += '<div class="habit-row" style="background:var(--secondary);margin:4px -10px;padding:10px;"><span class="habit-name" style="font-weight:600;">' + h.name + '</span>';
+            html += '<span class="habit-check section-spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + h.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
+        });
+    }
+
+    if (thirdSunday) {
+        var checked = dayHabits['symbolum-athanasianum'] || false;
+        html += '<div class="habit-row" style="background:var(--secondary);margin:4px -10px;padding:10px;"><span class="habit-name" style="font-weight:600;">Sýmbolum Athanasiánum</span>';
+        html += '<span class="habit-check section-spiritual-check' + (checked ? ' checked' : '') + '" data-habit="symbolum-athanasianum" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function renderDaySectionMortificacoes(dateStr) {
+    var morts = BuJo.state.mortifications[dateStr] || [];
+    var html = '<div class="card">';
+
+    if (morts.length === 0) {
+        html += '<p style="color:var(--muted-foreground);font-style:italic;text-align:center;padding:20px;">Nenhuma mortificação definida.</p>';
+    } else {
+        morts.forEach(function(m, i) {
+            html += '<div class="habit-row" style="padding:14px 0;font-size:var(--font-size-lg);"><span class="habit-name"' + (m.done ? ' style="text-decoration:line-through;color:var(--muted-foreground);"' : '') + '>' + m.text + '</span>';
+            html += '<span class="habit-check section-mort-check' + (m.done ? ' checked' : '') + '" data-date="' + dateStr + '" data-index="' + i + '" style="width:44px;height:44px;">' + (m.done ? '✓' : '') + '</span></div>';
+        });
+    }
+
+    html += '<div style="margin-top:20px;text-align:center;"><span class="btn btn-primary" id="section-add-mort-btn" style="padding:14px 24px;font-size:var(--font-size-base);">+ Adicionar Mortificação</span></div>';
+    html += '</div>';
+    return html;
+}
+
+function renderDaySectionLeituras() {
+    var cw = BuJo.state.readingProgress.currentWeek || 1;
+    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
+    var noturna = BuJo.readingPlan.noturna;
+    var np = BuJo.state.readingProgress.noturna.currentPage || 0;
+    var nPct = Math.round((np / noturna.paginas) * 100);
+
+    var html = '<div class="card">';
+    html += '<div style="margin-bottom:20px;">';
+    html += '<div style="font-weight:700;font-size:var(--font-size-lg);margin-bottom:8px;">Leitura Noturna</div>';
+    html += '<div style="font-size:var(--font-size-base);margin-bottom:8px;">' + noturna.titulo + ' - ' + noturna.autor + '</div>';
+    html += '<div class="reading-progress"><div class="reading-progress-bar" style="height:16px;"><div class="reading-progress-fill" style="width:' + nPct + '%;"></div></div><span class="reading-percent" style="font-size:var(--font-size-lg);">' + nPct + '%</span></div>';
+    html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);">Página ' + np + ' de ' + noturna.paginas + '</div>';
+    html += '</div>';
+
+    if (wd) {
+        var ek = 'sem' + cw + '_esp', sk = 'sem' + cw + '_sec';
+        var ep = BuJo.state.readingProgress.books[ek] || 0, sp = BuJo.state.readingProgress.books[sk] || 0;
+        var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1, st = wd.secular.pFim - wd.secular.pInicio + 1;
+        var ePct = Math.round((ep / et) * 100), sPct = Math.round((sp / st) * 100);
+
+        html += '<div style="margin-bottom:20px;padding:16px;background:var(--secondary);border-radius:var(--radius);">';
+        html += '<div style="font-weight:700;font-size:var(--font-size-lg);margin-bottom:12px;">Semana ' + cw + ' - ' + wd.bloco + '</div>';
+
+        html += '<div style="margin-bottom:16px;">';
+        html += '<div><span class="book-type" style="background:#4a5568;color:#fff;">Espiritual</span></div>';
+        html += '<div style="font-weight:600;margin:8px 0;">' + wd.espiritual.titulo + '</div>';
+        html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);margin-bottom:8px;">' + wd.espiritual.autor + ' (p. ' + wd.espiritual.pInicio + '-' + wd.espiritual.pFim + ')</div>';
+        html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + ePct + '%;"></div></div><span class="reading-percent">' + ePct + '%</span></div>';
+        html += '</div>';
+
+        html += '<div>';
+        html += '<div><span class="book-type" style="background:#718096;color:#fff;">Secular</span></div>';
+        html += '<div style="font-weight:600;margin:8px 0;">' + wd.secular.titulo + '</div>';
+        html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);margin-bottom:8px;">' + wd.secular.autor + ' (p. ' + wd.secular.pInicio + '-' + wd.secular.pFim + ')</div>';
+        html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + sPct + '%;"></div></div><span class="reading-percent">' + sPct + '%</span></div>';
+        html += '</div>';
+        html += '</div>';
+    }
+
+    html += '<div style="margin-top:20px;text-align:center;"><span class="btn btn-primary" onclick="closeDaySection();setView(\'leituras\');" style="padding:14px 24px;">Ir para Leituras Completas</span></div>';
+    html += '</div>';
+    return html;
+}
+
 function showAddMortModal() {
     var dateStr = formatDateKey(BuJo.state.selectedDate);
     showModal('<div class="modal-title">Adicionar Mortificação</div>' +
@@ -1281,7 +1697,13 @@ function addMortification(dateStr) {
     if (!BuJo.state.mortifications[dateStr]) BuJo.state.mortifications[dateStr] = [];
     BuJo.state.mortifications[dateStr].push({ text: text, done: false });
     recordEvent('mortification_added', { text: text }, dateStr);
-    saveState(); closeModal(); render();
+    saveState();
+    closeModal();
+    if (daySectionOverlay) {
+        refreshDaySection('mortificacoes');
+    } else {
+        render();
+    }
 }
 
 function showAddProjectModal() {
@@ -1366,85 +1788,240 @@ function renderLeituras() {
     var cw = BuJo.state.readingProgress.currentWeek || 1;
     var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
     var noturna = BuJo.readingPlan.noturna;
-    var np = BuJo.state.readingProgress.noturna.currentPage || 0;
-    var nPct = Math.round((np / noturna.paginas) * 100);
+    var library = BuJo.state.readingProgress.library || {};
 
-    var html = '<div class="card reading-card noturna">';
-    html += '<div class="card-title">Leitura Noturna</div>';
-    html += '<div style="font-weight:600;">' + noturna.titulo + '</div>';
-    html += '<div class="reading-meta">' + noturna.autor + ' · ' + noturna.paginas + ' págs</div>';
-    html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + nPct + '%;"></div></div><span class="reading-percent">' + nPct + '%</span></div>';
-    html += '<div style="display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;margin-top:10px;">Página: <input type="number" class="reading-input" value="' + np + '" min="0" max="' + noturna.paginas + '" onchange="updateNoturna(this.value)" style="margin-left:10px;margin-right:10px;"> / ' + noturna.paginas + '</div></div>';
+    var html = '<div class="reading-grid">';
 
-    html += '<div class="card"><div class="card-title"><span class="btn" onclick="navWeek(-1)">←</span><span style="-webkit-box-flex:1;flex:1;text-align:center;">Semana ' + cw + '</span><span class="btn" onclick="navWeek(1)">→</span></div>';
+    // ===== COLUNA ESQUERDA: LENDO =====
+    html += '<div class="reading-col-left">';
+    html += '<div class="reading-col-title">Lendo</div>';
 
+    // Leitura Noturna
+    html += renderReadingCard({
+        id: 'noturna',
+        category: 'espiritual',
+        title: noturna.titulo,
+        author: noturna.autor,
+        totalPages: noturna.paginas,
+        currentPage: BuJo.state.readingProgress.noturna.currentPage || 0,
+        weekGoal: null,
+        isNoturna: true
+    });
+
+    // Livro Espiritual da Semana
     if (wd) {
-        html += '<div style="background:var(--secondary);padding:8px 12px;border-radius:6px;margin-bottom:14px;font-weight:600;">' + wd.bloco + '</div>';
-        var ek = 'sem' + cw + '_esp', sk = 'sem' + cw + '_sec';
-        var ep = BuJo.state.readingProgress.books[ek] || 0, sp = BuJo.state.readingProgress.books[sk] || 0;
-        var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1, st = wd.secular.pFim - wd.secular.pInicio + 1;
-        var ePct = Math.round((ep / et) * 100), sPct = Math.round((sp / st) * 100);
+        var ek = 'sem' + cw + '_esp';
+        var ep = BuJo.state.readingProgress.books[ek] || 0;
+        var epPage = ep > 0 ? wd.espiritual.pInicio + ep - 1 : 0;
+        var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1;
 
-        html += '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:12px;">';
-        html += '<span class="book-type">Espiritual</span> <span style="float:right;font-size:0.85rem;">p.' + wd.espiritual.pInicio + '–' + wd.espiritual.pFim + '</span>';
-        html += '<div style="font-weight:600;margin:8px 0;">' + wd.espiritual.titulo + '</div>';
-        html += '<div class="reading-meta">' + wd.espiritual.autor + '</div>';
-        html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + ePct + '%;"></div></div><span class="reading-percent">' + ePct + '%</span></div>';
-        var epPage = ep > 0 ? wd.espiritual.pInicio + ep - 1 : '';
-        html += '<div style="display:flex;align-items:center;margin-top:10px;">Página: <input type="number" class="reading-input" value="' + epPage + '" min="' + wd.espiritual.pInicio + '" max="' + wd.espiritual.pFim + '" placeholder="' + wd.espiritual.pInicio + '" onchange="updateBookPage(\'' + ek + '\',' + wd.espiritual.pInicio + ',' + wd.espiritual.pFim + ',this.value)" style="margin-left:10px;margin-right:10px;width:80px;"> / ' + wd.espiritual.pFim + '</div></div>';
+        html += renderReadingCard({
+            id: ek,
+            category: 'espiritual',
+            title: wd.espiritual.titulo,
+            author: wd.espiritual.autor,
+            totalPages: wd.espiritual.pFim,
+            currentPage: epPage,
+            weekGoal: { start: wd.espiritual.pInicio, end: wd.espiritual.pFim, read: ep, total: et },
+            bloco: wd.bloco,
+            week: cw
+        });
 
-        html += '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;">';
-        html += '<span class="book-type">Secular</span> <span style="float:right;font-size:0.85rem;">p.' + wd.secular.pInicio + '–' + wd.secular.pFim + '</span>';
-        html += '<div style="font-weight:600;margin:8px 0;">' + wd.secular.titulo + '</div>';
-        html += '<div class="reading-meta">' + wd.secular.autor + '</div>';
-        html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + sPct + '%;"></div></div><span class="reading-percent">' + sPct + '%</span></div>';
-        var spPage = sp > 0 ? wd.secular.pInicio + sp - 1 : '';
-        html += '<div style="display:flex;align-items:center;margin-top:10px;">Página: <input type="number" class="reading-input" value="' + spPage + '" min="' + wd.secular.pInicio + '" max="' + wd.secular.pFim + '" placeholder="' + wd.secular.pInicio + '" onchange="updateBookPage(\'' + sk + '\',' + wd.secular.pInicio + ',' + wd.secular.pFim + ',this.value)" style="margin-left:10px;margin-right:10px;width:80px;"> / ' + wd.secular.pFim + '</div></div>';
+        // Livro Cultural/Secular da Semana
+        var sk = 'sem' + cw + '_sec';
+        var sp = BuJo.state.readingProgress.books[sk] || 0;
+        var spPage = sp > 0 ? wd.secular.pInicio + sp - 1 : 0;
+        var st = wd.secular.pFim - wd.secular.pInicio + 1;
+
+        html += renderReadingCard({
+            id: sk,
+            category: 'cultural',
+            title: wd.secular.titulo,
+            author: wd.secular.autor,
+            totalPages: wd.secular.pFim,
+            currentPage: spPage,
+            weekGoal: { start: wd.secular.pInicio, end: wd.secular.pFim, read: sp, total: st },
+            bloco: wd.bloco,
+            week: cw
+        });
+    }
+
+    html += '</div>';
+
+    // ===== COLUNA DIREITA: BIBLIOTECA =====
+    html += '<div class="reading-col-right">';
+    html += '<div class="reading-col-title">Biblioteca</div>';
+
+    // Obter todos os livros únicos do cronograma
+    var allBooks = getAllBooksFromPlan();
+
+    // Categorizar livros
+    var proximas = allBooks.filter(function(b) { return (library[b.id] || 'nao_iniciado') === 'proximas'; });
+    var concluidos = allBooks.filter(function(b) { return library[b.id] === 'concluido'; });
+    var naoIniciados = allBooks.filter(function(b) { return !library[b.id] || library[b.id] === 'nao_iniciado'; });
+
+    // Próximas Leituras
+    html += '<div class="library-section">';
+    html += '<div class="library-section-title">Próximas Leituras</div>';
+    if (proximas.length === 0) {
+        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);font-style:italic;">Nenhum livro</div>';
+    } else {
+        proximas.forEach(function(b) {
+            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
+            html += '<span class="item-title">' + b.title + '</span>';
+            html += '<span class="item-status">' + b.type + '</span>';
+            html += '</div>';
+        });
     }
     html += '</div>';
 
-    // Histórico de leitura
-    html += '<div class="card"><div class="card-title">Histórico de Leituras</div>';
-    html += renderReadingHistory();
+    // Concluídos
+    html += '<div class="library-section">';
+    html += '<div class="library-section-title">Concluído</div>';
+    if (concluidos.length === 0) {
+        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);font-style:italic;">Nenhum livro</div>';
+    } else {
+        concluidos.forEach(function(b) {
+            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
+            html += '<span class="item-title">' + b.title + '</span>';
+            html += '<span class="item-status">✓</span>';
+            html += '</div>';
+        });
+    }
     html += '</div>';
+
+    // Não Iniciados
+    html += '<div class="library-section">';
+    html += '<div class="library-section-title">Não Iniciado</div>';
+    if (naoIniciados.length === 0) {
+        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);font-style:italic;">Nenhum livro</div>';
+    } else {
+        naoIniciados.slice(0, 10).forEach(function(b) {
+            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
+            html += '<span class="item-title">' + b.title + '</span>';
+            html += '<span class="item-status">' + b.type + '</span>';
+            html += '</div>';
+        });
+        if (naoIniciados.length > 10) {
+            html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-xs);text-align:center;padding:8px;">+' + (naoIniciados.length - 10) + ' livros</div>';
+        }
+    }
+    html += '</div>';
+
+    html += '</div>'; // fim col-right
+    html += '</div>'; // fim reading-grid
 
     return html;
 }
 
-function renderReadingHistory() {
-    var history = BuJo.state.readingProgress.history || {};
-    var noturnaHistory = BuJo.state.readingProgress.noturna.history || {};
-    var dates = Object.keys(history).concat(Object.keys(noturnaHistory));
-    dates = [...new Set(dates)].sort().reverse().slice(0, 14); // últimos 14 dias com registros
+function renderReadingCard(book) {
+    var pct = book.totalPages > 0 ? Math.round((book.currentPage / book.totalPages) * 100) : 0;
+    var categoryClass = book.category === 'espiritual' ? 'espiritual' : 'cultural';
+    var categoryLabel = book.category === 'espiritual' ? 'Espiritual' : 'Cultural';
 
-    if (dates.length === 0) {
-        return '<p style="color:var(--muted-foreground);font-style:italic;">Nenhum histórico de leitura registrado.</p>';
+    var html = '<div class="reading-book-card">';
+
+    // Header: Categoria e Total de Páginas
+    html += '<div class="book-header">';
+    html += '<span class="book-type ' + categoryClass + '">' + categoryLabel + '</span>';
+    html += '<span class="book-pages">' + book.totalPages + ' págs</span>';
+    html += '</div>';
+
+    // Título e Autor
+    html += '<div class="book-title">' + book.title + '</div>';
+    html += '<div class="book-author">' + book.author + '</div>';
+
+    // Barra de progresso
+    html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + pct + '%;"></div></div><span class="reading-percent">' + pct + '%</span></div>';
+
+    // Registro de páginas
+    if (book.isNoturna) {
+        html += '<div style="display:flex;align-items:center;margin-top:8px;">Página: <input type="number" class="reading-input" value="' + book.currentPage + '" min="0" max="' + book.totalPages + '" onchange="updateNoturna(this.value)" style="margin-left:8px;margin-right:8px;"> / ' + book.totalPages + '</div>';
+    } else if (book.weekGoal) {
+        var goalPct = Math.round((book.weekGoal.read / book.weekGoal.total) * 100);
+        var isComplete = goalPct >= 100;
+        var currentPageValue = book.currentPage > 0 ? book.currentPage : '';
+
+        html += '<div style="display:flex;align-items:center;margin-top:8px;">Página: <input type="number" class="reading-input" value="' + currentPageValue + '" min="' + book.weekGoal.start + '" max="' + book.weekGoal.end + '" placeholder="' + book.weekGoal.start + '" onchange="updateBookPage(\'' + book.id + '\',' + book.weekGoal.start + ',' + book.weekGoal.end + ',this.value)" style="margin-left:8px;margin-right:8px;width:70px;"> / ' + book.weekGoal.end + '</div>';
+
+        // Meta da Semana
+        html += '<div class="week-goal' + (isComplete ? ' week-goal-complete' : '') + '">';
+        html += '<strong>Meta Semana ' + book.week + ':</strong> p.' + book.weekGoal.start + '–' + book.weekGoal.end + ' (' + goalPct + '%)';
+        if (isComplete) {
+            html += '<div style="margin-top:6px;"><span class="btn btn-primary" onclick="advanceToNextWeek()" style="padding:6px 12px;font-size:0.85rem;">Avançar Semana →</span></div>';
+        }
+        html += '</div>';
     }
 
-    var html = '';
-    dates.forEach(function(dateStr) {
-        var d = new Date(dateStr + 'T12:00:00');
-        var dayName = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
-        var dayHistory = history[dateStr] || {};
-        var noturnaPage = noturnaHistory[dateStr];
+    html += '</div>';
+    return html;
+}
 
-        html += '<div style="padding:10px 0;border-bottom:1px dotted var(--border);">';
-        html += '<div style="font-weight:600;margin-bottom:6px;">' + dayName + '</div>';
+function getAllBooksFromPlan() {
+    var books = [];
+    var seen = {};
 
-        if (noturnaPage !== undefined) {
-            html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-left:10px;">Vida de Cristo: p.' + noturnaPage + '</div>';
+    BuJo.readingPlan.cronograma.forEach(function(w) {
+        var espKey = w.espiritual.titulo;
+        if (!seen[espKey]) {
+            seen[espKey] = true;
+            books.push({
+                id: 'book_esp_' + espKey.replace(/\s+/g, '_').toLowerCase(),
+                title: w.espiritual.titulo,
+                author: w.espiritual.autor,
+                type: 'Esp'
+            });
         }
 
-        Object.keys(dayHistory).forEach(function(bookKey) {
-            var page = dayHistory[bookKey];
-            var bookName = getBookNameFromKey(bookKey);
-            html += '<div style="font-size:0.9rem;color:var(--muted-foreground);margin-left:10px;">' + bookName + ': p.' + page + '</div>';
-        });
-
-        html += '</div>';
+        var secKey = w.secular.titulo;
+        if (!seen[secKey]) {
+            seen[secKey] = true;
+            books.push({
+                id: 'book_sec_' + secKey.replace(/\s+/g, '_').toLowerCase(),
+                title: w.secular.titulo,
+                author: w.secular.autor,
+                type: 'Cul'
+            });
+        }
     });
 
-    return html;
+    return books;
+}
+
+function showBookStatusModal(bookId) {
+    var library = BuJo.state.readingProgress.library || {};
+    var currentStatus = library[bookId] || 'nao_iniciado';
+
+    var statusOptions = [
+        { value: 'lendo', label: 'Lendo' },
+        { value: 'proximas', label: 'Próximas Leituras' },
+        { value: 'concluido', label: 'Concluído' },
+        { value: 'nao_iniciado', label: 'Não Iniciado' }
+    ];
+
+    var optionsHtml = statusOptions.map(function(opt) {
+        var selected = opt.value === currentStatus ? ' style="background:var(--primary);color:#fff;"' : '';
+        return '<div class="library-item" onclick="changeBookStatus(\'' + bookId + '\',\'' + opt.value + '\')"' + selected + '><span class="item-title">' + opt.label + '</span>' + (opt.value === currentStatus ? '<span>✓</span>' : '') + '</div>';
+    }).join('');
+
+    showModal('<div class="modal-title">Alterar Estado</div>' + optionsHtml + '<div class="modal-actions"><span class="btn" onclick="closeModal()">Fechar</span></div>');
+}
+
+function changeBookStatus(bookId, status) {
+    if (!BuJo.state.readingProgress.library) BuJo.state.readingProgress.library = {};
+    BuJo.state.readingProgress.library[bookId] = status;
+    saveState();
+    closeModal();
+    render();
+}
+
+function advanceToNextWeek() {
+    var nw = BuJo.state.readingProgress.currentWeek + 1;
+    if (nw <= 104) {
+        BuJo.state.readingProgress.currentWeek = nw;
+        saveState();
+        render();
+    }
 }
 
 function getBookNameFromKey(bookKey) {
@@ -1476,7 +2053,6 @@ function updateBookPage(bookKey, pInicio, pFim, pageValue) {
     } else {
         BuJo.state.readingProgress.books[bookKey] = page - pInicio + 1;
     }
-    // Salvar histórico por dia
     var dateStr = formatDateKey(new Date());
     if (!BuJo.state.readingProgress.history) BuJo.state.readingProgress.history = {};
     if (!BuJo.state.readingProgress.history[dateStr]) BuJo.state.readingProgress.history[dateStr] = {};
