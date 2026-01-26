@@ -703,9 +703,9 @@ function renderDayView() {
     var readingSummary = getReadingSummary();
 
     var html = '<div class="card">';
-    html += '<div class="card-title"' + titleStyle + '><span class="btn" id="prev-date">←</span>';
+    html += '<div class="card-title"' + titleStyle + '><span class="btn" id="prev-date" style="line-height:1;"><img src="/icones/seta.png" style="transform:rotate(180deg);width:20px;height:20px;"></span>';
     html += '<span style="flex:1;text-align:center;text-transform:capitalize;">' + formatDateDisplay(date) + todayBadge + '</span>';
-    html += '<span class="btn" id="next-date">→</span></div>';
+    html += '<span class="btn" id="next-date" style="line-height:1;"><img src="/icones/seta.png" style="width:20px;height:20px;"></span></div>';
 
     if (hasSpecial) {
         html += '<div class="special-day"><strong>★ Especial:</strong> ';
@@ -859,9 +859,9 @@ function renderWeekView() {
     var weekEnd = sunday.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
 
     var html = '<div class="week-nav">';
-    html += '<span class="btn" id="prev-week">←</span>';
+    html += '<span class="btn" id="prev-week" style="line-height:1;"><img src="/icones/seta.png" style="transform:rotate(180deg);width:20px;height:20px;"></span>';
     html += '<span class="week-nav-title">' + weekStart + ' - ' + weekEnd + '</span>';
-    html += '<span class="btn" id="next-week">→</span>';
+    html += '<span class="btn" id="next-week" style="line-height:1;"><img src="/icones/seta.png" style="width:20px;height:20px;"></span>';
     html += '</div>';
 
     html += '<div class="week-grid">';
@@ -925,9 +925,9 @@ function renderMonthView() {
     var startPadding = firstDay.getDay();
     var monthName = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
-    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-month">←</span>';
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-month" style="line-height:1;"><img src="/icones/seta.png" style="transform:rotate(180deg);width:20px;height:20px;"></span>';
     html += '<span style="flex:1;text-align:center;text-transform:capitalize;">' + monthName + '</span>';
-    html += '<span class="btn" id="next-month">→</span></div>';
+    html += '<span class="btn" id="next-month" style="line-height:1;"><img src="/icones/seta.png" style="width:20px;height:20px;"></span></div>';
     html += '<div class="month-calendar"><div class="month-row">';
     BuJo.dayNamesShort.forEach(function(d) { html += '<div class="month-cell header">' + d + '</div>'; });
     html += '</div>';
@@ -984,14 +984,14 @@ function renderDayEventsPanel(dateStr) {
         html += '<div class="schedule-item"><span class="schedule-time">' + (ev.allDay ? 'Dia' : ev.startTime) + '</span>';
         html += '<span class="schedule-event">' + (ev.summary || 'Sem título') + '</span></div>';
     });
-    html += '<div style="margin-top:14px;text-align:center;"><span class="btn btn-primary" onclick="goToDay(\'' + dateStr + '\')">Ir para este dia →</span></div>';
+    html += '<div style="margin-top:14px;text-align:center;"><span class="btn btn-primary" onclick="goToDay(\'' + dateStr + '\')">Ir para este dia <img src="/icones/seta.png" style="width:16px;height:16px;vertical-align:middle;"></span></div>';
     return html;
 }
 
 function renderPlanoVida() {
     var weekDays = getWeekDays(BuJo.state.selectedDate);
-    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week">←</span>';
-    html += '<span style="flex:1;text-align:center;">Plano de Vida</span><span class="btn" id="next-week">→</span></div>';
+    var html = '<div class="card"><div class="card-title"><span class="btn" id="prev-week" style="line-height:1;"><img src="/icones/seta.png" style="transform:rotate(180deg);width:20px;height:20px;"></span>';
+    html += '<span style="flex:1;text-align:center;">Plano de Vida</span><span class="btn" id="next-week" style="line-height:1;"><img src="/icones/seta.png" style="width:20px;height:20px;"></span></div>';
     html += '<div style="overflow-x:auto;"><table class="tracker-table"><tr><th class="label">Hábito</th>';
     weekDays.forEach(function(d) {
         var style = isToday(d) ? ' style="background:var(--primary);color:#fff;"' : '';
