@@ -123,9 +123,14 @@
                 <div class="app-title"><span class="jp">日本語</span> TRACKER</div>
                 <div class="header-date" id="header-date"></div>
             </div>
-            <button class="btn-icon" onclick="exportData()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </button>
+            <div style="display:flex;gap:8px;">
+                <button class="btn-icon" onclick="forceSync()" title="Sincronizar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                </button>
+                <button class="btn-icon" onclick="exportData()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+            </div>
         </div>
         <div class="nav-tabs" id="nav-tabs">
             <span class="nav-tab active" data-view="hoje">Hoje</span>
@@ -279,15 +284,19 @@ if (typeof window !== 'undefined') {
 // Debounce para evitar múltiplas chamadas de sync
 var syncTimeout = null;
 var lastSyncTime = 0;
+var isSyncing = false;
 
 function saveState() {
     try { localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state)); } catch(e){}
-    // Sincronizar com Google Sheets (debounced - espera 3 segundos após última alteração)
+    // Sincronizar com nuvem (debounced - espera 2 segundos após última alteração)
     clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(syncToCloud, 3000);
+    syncTimeout = setTimeout(syncToCloud, 2000);
 }
 
 async function syncToCloud() {
+    if (isSyncing) return;
+    isSyncing = true;
+
     try {
         var stateToSync = {
             sessions: JpTracker.state.sessions,
@@ -307,9 +316,15 @@ async function syncToCloud() {
             var syncTime = result.timestamp ? new Date(result.timestamp).getTime() : Date.now();
             localStorage.setItem('jp-tracker-v1-time', syncTime.toString());
             lastSyncTime = syncTime;
-            console.log('Nihongo sincronizado com sucesso');
+            console.log('✅ Nihongo sincronizado com sucesso');
+            showSyncStatus('Sincronizado!', 'success');
         }
-    } catch(e) { console.warn('Falha ao sincronizar com nuvem:', e.message); }
+    } catch(e) {
+        console.warn('Falha ao sincronizar com nuvem:', e.message);
+        showSyncStatus('Erro ao sincronizar', 'error');
+    } finally {
+        isSyncing = false;
+    }
 }
 
 async function loadFromCloud() {
@@ -339,25 +354,101 @@ function loadState() {
     } catch(e){}
 }
 
-async function syncFromCloud() {
-    var cloudData = await loadFromCloud();
-    if (cloudData && cloudData.state) {
-        var localTime = localStorage.getItem('jp-tracker-v1-time') || '0';
-        var cloudTime = new Date(cloudData.timestamp).getTime();
-        if (cloudTime > parseInt(localTime)) {
-            var p = cloudData.state;
-            JpTracker.state.sessions = p.sessions || {};
-            JpTracker.state.hiragana = p.hiragana || {};
-            JpTracker.state.katakana = p.katakana || {};
-            JpTracker.state.kanji = p.kanji || {};
-            JpTracker.state.vocabulary = p.vocabulary || {};
-            JpTracker.state.progress = p.progress || JpTracker.state.progress;
-            localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state));
-            localStorage.setItem('jp-tracker-v1-time', cloudTime.toString());
-            console.log('Dados carregados da nuvem');
-            render();
+// ============= FUNÇÕES DE MERGE INTELIGENTE =============
+
+// Merge de objetos por chave (sessions, hiragana, katakana, kanji, vocabulary)
+function mergeObjectsByKey(local, cloud) {
+    var result = {};
+    // Copiar todas as chaves locais
+    Object.keys(local || {}).forEach(function(key) {
+        result[key] = local[key];
+    });
+    // Sobrescrever/adicionar chaves da nuvem
+    Object.keys(cloud || {}).forEach(function(key) {
+        if (!result[key]) {
+            result[key] = cloud[key];
+        } else {
+            // Merge profundo para objetos aninhados
+            if (typeof cloud[key] === 'object' && typeof result[key] === 'object' && !Array.isArray(cloud[key])) {
+                result[key] = Object.assign({}, result[key], cloud[key]);
+            } else {
+                result[key] = cloud[key];
+            }
         }
+    });
+    return result;
+}
+
+// Merge de progress - usar o maior valor
+function mergeProgress(local, cloud) {
+    var result = {
+        hiraganaBasic: 0,
+        katakanaBasic: 0,
+        kanjiCount: 0,
+        vocabCount: 0
+    };
+
+    result.hiraganaBasic = Math.max((local && local.hiraganaBasic) || 0, (cloud && cloud.hiraganaBasic) || 0);
+    result.katakanaBasic = Math.max((local && local.katakanaBasic) || 0, (cloud && cloud.katakanaBasic) || 0);
+    result.kanjiCount = Math.max((local && local.kanjiCount) || 0, (cloud && cloud.kanjiCount) || 0);
+    result.vocabCount = Math.max((local && local.vocabCount) || 0, (cloud && cloud.vocabCount) || 0);
+
+    return result;
+}
+
+function showSyncStatus(message, type) {
+    var existing = document.getElementById('sync-status-toast');
+    if (existing) existing.remove();
+
+    var toast = document.createElement('div');
+    toast.id = 'sync-status-toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;z-index:9999;transition:opacity 0.3s;';
+    toast.style.background = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6';
+    toast.style.color = '#fff';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 2000);
+}
+
+async function syncFromCloud() {
+    showSyncStatus('Sincronizando...', 'info');
+
+    var cloudData = await loadFromCloud();
+
+    if (cloudData && cloudData.state) {
+        var cloud = cloudData.state;
+
+        // MERGE INTELIGENTE - combinar dados locais e da nuvem
+        JpTracker.state.sessions = mergeObjectsByKey(JpTracker.state.sessions, cloud.sessions);
+        JpTracker.state.hiragana = mergeObjectsByKey(JpTracker.state.hiragana, cloud.hiragana);
+        JpTracker.state.katakana = mergeObjectsByKey(JpTracker.state.katakana, cloud.katakana);
+        JpTracker.state.kanji = mergeObjectsByKey(JpTracker.state.kanji, cloud.kanji);
+        JpTracker.state.vocabulary = mergeObjectsByKey(JpTracker.state.vocabulary, cloud.vocabulary);
+        JpTracker.state.progress = mergeProgress(JpTracker.state.progress, cloud.progress);
+
+        // Salvar localmente o resultado do merge
+        localStorage.setItem('jp-tracker-v1', JSON.stringify(JpTracker.state));
+
+        console.log('✅ Dados merged com sucesso');
+        render();
+
+        // Enviar o resultado do merge de volta para a nuvem
+        await syncToCloud();
+    } else {
+        // Nuvem vazia - enviar dados locais para a nuvem
+        console.log('Nuvem vazia, enviando dados locais...');
+        await syncToCloud();
     }
+}
+
+// Função para forçar sincronização manual
+async function forceSync() {
+    showSyncStatus('Forçando sincronização...', 'info');
+    await syncFromCloud();
 }
 
 function init() { loadState(); updateHeaderDate(); bindNavEvents(); render(); syncFromCloud(); }

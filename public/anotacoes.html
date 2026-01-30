@@ -948,6 +948,7 @@
                 // Herdar tag do filtro atual, se houver
                 const inheritedTags = currentFilter ? [currentFilter] : [];
 
+                console.log('[Anotações] Criando nova nota...');
                 const response = await fetch('/api/anotacoes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -959,11 +960,17 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Erro ao criar anotação');
+                    const errorData = await response.text();
+                    console.error('[Anotações] Erro na resposta:', response.status, errorData);
+                    throw new Error('Erro ao criar anotação: ' + response.status);
                 }
 
                 const newAnnotation = await response.json();
+                console.log('[Anotações] Nota criada:', newAnnotation);
                 currentAnnotation = newAnnotation;
+
+                // Atualizar lista em background
+                loadAnnotations();
 
                 // Atualizar elementos do modal com a nova nota
                 const titleView = document.getElementById('modal-title-view');

@@ -172,9 +172,14 @@
             <div>
                 <div class="header-date" id="header-date"></div>
             </div>
-            <button class="btn-icon" onclick="window.location.href='dashboard.html'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </button>
+            <div style="display:flex;gap:8px;">
+                <button class="btn-icon" onclick="forceSync()" title="Sincronizar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                </button>
+                <button class="btn-icon" onclick="window.location.href='dashboard.html'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </button>
+            </div>
         </div>
         <div class="nav-tabs" id="nav-tabs">
             <span class="nav-tab active" data-view="dia">Dia</span>
@@ -446,18 +451,22 @@ if (typeof window !== 'undefined') {
 // Debounce para evitar múltiplas chamadas de sync
 var syncTimeout = null;
 var lastSyncTime = 0;
+var isSyncing = false;
 
 function saveState() {
     try {
         localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
     } catch(e){}
 
-    // Sincronizar com Google Sheets (debounced - espera 3 segundos após última alteração)
+    // Sincronizar com nuvem (debounced - espera 2 segundos após última alteração)
     clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(syncToCloud, 3000);
+    syncTimeout = setTimeout(syncToCloud, 2000);
 }
 
 async function syncToCloud() {
+    if (isSyncing) return;
+    isSyncing = true;
+
     try {
         var stateToSync = {
             entries: BuJo.state.entries,
@@ -481,10 +490,14 @@ async function syncToCloud() {
             var syncTime = result.timestamp ? new Date(result.timestamp).getTime() : Date.now();
             localStorage.setItem('bujo-kindle-v2-time', syncTime.toString());
             lastSyncTime = syncTime;
-            console.log('Jornal sincronizado com sucesso');
+            console.log('✅ Jornal sincronizado com sucesso');
+            showSyncStatus('Sincronizado!', 'success');
         }
     } catch(e) {
         console.warn('Falha ao sincronizar com nuvem:', e.message);
+        showSyncStatus('Erro ao sincronizar', 'error');
+    } finally {
+        isSyncing = false;
     }
 }
 
@@ -521,29 +534,142 @@ function loadState() {
     } catch(e){}
 }
 
-async function syncFromCloud() {
-    var cloudData = await loadFromCloud();
-    if (cloudData && cloudData.state) {
-        var localTime = localStorage.getItem('bujo-kindle-v2-time') || '0';
-        var cloudTime = new Date(cloudData.timestamp).getTime();
+// ============= FUNÇÕES DE MERGE INTELIGENTE =============
 
-        // Se dados da nuvem são mais recentes, usar eles
-        if (cloudTime > parseInt(localTime)) {
-            var p = cloudData.state;
-            BuJo.state.entries = p.entries || [];
-            BuJo.state.spiritualHabits = p.spiritualHabits || {};
-            BuJo.state.studyGoals = p.studyGoals || {};
-            BuJo.state.mortifications = p.mortifications || {};
-            BuJo.state.projects = p.projects || [];
-            BuJo.state.futureLog = p.futureLog || [];
-            BuJo.state.notes = p.notes || [];
-            BuJo.state.readingProgress = p.readingProgress || BuJo.state.readingProgress;
-            localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
-            localStorage.setItem('bujo-kindle-v2-time', cloudTime.toString());
-            console.log('Dados carregados da nuvem');
-            render();
+// Merge de arrays por ID (entries, projects, futureLog, notes)
+function mergeArraysById(local, cloud) {
+    var map = new Map();
+    // Adicionar itens locais primeiro
+    (local || []).forEach(function(item) {
+        if (item.id) map.set(item.id, item);
+    });
+    // Sobrescrever/adicionar itens da nuvem (mais recentes têm prioridade)
+    (cloud || []).forEach(function(item) {
+        if (item.id) {
+            var existing = map.get(item.id);
+            if (!existing) {
+                map.set(item.id, item);
+            } else {
+                // Se ambos existem, manter o mais recente (baseado em updatedAt ou criação)
+                var localTime = existing.updatedAt || existing.createdAt || 0;
+                var cloudTime = item.updatedAt || item.createdAt || 0;
+                if (cloudTime >= localTime) {
+                    map.set(item.id, item);
+                }
+            }
         }
+    });
+    return Array.from(map.values());
+}
+
+// Merge de objetos por chave (spiritualHabits, studyGoals, mortifications - chave é a data)
+function mergeObjectsByKey(local, cloud) {
+    var result = {};
+    // Copiar todas as chaves locais
+    Object.keys(local || {}).forEach(function(key) {
+        result[key] = local[key];
+    });
+    // Sobrescrever/adicionar chaves da nuvem
+    Object.keys(cloud || {}).forEach(function(key) {
+        if (!result[key]) {
+            result[key] = cloud[key];
+        } else {
+            // Merge profundo para objetos aninhados (ex: spiritualHabits['2026-01-30'] = { serviam: true, ... })
+            if (typeof cloud[key] === 'object' && typeof result[key] === 'object') {
+                result[key] = Object.assign({}, result[key], cloud[key]);
+            } else {
+                result[key] = cloud[key];
+            }
+        }
+    });
+    return result;
+}
+
+// Merge de readingProgress
+function mergeReadingProgress(local, cloud) {
+    var result = {
+        noturna: { currentPage: 0 },
+        currentWeek: 1,
+        books: {}
+    };
+
+    // Usar o maior valor de página/semana entre local e nuvem
+    var localNoturna = (local && local.noturna && local.noturna.currentPage) || 0;
+    var cloudNoturna = (cloud && cloud.noturna && cloud.noturna.currentPage) || 0;
+    result.noturna.currentPage = Math.max(localNoturna, cloudNoturna);
+
+    var localWeek = (local && local.currentWeek) || 1;
+    var cloudWeek = (cloud && cloud.currentWeek) || 1;
+    result.currentWeek = Math.max(localWeek, cloudWeek);
+
+    // Merge de books - usar maior valor para cada livro
+    var localBooks = (local && local.books) || {};
+    var cloudBooks = (cloud && cloud.books) || {};
+    var allBookKeys = new Set(Object.keys(localBooks).concat(Object.keys(cloudBooks)));
+    allBookKeys.forEach(function(key) {
+        result.books[key] = Math.max(localBooks[key] || 0, cloudBooks[key] || 0);
+    });
+
+    return result;
+}
+
+function showSyncStatus(message, type) {
+    var existing = document.getElementById('sync-status-toast');
+    if (existing) existing.remove();
+
+    var toast = document.createElement('div');
+    toast.id = 'sync-status-toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;z-index:9999;transition:opacity 0.3s;';
+    toast.style.background = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6';
+    toast.style.color = '#fff';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 2000);
+}
+
+async function syncFromCloud() {
+    showSyncStatus('Sincronizando...', 'info');
+
+    var cloudData = await loadFromCloud();
+
+    if (cloudData && cloudData.state) {
+        var cloud = cloudData.state;
+
+        // MERGE INTELIGENTE - combinar dados locais e da nuvem
+        BuJo.state.entries = mergeArraysById(BuJo.state.entries, cloud.entries);
+        BuJo.state.projects = mergeArraysById(BuJo.state.projects, cloud.projects);
+        BuJo.state.futureLog = mergeArraysById(BuJo.state.futureLog, cloud.futureLog);
+        BuJo.state.notes = mergeArraysById(BuJo.state.notes, cloud.notes);
+
+        BuJo.state.spiritualHabits = mergeObjectsByKey(BuJo.state.spiritualHabits, cloud.spiritualHabits);
+        BuJo.state.studyGoals = mergeObjectsByKey(BuJo.state.studyGoals, cloud.studyGoals);
+        BuJo.state.mortifications = mergeObjectsByKey(BuJo.state.mortifications, cloud.mortifications);
+
+        BuJo.state.readingProgress = mergeReadingProgress(BuJo.state.readingProgress, cloud.readingProgress);
+
+        // Salvar localmente o resultado do merge
+        localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
+
+        console.log('✅ Dados merged com sucesso');
+        render();
+
+        // Enviar o resultado do merge de volta para a nuvem (para outros dispositivos)
+        await syncToCloud();
+    } else {
+        // Nuvem vazia - enviar dados locais para a nuvem
+        console.log('Nuvem vazia, enviando dados locais...');
+        await syncToCloud();
     }
+}
+
+// Função para forçar sincronização manual
+async function forceSync() {
+    showSyncStatus('Forçando sincronização...', 'info');
+    await syncFromCloud();
 }
 
 async function loadCalendarEvents() {
@@ -1391,7 +1517,7 @@ function addEntryFromSection() {
     var type = document.getElementById('section-add-entry-type').value;
     var text = document.getElementById('section-add-entry-input').value.trim();
     if (!text) return;
-    var newEntry = { id: generateId(), date: dateStr, type: type, text: text, status: type === 'task' ? 'pending' : null };
+    var newEntry = { id: generateId(), date: dateStr, type: type, text: text, status: type === 'task' ? 'pending' : null, createdAt: new Date().toISOString() };
     BuJo.state.entries.push(newEntry);
     recordEvent('entry_added', { id: newEntry.id, type: type, text: text }, dateStr);
     saveState();
@@ -1413,7 +1539,8 @@ function duplicateToNextDay(id) {
         date: nextDateStr,
         type: entry.type,
         text: entry.text,
-        status: 'pending'
+        status: 'pending',
+        createdAt: new Date().toISOString()
     };
     BuJo.state.entries.push(newEntry);
     recordEvent('entry_duplicated', { originalId: id, newId: newEntry.id, text: entry.text, fromDate: entry.date, toDate: nextDateStr }, nextDateStr);

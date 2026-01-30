@@ -84,8 +84,9 @@ async function requireSheets(req, res, next) {
 
 // ============= HELPERS PARA KV =============
 async function getNextId(key) {
-  const current = await db.get(`${key}:counter`) || 0;
-  const next = current + 1;
+  const current = await db.get(`${key}:counter`);
+  const currentNum = parseInt(current) || 0;
+  const next = currentNum + 1;
   await db.set(`${key}:counter`, next);
   return next;
 }
@@ -1128,15 +1129,25 @@ app.get('/api/anotacoes', async (req, res) => {
     const noteKeys = await db.keys('note:*');
     const annotations = [];
 
-    for (const key of noteKeys) {
+    // Garantir que noteKeys é um array
+    const keysArray = Array.isArray(noteKeys) ? noteKeys : [];
+    console.log(`[API] Encontradas ${keysArray.length} chaves de notas`);
+
+    for (const key of keysArray) {
       if (!key.endsWith(':counter')) {
-        const noteData = await db.get(key);
-        if (noteData) {
-          const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
-          annotations.push(note);
+        try {
+          const noteData = await db.get(key);
+          if (noteData) {
+            const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
+            annotations.push(note);
+          }
+        } catch (parseErr) {
+          console.error(`Erro ao parsear nota ${key}:`, parseErr.message);
         }
       }
     }
+
+    console.log(`[API] ${annotations.length} anotações carregadas`);
 
     // Filtrar por tag se especificado
     const tagFilter = req.query.tag;
@@ -1146,7 +1157,7 @@ app.get('/api/anotacoes', async (req, res) => {
     }
 
     // Ordenar por updatedTime (mais recentes primeiro)
-    filtered.sort((a, b) => new Date(b.updatedTime) - new Date(a.updatedTime));
+    filtered.sort((a, b) => new Date(b.updatedTime || b.createdTime) - new Date(a.updatedTime || a.createdTime));
 
     // Adicionar preview para cada anotação
     const withPreview = filtered.map(a => ({
@@ -1182,7 +1193,10 @@ app.get('/api/anotacoes/:id', async (req, res) => {
 app.post('/api/anotacoes', async (req, res) => {
   try {
     const { title, content, tags } = req.body;
+    console.log('[API] Criando nova anotação:', { title, tags });
+
     const id = await getNextId('note');
+    console.log('[API] ID gerado:', id);
 
     const newAnnotation = {
       id: id.toString(),
@@ -1194,6 +1208,7 @@ app.post('/api/anotacoes', async (req, res) => {
     };
 
     await db.set(`note:${id}`, JSON.stringify(newAnnotation));
+    console.log('[API] Anotação salva com sucesso:', newAnnotation.id);
 
     res.status(201).json(newAnnotation);
   } catch (error) {
