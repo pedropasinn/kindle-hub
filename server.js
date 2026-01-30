@@ -938,82 +938,88 @@ app.get('/api/escriva/random-point', async (req, res) => {
   }
 });
 
-// ============= ROTAS DE SINCRONIZAÇÃO COM GOOGLE SHEETS =============
+// ============= ROTAS DE SINCRONIZAÇÃO COM KV (UPSTASH REDIS) =============
 
 // Salvar estado do Jornal (BuJo)
-app.post('/api/sync/jornal', requireSheets, async (req, res) => {
+app.post('/api/sync/jornal', async (req, res) => {
   try {
     const state = req.body;
-    const result = await sheetsDB.saveState('jornal_state', state);
-    res.json(result);
+    const timestamp = new Date().toISOString();
+    await db.set('sync:jornal_state', JSON.stringify({ state, timestamp }));
+    res.json({ success: true, timestamp });
   } catch (error) {
-    console.error('Erro ao salvar jornal no Sheets:', error);
+    console.error('Erro ao salvar jornal no KV:', error);
     res.status(500).json({ error: 'Erro ao salvar dados', details: error.message });
   }
 });
 
 // Carregar estado do Jornal
-app.get('/api/sync/jornal', requireSheets, async (req, res) => {
+app.get('/api/sync/jornal', async (req, res) => {
   try {
-    const data = await sheetsDB.loadState('jornal_state');
+    const data = await db.get('sync:jornal_state');
     if (!data) {
       return res.json({ state: null, message: 'Nenhum dado salvo' });
     }
-    res.json(data);
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    res.json(parsed);
   } catch (error) {
-    console.error('Erro ao carregar jornal do Sheets:', error);
+    console.error('Erro ao carregar jornal do KV:', error);
     res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
   }
 });
 
 // Salvar estado do Nihongo Tracker
-app.post('/api/sync/nihongo', requireSheets, async (req, res) => {
+app.post('/api/sync/nihongo', async (req, res) => {
   try {
     const state = req.body;
-    const result = await sheetsDB.saveState('nihongo_state', state);
-    res.json(result);
+    const timestamp = new Date().toISOString();
+    await db.set('sync:nihongo_state', JSON.stringify({ state, timestamp }));
+    res.json({ success: true, timestamp });
   } catch (error) {
-    console.error('Erro ao salvar nihongo no Sheets:', error);
+    console.error('Erro ao salvar nihongo no KV:', error);
     res.status(500).json({ error: 'Erro ao salvar dados', details: error.message });
   }
 });
 
 // Carregar estado do Nihongo Tracker
-app.get('/api/sync/nihongo', requireSheets, async (req, res) => {
+app.get('/api/sync/nihongo', async (req, res) => {
   try {
-    const data = await sheetsDB.loadState('nihongo_state');
+    const data = await db.get('sync:nihongo_state');
     if (!data) {
       return res.json({ state: null, message: 'Nenhum dado salvo' });
     }
-    res.json(data);
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    res.json(parsed);
   } catch (error) {
-    console.error('Erro ao carregar nihongo do Sheets:', error);
+    console.error('Erro ao carregar nihongo do KV:', error);
     res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
   }
 });
 
 // Salvar estado do Plano de Vida (hábitos)
-app.post('/api/sync/plano', requireSheets, async (req, res) => {
+app.post('/api/sync/plano', async (req, res) => {
   try {
     const state = req.body;
-    const result = await sheetsDB.saveState('plano_state', state);
-    res.json(result);
+    const timestamp = new Date().toISOString();
+    await db.set('sync:plano_state', JSON.stringify({ state, timestamp }));
+    res.json({ success: true, timestamp });
   } catch (error) {
-    console.error('Erro ao salvar plano no Sheets:', error);
+    console.error('Erro ao salvar plano no KV:', error);
     res.status(500).json({ error: 'Erro ao salvar dados', details: error.message });
   }
 });
 
 // Carregar estado do Plano de Vida
-app.get('/api/sync/plano', requireSheets, async (req, res) => {
+app.get('/api/sync/plano', async (req, res) => {
   try {
-    const data = await sheetsDB.loadState('plano_state');
+    const data = await db.get('sync:plano_state');
     if (!data) {
       return res.json({ state: null, message: 'Nenhum dado salvo' });
     }
-    res.json(data);
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+    res.json(parsed);
   } catch (error) {
-    console.error('Erro ao carregar plano do Sheets:', error);
+    console.error('Erro ao carregar plano do KV:', error);
     res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
   }
 });
