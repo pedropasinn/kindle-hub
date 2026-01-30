@@ -123,14 +123,9 @@
                 <div class="app-title"><span class="jp">日本語</span> TRACKER</div>
                 <div class="header-date" id="header-date"></div>
             </div>
-            <div style="display:flex;gap:8px;">
-                <button class="btn-icon" onclick="forceSync()" title="Sincronizar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-                </button>
-                <button class="btn-icon" onclick="exportData()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                </button>
-            </div>
+            <button class="btn-icon" onclick="exportData()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
         </div>
         <div class="nav-tabs" id="nav-tabs">
             <span class="nav-tab active" data-view="hoje">Hoje</span>
@@ -317,11 +312,9 @@ async function syncToCloud() {
             localStorage.setItem('jp-tracker-v1-time', syncTime.toString());
             lastSyncTime = syncTime;
             console.log('✅ Nihongo sincronizado com sucesso');
-            showSyncStatus('Sincronizado!', 'success');
         }
     } catch(e) {
         console.warn('Falha ao sincronizar com nuvem:', e.message);
-        showSyncStatus('Erro ao sincronizar', 'error');
     } finally {
         isSyncing = false;
     }
@@ -396,27 +389,7 @@ function mergeProgress(local, cloud) {
     return result;
 }
 
-function showSyncStatus(message, type) {
-    var existing = document.getElementById('sync-status-toast');
-    if (existing) existing.remove();
-
-    var toast = document.createElement('div');
-    toast.id = 'sync-status-toast';
-    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;z-index:9999;transition:opacity 0.3s;';
-    toast.style.background = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6';
-    toast.style.color = '#fff';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(function() {
-        toast.style.opacity = '0';
-        setTimeout(function() { toast.remove(); }, 300);
-    }, 2000);
-}
-
 async function syncFromCloud() {
-    showSyncStatus('Sincronizando...', 'info');
-
     var cloudData = await loadFromCloud();
 
     if (cloudData && cloudData.state) {
@@ -443,12 +416,6 @@ async function syncFromCloud() {
         console.log('Nuvem vazia, enviando dados locais...');
         await syncToCloud();
     }
-}
-
-// Função para forçar sincronização manual
-async function forceSync() {
-    showSyncStatus('Forçando sincronização...', 'info');
-    await syncFromCloud();
 }
 
 function init() { loadState(); updateHeaderDate(); bindNavEvents(); render(); syncFromCloud(); }

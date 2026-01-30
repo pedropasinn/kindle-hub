@@ -172,14 +172,9 @@
             <div>
                 <div class="header-date" id="header-date"></div>
             </div>
-            <div style="display:flex;gap:8px;">
-                <button class="btn-icon" onclick="forceSync()" title="Sincronizar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-                </button>
-                <button class="btn-icon" onclick="window.location.href='dashboard.html'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </button>
-            </div>
+            <button class="btn-icon" onclick="window.location.href='dashboard.html'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </button>
         </div>
         <div class="nav-tabs" id="nav-tabs">
             <span class="nav-tab active" data-view="dia">Dia</span>
@@ -491,11 +486,9 @@ async function syncToCloud() {
             localStorage.setItem('bujo-kindle-v2-time', syncTime.toString());
             lastSyncTime = syncTime;
             console.log('✅ Jornal sincronizado com sucesso');
-            showSyncStatus('Sincronizado!', 'success');
         }
     } catch(e) {
         console.warn('Falha ao sincronizar com nuvem:', e.message);
-        showSyncStatus('Erro ao sincronizar', 'error');
     } finally {
         isSyncing = false;
     }
@@ -613,27 +606,7 @@ function mergeReadingProgress(local, cloud) {
     return result;
 }
 
-function showSyncStatus(message, type) {
-    var existing = document.getElementById('sync-status-toast');
-    if (existing) existing.remove();
-
-    var toast = document.createElement('div');
-    toast.id = 'sync-status-toast';
-    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:14px;z-index:9999;transition:opacity 0.3s;';
-    toast.style.background = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6';
-    toast.style.color = '#fff';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(function() {
-        toast.style.opacity = '0';
-        setTimeout(function() { toast.remove(); }, 300);
-    }, 2000);
-}
-
 async function syncFromCloud() {
-    showSyncStatus('Sincronizando...', 'info');
-
     var cloudData = await loadFromCloud();
 
     if (cloudData && cloudData.state) {
@@ -664,12 +637,6 @@ async function syncFromCloud() {
         console.log('Nuvem vazia, enviando dados locais...');
         await syncToCloud();
     }
-}
-
-// Função para forçar sincronização manual
-async function forceSync() {
-    showSyncStatus('Forçando sincronização...', 'info');
-    await syncFromCloud();
 }
 
 async function loadCalendarEvents() {
@@ -883,11 +850,6 @@ function renderDayView() {
         html += '<div style="font-size:var(--font-size-xs);color:var(--muted-foreground);margin-top:2px;">' + readingSummary + '</div>';
     }
     html += '</div>';
-    html += '</div>';
-
-    // EXAME DE CONSCIÊNCIA
-    html += '<div class="day-btn" onclick="openDaySection(\'exame\')" style="background:var(--secondary);border-color:var(--primary);">';
-    html += '<span class="day-btn-label">Exame de Consciência</span>';
     html += '</div>';
 
     html += '</div>';
@@ -1511,6 +1473,15 @@ function bindDaySectionEvents(section, dateStr) {
         });
         var addMortBtn = document.getElementById('section-add-mort-btn');
         if (addMortBtn) addMortBtn.onclick = function() { showAddMortModalFromSection(dateStr); };
+
+        // Link do Exame para abrir seção de Exame de Consciência
+        document.querySelectorAll('.exame-link').forEach(function(el) {
+            el.onclick = function(e) {
+                e.stopPropagation();
+                closeDaySection();
+                setTimeout(function() { openDaySection('exame'); }, 50);
+            };
+        });
     }
 }
 
@@ -1626,7 +1597,12 @@ function renderDaySectionPlano(dateStr, dow, thirdSunday) {
     html += '<div style="display:-webkit-box;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;">';
     BuJo.dailySpiritualHabits.forEach(function(h) {
         var checked = dayHabits[h.id] || false;
-        html += '<div class="habit-row" style="width:50%;-webkit-box-sizing:border-box;box-sizing:border-box;padding-right:8px;"><span class="habit-name">' + h.name + '</span>';
+        var nameHtml = h.name;
+        // Tornar "Exame" clicável para abrir a seção de Exame de Consciência
+        if (h.id === 'exame') {
+            nameHtml = '<span class="exame-link" style="cursor:pointer;text-decoration:underline;color:var(--primary);">' + h.name + '</span>';
+        }
+        html += '<div class="habit-row" style="width:50%;-webkit-box-sizing:border-box;box-sizing:border-box;padding-right:8px;"><span class="habit-name">' + nameHtml + '</span>';
         html += '<span class="habit-check section-spiritual-check' + (checked ? ' checked' : '') + '" data-habit="' + h.id + '" data-date="' + dateStr + '">' + (checked ? '✓' : '') + '</span></div>';
     });
     html += '</div>';
