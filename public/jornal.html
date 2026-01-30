@@ -885,6 +885,11 @@ function renderDayView() {
     html += '</div>';
     html += '</div>';
 
+    // EXAME DE CONSCIÊNCIA
+    html += '<div class="day-btn" onclick="openDaySection(\'exame\')" style="background:var(--secondary);border-color:var(--primary);">';
+    html += '<span class="day-btn-label">Exame de Consciência</span>';
+    html += '</div>';
+
     html += '</div>';
     return html;
 }
@@ -1426,6 +1431,7 @@ function openDaySection(section) {
     else if (section === 'plano') title = 'Plano de Vida';
     else if (section === 'mortificacoes') title = 'Mortificações';
     else if (section === 'leituras') title = 'Leituras do Dia';
+    else if (section === 'exame') title = 'Exame de Consciência';
 
     html += '<span class="modal-full-title">' + title + '</span>';
     html += '<button class="modal-full-close" onclick="closeDaySection()">Voltar</button>';
@@ -1436,6 +1442,7 @@ function openDaySection(section) {
     else if (section === 'plano') html += renderDaySectionPlano(dateStr, dow, thirdSunday);
     else if (section === 'mortificacoes') html += renderDaySectionMortificacoes(dateStr);
     else if (section === 'leituras') html += renderDaySectionLeituras();
+    else if (section === 'exame') html += renderDaySectionExame();
 
     html += '</div>';
 
@@ -1701,6 +1708,43 @@ function renderDaySectionLeituras() {
     }
 
     html += '<div style="margin-top:20px;text-align:center;"><span class="btn btn-primary" onclick="closeDaySection();setView(\'leituras\');" style="padding:14px 24px;">Ir para Leituras Completas</span></div>';
+    html += '</div>';
+    return html;
+}
+
+function renderDaySectionExame() {
+    var html = '<div style="padding:0 4px;line-height:1.8;">';
+
+    html += '<div style="font-size:var(--font-size-xl);font-weight:700;margin-bottom:20px;padding-bottom:10px;border-bottom:3px solid var(--primary);">';
+    html += 'Jesus, afasta de mim o que me afasta de ti!';
+    html += '</div>';
+
+    html += '<div style="margin-bottom:24px;">';
+    html += '<p style="font-size:var(--font-size-base);margin-bottom:16px;"><strong>"Muitos vivem como anjos no meio do mundo. - Tu… por que não? (C122)"</strong></p>';
+    html += '<p style="font-size:var(--font-size-sm);color:var(--muted-foreground);padding-left:12px;border-left:3px solid var(--border);">Usei o telefone enquanto estava deitado? Tirei ele do modo sono sem necessidade? Fiquei usando ele até tarde?</p>';
+    html += '</div>';
+
+    html += '<div style="margin-bottom:24px;">';
+    html += '<p style="font-size:var(--font-size-base);margin-bottom:16px;"><strong>"Põe um motivo sobrenatural na tua atividade profissional de cada dia, e terás santificado o trabalho. (C359)"</strong></p>';
+    html += '<p style="font-size:var(--font-size-sm);color:var(--muted-foreground);padding-left:12px;border-left:3px solid var(--border);">Lembrei de pedir graças antes de estudar? Deixei me distrair durante o estudo? Agradeci o tempo de estudo?</p>';
+    html += '</div>';
+
+    html += '<div style="margin-bottom:24px;">';
+    html += '<p style="font-size:var(--font-size-base);margin-bottom:16px;"><strong>"Estar ocioso é coisa que não se compreende num homem com alma de apóstolo. (C358)"</strong></p>';
+    html += '<p style="font-size:var(--font-size-sm);color:var(--muted-foreground);padding-left:12px;border-left:3px solid var(--border);">Lembrei das jaculatórias habituais? Vivi bem o tempo da tarde? Levei a sério o meu apostolado planejado?</p>';
+    html += '</div>';
+
+    html += '<div style="margin-top:30px;padding-top:20px;border-top:2px solid var(--primary);">';
+    html += '<div style="font-size:var(--font-size-xl);font-weight:700;margin-bottom:16px;">Ato de Contrição</div>';
+    html += '<p style="font-size:var(--font-size-base);font-style:italic;background:var(--secondary);padding:16px;border-radius:var(--radius);">';
+    html += 'Senhor, me arrependo de todo o coração de vos ter ofendido. Dai-me a graça de não mais pecar.';
+    html += '</p>';
+    html += '</div>';
+
+    html += '<div style="text-align:center;margin-top:30px;">';
+    html += '<img src="/Imagens/download.png" alt="Imagem devocional" style="max-width:100%;height:auto;border-radius:var(--radius);">';
+    html += '</div>';
+
     html += '</div>';
     return html;
 }
