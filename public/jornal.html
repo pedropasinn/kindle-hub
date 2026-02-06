@@ -189,10 +189,13 @@
 </div>
 <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
 <script>
+var TIME_OFFSET_MINUTES = -180; // -3h (UTC-3 Brasil)
+function agoraCorrigido() { var d = new Date(); return new Date(d.getTime() + TIME_OFFSET_MINUTES * 60000); }
+
 var BuJo = {
     state: {
         currentView: 'dia',
-        selectedDate: new Date(),
+        selectedDate: agoraCorrigido(),
         entries: [],
         spiritualHabits: {},
         studyGoals: {},
@@ -365,103 +368,25 @@ function getWeekDays(date) {
     return days;
 }
 function isToday(date) {
-    var today = new Date();
+    var today = agoraCorrigido();
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
 }
 function isThirdSunday(date) { return date.getDay() === 0 && date.getDate() >= 15 && date.getDate() <= 21; }
 function formatDateDisplay(date) { return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
 function formatDateShort(date) { return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
-// ============= SISTEMA DE LOG DE EVENTOS =============
-function getDeviceId() {
-    var deviceId = localStorage.getItem('bujo-device-id');
-    if (!deviceId) {
-        deviceId = 'device-' + generateId();
-        localStorage.setItem('bujo-device-id', deviceId);
-    }
-    return deviceId;
-}
-
-function recordEvent(type, payload, dateKey) {
-    var event = {
-        eventId: generateId(),
-        app: 'jornal',
-        deviceId: getDeviceId(),
-        ts: new Date().toISOString(),
-        type: type,
-        dateKey: dateKey || null,
-        payload: payload || {}
-    };
-
-    var queue = [];
-    try {
-        var saved = localStorage.getItem('bujo-event-queue');
-        if (saved) queue = JSON.parse(saved);
-    } catch(e) {}
-
-    queue.push(event);
-    localStorage.setItem('bujo-event-queue', JSON.stringify(queue));
-
-    // Tentar flush se fila grande ou após 10 segundos
-    if (queue.length >= 10) {
-        flushEventQueue();
-    } else {
-        clearTimeout(window.eventFlushTimeout);
-        window.eventFlushTimeout = setTimeout(flushEventQueue, 10000);
-    }
-}
-
-async function flushEventQueue() {
-    var queue = [];
-    try {
-        var saved = localStorage.getItem('bujo-event-queue');
-        if (saved) queue = JSON.parse(saved);
-    } catch(e) {}
-
-    if (queue.length === 0) return;
-
-    try {
-        var response = await fetch('/api/log/batch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ events: queue })
-        });
-
-        if (response.ok) {
-            var result = await response.json();
-            console.log('Eventos enviados:', result.accepted, 'de', result.total);
-            // Limpar apenas os eventos enviados com sucesso
-            localStorage.setItem('bujo-event-queue', '[]');
-        }
-    } catch(e) {
-        console.warn('Falha ao enviar eventos:', e.message);
-    }
-}
-
-// Flush quando voltar online
-if (typeof window !== 'undefined') {
-    window.addEventListener('online', flushEventQueue);
-}
-
-// Debounce para evitar múltiplas chamadas de sync
+// ============= SALVAMENTO E CARREGAMENTO (SERVIDOR) =============
 var syncTimeout = null;
-var lastSyncTime = 0;
 var isSyncing = false;
 
 function saveState() {
-    try {
-        localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
-    } catch(e){}
-
-    // Sincronizar com nuvem (debounced - espera 2 segundos após última alteração)
     clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(syncToCloud, 2000);
+    syncTimeout = setTimeout(syncToServer, 2000);
 }
 
-async function syncToCloud() {
+async function syncToServer() {
     if (isSyncing) return;
     isSyncing = true;
-
     try {
         var stateToSync = {
             entries: BuJo.state.entries,
@@ -473,170 +398,43 @@ async function syncToCloud() {
             notes: BuJo.state.notes,
             readingProgress: BuJo.state.readingProgress
         };
-
         var response = await fetch('/api/sync/jornal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(stateToSync)
         });
-
         if (response.ok) {
-            var result = await response.json();
-            var syncTime = result.timestamp ? new Date(result.timestamp).getTime() : Date.now();
-            localStorage.setItem('bujo-kindle-v2-time', syncTime.toString());
-            lastSyncTime = syncTime;
-            console.log('✅ Jornal sincronizado com sucesso');
+            console.log('Jornal salvo no servidor');
         }
     } catch(e) {
-        console.warn('Falha ao sincronizar com nuvem:', e.message);
+        console.warn('Falha ao salvar no servidor:', e.message);
     } finally {
         isSyncing = false;
     }
 }
 
-async function loadFromCloud() {
+async function loadFromServer() {
     try {
         var response = await fetch('/api/sync/jornal');
         if (response.ok) {
             var data = await response.json();
             if (data.state) {
-                return data;
+                var s = data.state;
+                BuJo.state.entries = s.entries || [];
+                BuJo.state.spiritualHabits = s.spiritualHabits || {};
+                BuJo.state.studyGoals = s.studyGoals || {};
+                BuJo.state.mortifications = s.mortifications || {};
+                BuJo.state.projects = s.projects || [];
+                BuJo.state.futureLog = s.futureLog || [];
+                BuJo.state.notes = s.notes || [];
+                BuJo.state.readingProgress = s.readingProgress || { noturna: { currentPage: 0 }, currentWeek: 1, books: {} };
+                return true;
             }
         }
     } catch(e) {
-        console.warn('Falha ao carregar da nuvem:', e.message);
+        console.warn('Falha ao carregar do servidor:', e.message);
     }
-    return null;
-}
-
-function loadState() {
-    try {
-        var saved = localStorage.getItem('bujo-kindle-v2');
-        if (saved) {
-            var p = JSON.parse(saved);
-            BuJo.state.entries = p.entries || [];
-            BuJo.state.spiritualHabits = p.spiritualHabits || {};
-            BuJo.state.studyGoals = p.studyGoals || {};
-            BuJo.state.mortifications = p.mortifications || {};
-            BuJo.state.projects = p.projects || [];
-            BuJo.state.futureLog = p.futureLog || [];
-            BuJo.state.notes = p.notes || [];
-            BuJo.state.readingProgress = p.readingProgress || { noturna: { currentPage: 0 }, currentWeek: 1, books: {} };
-            if (p.selectedDate) BuJo.state.selectedDate = new Date(p.selectedDate);
-        }
-    } catch(e){}
-}
-
-// ============= FUNÇÕES DE MERGE INTELIGENTE =============
-
-// Merge de arrays por ID (entries, projects, futureLog, notes)
-function mergeArraysById(local, cloud) {
-    var map = new Map();
-    // Adicionar itens locais primeiro
-    (local || []).forEach(function(item) {
-        if (item.id) map.set(item.id, item);
-    });
-    // Sobrescrever/adicionar itens da nuvem (mais recentes têm prioridade)
-    (cloud || []).forEach(function(item) {
-        if (item.id) {
-            var existing = map.get(item.id);
-            if (!existing) {
-                map.set(item.id, item);
-            } else {
-                // Se ambos existem, manter o mais recente (baseado em updatedAt ou criação)
-                var localTime = existing.updatedAt || existing.createdAt || 0;
-                var cloudTime = item.updatedAt || item.createdAt || 0;
-                if (cloudTime >= localTime) {
-                    map.set(item.id, item);
-                }
-            }
-        }
-    });
-    return Array.from(map.values());
-}
-
-// Merge de objetos por chave (spiritualHabits, studyGoals, mortifications - chave é a data)
-function mergeObjectsByKey(local, cloud) {
-    var result = {};
-    // Copiar todas as chaves locais
-    Object.keys(local || {}).forEach(function(key) {
-        result[key] = local[key];
-    });
-    // Sobrescrever/adicionar chaves da nuvem
-    Object.keys(cloud || {}).forEach(function(key) {
-        if (!result[key]) {
-            result[key] = cloud[key];
-        } else {
-            // Merge profundo para objetos aninhados (ex: spiritualHabits['2026-01-30'] = { serviam: true, ... })
-            if (typeof cloud[key] === 'object' && typeof result[key] === 'object') {
-                result[key] = Object.assign({}, result[key], cloud[key]);
-            } else {
-                result[key] = cloud[key];
-            }
-        }
-    });
-    return result;
-}
-
-// Merge de readingProgress
-function mergeReadingProgress(local, cloud) {
-    var result = {
-        noturna: { currentPage: 0 },
-        currentWeek: 1,
-        books: {}
-    };
-
-    // Usar o maior valor de página/semana entre local e nuvem
-    var localNoturna = (local && local.noturna && local.noturna.currentPage) || 0;
-    var cloudNoturna = (cloud && cloud.noturna && cloud.noturna.currentPage) || 0;
-    result.noturna.currentPage = Math.max(localNoturna, cloudNoturna);
-
-    var localWeek = (local && local.currentWeek) || 1;
-    var cloudWeek = (cloud && cloud.currentWeek) || 1;
-    result.currentWeek = Math.max(localWeek, cloudWeek);
-
-    // Merge de books - usar maior valor para cada livro
-    var localBooks = (local && local.books) || {};
-    var cloudBooks = (cloud && cloud.books) || {};
-    var allBookKeys = new Set(Object.keys(localBooks).concat(Object.keys(cloudBooks)));
-    allBookKeys.forEach(function(key) {
-        result.books[key] = Math.max(localBooks[key] || 0, cloudBooks[key] || 0);
-    });
-
-    return result;
-}
-
-async function syncFromCloud() {
-    var cloudData = await loadFromCloud();
-
-    if (cloudData && cloudData.state) {
-        var cloud = cloudData.state;
-
-        // MERGE INTELIGENTE - combinar dados locais e da nuvem
-        BuJo.state.entries = mergeArraysById(BuJo.state.entries, cloud.entries);
-        BuJo.state.projects = mergeArraysById(BuJo.state.projects, cloud.projects);
-        BuJo.state.futureLog = mergeArraysById(BuJo.state.futureLog, cloud.futureLog);
-        BuJo.state.notes = mergeArraysById(BuJo.state.notes, cloud.notes);
-
-        BuJo.state.spiritualHabits = mergeObjectsByKey(BuJo.state.spiritualHabits, cloud.spiritualHabits);
-        BuJo.state.studyGoals = mergeObjectsByKey(BuJo.state.studyGoals, cloud.studyGoals);
-        BuJo.state.mortifications = mergeObjectsByKey(BuJo.state.mortifications, cloud.mortifications);
-
-        BuJo.state.readingProgress = mergeReadingProgress(BuJo.state.readingProgress, cloud.readingProgress);
-
-        // Salvar localmente o resultado do merge
-        localStorage.setItem('bujo-kindle-v2', JSON.stringify(BuJo.state));
-
-        console.log('✅ Dados merged com sucesso');
-        render();
-
-        // Enviar o resultado do merge de volta para a nuvem (para outros dispositivos)
-        await syncToCloud();
-    } else {
-        // Nuvem vazia - enviar dados locais para a nuvem
-        console.log('Nuvem vazia, enviando dados locais...');
-        await syncToCloud();
-    }
+    return false;
 }
 
 async function loadCalendarEvents() {
@@ -667,10 +465,17 @@ function getEventsForDate(dateStr) {
     return events;
 }
 
-function init() { loadState(); updateHeaderDate(); bindNavEvents(); loadCalendarEvents(); syncFromCloud(); }
+async function init() {
+    document.getElementById('main-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted-foreground);">Carregando...</div>';
+    updateHeaderDate();
+    bindNavEvents();
+    await loadFromServer();
+    render();
+    loadCalendarEvents();
+}
 function updateHeaderDate() {
     var headerDate = document.getElementById('header-date');
-    headerDate.textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    headerDate.textContent = agoraCorrigido().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     headerDate.onclick = function() { goToToday(); };
 }
 function bindNavEvents() {
@@ -858,7 +663,7 @@ function renderDayView() {
 
 function getCurrentOrNextEvent(events) {
     if (!events || events.length === 0) return null;
-    var now = new Date();
+    var now = agoraCorrigido();
     var currentHour = now.getHours();
     var currentMin = now.getMinutes();
     var currentTime = currentHour * 60 + currentMin;
@@ -1200,13 +1005,12 @@ function navigateWeek(delta) { BuJo.state.selectedDate = new Date(BuJo.state.sel
 function navigateMonth(delta) { var d = BuJo.state.selectedDate; BuJo.state.selectedDate = new Date(d.getFullYear(), d.getMonth() + delta, 1); render(); }
 function selectMonthDay(dateStr) { BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00'); render(); }
 function goToDay(dateStr) { BuJo.state.selectedDate = new Date(dateStr + 'T12:00:00'); setView('dia'); }
-function goToToday() { BuJo.state.selectedDate = new Date(); render(); }
+function goToToday() { BuJo.state.selectedDate = agoraCorrigido(); render(); }
 
 function toggleSpiritualHabit(habitId, dateStr) {
     if (!BuJo.state.spiritualHabits[dateStr]) BuJo.state.spiritualHabits[dateStr] = {};
     var newValue = !BuJo.state.spiritualHabits[dateStr][habitId];
     BuJo.state.spiritualHabits[dateStr][habitId] = newValue;
-    recordEvent('spiritual_toggled', { habitId: habitId, value: newValue }, dateStr);
     saveState(); render();
 }
 function toggleStudyGoal(habitId, dateStr, index) {
@@ -1214,14 +1018,12 @@ function toggleStudyGoal(habitId, dateStr, index) {
     if (!BuJo.state.studyGoals[dateStr][habitId]) BuJo.state.studyGoals[dateStr][habitId] = [];
     var newValue = !BuJo.state.studyGoals[dateStr][habitId][index];
     BuJo.state.studyGoals[dateStr][habitId][index] = newValue;
-    recordEvent('study_toggled', { habitId: habitId, index: index, value: newValue }, dateStr);
     saveState(); render();
 }
 function toggleMortification(dateStr, index) {
     var morts = BuJo.state.mortifications[dateStr];
     if (morts && morts[index]) {
         morts[index].done = !morts[index].done;
-        recordEvent('mortification_toggled', { index: index, text: morts[index].text, done: morts[index].done }, dateStr);
         saveState(); render();
     }
 }
@@ -1234,21 +1036,16 @@ function addEntry() {
     var dateStr = formatDateKey(BuJo.state.selectedDate);
     var newEntry = { id: generateId(), date: dateStr, type: type, text: text, status: 'pending', createdAt: new Date().toISOString() };
     BuJo.state.entries.push(newEntry);
-    recordEvent('entry_added', { id: newEntry.id, entryType: type, text: text, status: 'pending' }, dateStr);
     saveState(); input.value = ''; render();
 }
 function cycleEntrySymbol(id) {
     var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
     if (entry && entry.type === 'task') {
-        var oldStatus = entry.status;
         entry.status = entry.status === 'pending' ? 'done' : entry.status === 'done' ? 'migrated' : 'pending';
-        recordEvent('entry_status_changed', { id: id, from: oldStatus, to: entry.status }, entry.date);
         saveState(); render();
     }
 }
 function deleteEntry(id) {
-    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
-    if (entry) recordEvent('entry_deleted', { id: id, entryType: entry.type, text: entry.text }, entry.date);
     BuJo.state.entries = BuJo.state.entries.filter(function(e) { return e.id !== id; });
     saveState();
     closeModal();
@@ -1281,14 +1078,10 @@ function editEntry(id) {
     var newType = document.getElementById('edit-entry-type').value;
     var newDate = document.getElementById('edit-entry-date').value;
     if (!newText) return;
-    var oldText = entry.text;
-    var oldType = entry.type;
-    var oldDate = entry.date;
     entry.text = newText;
     entry.type = newType;
     entry.date = newDate;
     if (newType !== 'task') entry.status = 'pending';
-    recordEvent('entry_edited', { id: id, oldText: oldText, newText: newText, oldType: oldType, newType: newType, oldDate: oldDate, newDate: newDate }, entry.date);
     saveState();
     closeModal();
     if (daySectionOverlay) {
@@ -1347,14 +1140,10 @@ function showEventDetails(dateStr, eventIdx) {
 }
 
 function deleteNote(id) {
-    var note = BuJo.state.notes.find(function(n) { return n.id === id; });
-    if (note) recordEvent('note_deleted', { id: id, text: note.text }, note.date);
     BuJo.state.notes = BuJo.state.notes.filter(function(n) { return n.id !== id; });
     saveState(); render();
 }
 function deleteFutureEntry(id) {
-    var entry = BuJo.state.futureLog.find(function(f) { return f.id === id; });
-    if (entry) recordEvent('future_deleted', { id: id, text: entry.text, month: entry.month });
     BuJo.state.futureLog = BuJo.state.futureLog.filter(function(f) { return f.id !== id; });
     saveState(); render();
 }
@@ -1497,7 +1286,6 @@ function addEntryFromSection() {
     if (!text) return;
     var newEntry = { id: generateId(), date: dateStr, type: type, text: text, status: type === 'task' ? 'pending' : null, createdAt: new Date().toISOString() };
     BuJo.state.entries.push(newEntry);
-    recordEvent('entry_added', { id: newEntry.id, type: type, text: text }, dateStr);
     saveState();
     refreshDaySection('registros');
 }
@@ -1521,7 +1309,6 @@ function duplicateToNextDay(id) {
         createdAt: new Date().toISOString()
     };
     BuJo.state.entries.push(newEntry);
-    recordEvent('entry_duplicated', { originalId: id, newId: newEntry.id, text: entry.text, fromDate: entry.date, toDate: nextDateStr }, nextDateStr);
     saveState();
     refreshDaySection('registros');
 }
@@ -1536,7 +1323,6 @@ function toggleEntryStar(id) {
     });
     // Alterna a estrela deste registro
     entry.starred = !entry.starred;
-    recordEvent('entry_starred', { id: id, starred: entry.starred }, dateStr);
     saveState();
     refreshDaySection('registros');
 }
@@ -1736,7 +1522,6 @@ function addMortification(dateStr) {
     if (!text) return;
     if (!BuJo.state.mortifications[dateStr]) BuJo.state.mortifications[dateStr] = [];
     BuJo.state.mortifications[dateStr].push({ text: text, done: false });
-    recordEvent('mortification_added', { text: text }, dateStr);
     saveState();
     closeModal();
     if (daySectionOverlay) {
@@ -1757,7 +1542,6 @@ function addProject() {
     if (!name) return;
     var newProject = { id: generateId(), name: name, nextAction: document.getElementById('project-next').value, status: 'Em andamento', createdAt: new Date().toISOString() };
     BuJo.state.projects.push(newProject);
-    recordEvent('project_added', { id: newProject.id, name: name });
     saveState(); closeModal(); render();
 }
 
@@ -1780,7 +1564,6 @@ function addFutureEntry() {
     var day = document.getElementById('future-day').value || null;
     var newEntry = { id: generateId(), month: month, day: day, text: text, createdAt: new Date().toISOString() };
     BuJo.state.futureLog.push(newEntry);
-    recordEvent('future_added', { id: newEntry.id, month: month, day: day, text: text });
     saveState(); closeModal(); render();
 }
 
@@ -1796,7 +1579,6 @@ function addNote() {
     var noteType = document.getElementById('note-type').value.trim() || 'Nota';
     var newNote = { id: generateId(), text: text, type: noteType, createdAt: new Date().toISOString() };
     BuJo.state.notes.push(newNote);
-    recordEvent('note_added', { id: newNote.id, text: text, type: noteType });
     saveState(); closeModal(); render();
 }
 
@@ -2077,7 +1859,7 @@ function getBookNameFromKey(bookKey) {
 
 function updateNoturna(v) {
     var page = parseInt(v) || 0;
-    var dateStr = formatDateKey(new Date());
+    var dateStr = formatDateKey(agoraCorrigido());
     if (!BuJo.state.readingProgress.noturna.history) BuJo.state.readingProgress.noturna.history = {};
     BuJo.state.readingProgress.noturna.history[dateStr] = page;
     BuJo.state.readingProgress.noturna.currentPage = page;
@@ -2093,7 +1875,7 @@ function updateBookPage(bookKey, pInicio, pFim, pageValue) {
     } else {
         BuJo.state.readingProgress.books[bookKey] = page - pInicio + 1;
     }
-    var dateStr = formatDateKey(new Date());
+    var dateStr = formatDateKey(agoraCorrigido());
     if (!BuJo.state.readingProgress.history) BuJo.state.readingProgress.history = {};
     if (!BuJo.state.readingProgress.history[dateStr]) BuJo.state.readingProgress.history[dateStr] = {};
     BuJo.state.readingProgress.history[dateStr][bookKey] = page;

@@ -579,6 +579,9 @@
             }
         };
 
+        const TIME_OFFSET_MINUTES = -180; // -3h (UTC-3 Brasil)
+        function agoraCorrigido() { const d = new Date(); return new Date(d.getTime() + TIME_OFFSET_MINUTES * 60000); }
+
         let idiomaAtualOracao = 'pt';
         let oracaoAtual = null;
         let clickTimeout = null;
@@ -587,7 +590,7 @@
 
         // Determinar qual oracao mostrar baseado no dia da semana
         function getOracaoDoDia() {
-            const hoje = new Date().getDay();
+            const hoje = agoraCorrigido().getDay();
             if (hoje === 2) return 'salmo_2';
             else if (hoje === 4) return 'adoro_te_devote';
             else return 'cantico_tres_jovens';

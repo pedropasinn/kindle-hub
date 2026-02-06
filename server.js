@@ -1033,95 +1033,53 @@ app.get('/api/sync/status', (req, res) => {
   });
 });
 
-// ============= ROTAS DE LOG DE EVENTOS =============
-
-// Receber batch de eventos (append-only log)
-app.post('/api/log/batch', async (req, res) => {
-  try {
-    const { events } = req.body;
-
-    if (!Array.isArray(events)) {
-      return res.status(400).json({ error: 'events deve ser um array' });
-    }
-
-    if (events.length > 200) {
-      return res.status(400).json({ error: 'Máximo de 200 eventos por batch' });
-    }
-
-    let accepted = 0;
-
-    for (const event of events) {
-      // Validar campos obrigatórios
-      if (!event.eventId || !event.app || !event.type || !event.ts) {
-        continue;
-      }
-
-      // Verificar se evento já foi processado (idempotência)
-      const existingEvent = await db.get(`log:${event.eventId}`);
-      if (existingEvent) {
-        continue;
-      }
-
-      // Normalizar e salvar evento
-      const logEntry = {
-        eventId: event.eventId,
-        app: event.app,
-        deviceId: event.deviceId || 'unknown',
-        ts: event.ts,
-        type: event.type,
-        dateKey: event.dateKey || null,
-        payload: event.payload || {},
-        receivedAt: new Date().toISOString()
-      };
-
-      await db.set(`log:${event.eventId}`, JSON.stringify(logEntry));
-      accepted++;
-    }
-
-    res.json({ ok: true, accepted, total: events.length });
-  } catch (error) {
-    console.error('Erro ao salvar log de eventos:', error);
-    res.status(500).json({ error: 'Erro ao salvar eventos', details: error.message });
-  }
-});
-
-// Listar eventos (para debug/análise)
-app.get('/api/log', async (req, res) => {
-  try {
-    const { app, from, to, limit = 100 } = req.query;
-    const logKeys = await db.keys('log:*');
-    const events = [];
-
-    for (const key of logKeys) {
-      const eventData = await db.get(key);
-      if (eventData) {
-        const event = typeof eventData === 'string' ? JSON.parse(eventData) : eventData;
-
-        // Filtrar por app se especificado
-        if (app && event.app !== app) continue;
-
-        // Filtrar por intervalo de datas se especificado
-        if (from && event.ts < from) continue;
-        if (to && event.ts > to) continue;
-
-        events.push(event);
-      }
-    }
-
-    // Ordenar por timestamp (mais recentes primeiro)
-    events.sort((a, b) => new Date(b.ts) - new Date(a.ts));
-
-    // Limitar quantidade
-    const limitedEvents = events.slice(0, parseInt(limit));
-
-    res.json({ events: limitedEvents, total: events.length });
-  } catch (error) {
-    console.error('Erro ao buscar log de eventos:', error);
-    res.status(500).json({ error: 'Erro ao buscar eventos', details: error.message });
-  }
-});
 
 // ============= ROTAS DE ANOTAÇÕES (KV) =============
+
+// Helper: salvar anotação como arquivo .md
+const ANOTACOES_DIR = path.join(__dirname, 'anotacoes');
+
+function slugify(text) {
+  return text.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 60);
+}
+
+function buildMdContent(note) {
+  const tags = (note.tags || []).map(t => `  - ${t}`).join('\n');
+  let md = '---\n';
+  md += `title: "${(note.title || 'Sem título').replace(/"/g, '\\"')}"\n`;
+  if (tags) md += `tags:\n${tags}\n`;
+  md += `date: ${note.createdTime || new Date().toISOString()}\n`;
+  md += '---\n\n';
+  md += note.content || '';
+  return md;
+}
+
+function getMdFilename(note) {
+  return `${note.id}-${slugify(note.title || 'sem-titulo')}.md`;
+}
+
+async function saveNoteMd(note) {
+  try {
+    await fs.promises.mkdir(ANOTACOES_DIR, { recursive: true });
+    const filePath = path.join(ANOTACOES_DIR, getMdFilename(note));
+    await fs.promises.writeFile(filePath, buildMdContent(note), 'utf8');
+  } catch (e) {
+    console.error('Erro ao salvar .md:', e.message);
+  }
+}
+
+async function deleteNoteMd(note) {
+  try {
+    const filePath = path.join(ANOTACOES_DIR, getMdFilename(note));
+    await fs.promises.unlink(filePath).catch(() => {});
+  } catch (e) {
+    console.error('Erro ao deletar .md:', e.message);
+  }
+}
 
 // Listar todas as anotações
 app.get('/api/anotacoes', async (req, res) => {
@@ -1208,6 +1166,7 @@ app.post('/api/anotacoes', async (req, res) => {
     };
 
     await db.set(`note:${id}`, JSON.stringify(newAnnotation));
+    await saveNoteMd(newAnnotation);
     console.log('[API] Anotação salva com sucesso:', newAnnotation.id);
 
     res.status(201).json(newAnnotation);
@@ -1239,6 +1198,12 @@ app.put('/api/anotacoes/:id', async (req, res) => {
 
     await db.set(`note:${req.params.id}`, JSON.stringify(updatedNote));
 
+    // Atualizar arquivo .md (apagar antigo se título mudou)
+    if (note.title !== updatedNote.title) {
+      await deleteNoteMd(note);
+    }
+    await saveNoteMd(updatedNote);
+
     res.json(updatedNote);
   } catch (error) {
     console.error('Erro ao atualizar anotação:', error);
@@ -1255,77 +1220,14 @@ app.delete('/api/anotacoes/:id', async (req, res) => {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
 
+    const noteToDelete = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
     await db.del(`note:${req.params.id}`);
+    await deleteNoteMd(noteToDelete);
 
     res.json({ success: true, message: 'Anotação excluída' });
   } catch (error) {
     console.error('Erro ao excluir anotação:', error);
     res.status(500).json({ error: 'Erro ao excluir anotação', details: error.message });
-  }
-});
-
-// Migrar anotações do Google Sheets para KV (rota temporária)
-// Remover após migração completa
-app.post('/api/anotacoes/migrate-from-sheets', requireSheets, async (req, res) => {
-  try {
-    // Carregar anotações do Sheets
-    const data = await sheetsDB.loadState('anotacoes');
-    const sheetsAnnotations = data?.state?.annotations || [];
-
-    if (sheetsAnnotations.length === 0) {
-      return res.json({ success: true, migrated: 0, message: 'Nenhuma anotação para migrar' });
-    }
-
-    let migrated = 0;
-    let skipped = 0;
-
-    // Obter o maior ID atual no KV para não sobrescrever
-    const existingKeys = await db.keys('note:*');
-    const existingIds = new Set();
-    for (const key of existingKeys) {
-      if (!key.endsWith(':counter')) {
-        const noteData = await db.get(key);
-        if (noteData) {
-          const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
-          existingIds.add(note.id);
-        }
-      }
-    }
-
-    for (const annotation of sheetsAnnotations) {
-      // Pular se já existe uma nota com o mesmo ID (evita duplicação)
-      if (existingIds.has(annotation.id)) {
-        skipped++;
-        continue;
-      }
-
-      // Gerar novo ID numérico
-      const newId = await getNextId('note');
-
-      const newNote = {
-        id: newId.toString(),
-        title: annotation.title || 'Sem título',
-        content: annotation.content || '',
-        tags: annotation.tags || [],
-        createdTime: annotation.createdTime || new Date().toISOString(),
-        updatedTime: annotation.updatedTime || new Date().toISOString(),
-        migratedFrom: annotation.id // Guardar referência ao ID original do Sheets
-      };
-
-      await db.set(`note:${newId}`, JSON.stringify(newNote));
-      migrated++;
-    }
-
-    res.json({
-      success: true,
-      migrated,
-      skipped,
-      total: sheetsAnnotations.length,
-      message: `Migração concluída: ${migrated} anotações migradas, ${skipped} puladas`
-    });
-  } catch (error) {
-    console.error('Erro ao migrar anotações:', error);
-    res.status(500).json({ error: 'Erro ao migrar anotações', details: error.message });
   }
 });
 
