@@ -204,7 +204,7 @@ var BuJo = {
         futureLog: [],
         notes: [],
         calendarEvents: [],
-        readingProgress: { noturna: { currentPage: 0 }, currentWeek: 1, books: {} }
+        readingProgress: { bookProgress: {}, library: {}, history: {} }
     },
     symbols: { task: '•', taskDone: '✕', taskMigrated: '→', event: '○', note: '–' },
     dailySpiritualHabits: [
@@ -349,6 +349,101 @@ var BuJo = {
     dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 };
 
+// ============= CATÁLOGO DE LIVROS =============
+var bookCatalog = {};
+
+function buildBookCatalog() {
+    var catalog = {};
+    // Vida de Cristo (noturna) como livro regular
+    catalog['book_esp_vida_de_cristo'] = {
+        id: 'book_esp_vida_de_cristo',
+        title: BuJo.readingPlan.noturna.titulo,
+        author: BuJo.readingPlan.noturna.autor,
+        category: 'espiritual',
+        totalPages: BuJo.readingPlan.noturna.paginas,
+        intervals: [{ pInicio: 1, pFim: BuJo.readingPlan.noturna.paginas }]
+    };
+
+    // Extrair livros únicos do cronograma
+    var seen = {};
+    BuJo.readingPlan.cronograma.forEach(function(w) {
+        // Espiritual
+        var espKey = 'book_esp_' + w.espiritual.titulo.replace(/\s+/g, '_').toLowerCase();
+        if (!seen[espKey]) {
+            seen[espKey] = true;
+            catalog[espKey] = { id: espKey, title: w.espiritual.titulo, author: w.espiritual.autor, category: 'espiritual', totalPages: 0, intervals: [] };
+        }
+        catalog[espKey].intervals.push({ pInicio: w.espiritual.pInicio, pFim: w.espiritual.pFim, semana: w.semana });
+        if (w.espiritual.pFim > catalog[espKey].totalPages) catalog[espKey].totalPages = w.espiritual.pFim;
+
+        // Secular
+        var secKey = 'book_sec_' + w.secular.titulo.replace(/\s+/g, '_').toLowerCase();
+        if (!seen[secKey]) {
+            seen[secKey] = true;
+            catalog[secKey] = { id: secKey, title: w.secular.titulo, author: w.secular.autor, category: 'cultural', totalPages: 0, intervals: [] };
+        }
+        catalog[secKey].intervals.push({ pInicio: w.secular.pInicio, pFim: w.secular.pFim, semana: w.semana });
+        if (w.secular.pFim > catalog[secKey].totalPages) catalog[secKey].totalPages = w.secular.pFim;
+    });
+
+    bookCatalog = catalog;
+}
+
+function migrateReadingState(rp) {
+    if (rp._migrated) return rp;
+    var newRp = { bookProgress: {}, library: {}, history: rp.history || {}, _migrated: true };
+
+    // Migrar noturna
+    if (rp.noturna && rp.noturna.currentPage) {
+        newRp.bookProgress['book_esp_vida_de_cristo'] = { currentInterval: 0, currentPage: rp.noturna.currentPage };
+        newRp.library['book_esp_vida_de_cristo'] = 'lendo';
+    }
+
+    // Migrar livros do cronograma
+    var cw = rp.currentWeek || 1;
+    if (rp.books) {
+        Object.keys(rp.books).forEach(function(key) {
+            var match = key.match(/sem(\d+)_(esp|sec)/);
+            if (!match) return;
+            var week = parseInt(match[1]);
+            var type = match[2];
+            var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === week; });
+            if (!wd) return;
+            var bookData = type === 'esp' ? wd.espiritual : wd.secular;
+            var prefix = type === 'esp' ? 'book_esp_' : 'book_sec_';
+            var bookId = prefix + bookData.titulo.replace(/\s+/g, '_').toLowerCase();
+            var pagesRead = rp.books[key] || 0;
+            if (pagesRead > 0) {
+                var absolutePage = bookData.pInicio + pagesRead - 1;
+                // Encontrar o intervalo correto
+                var cat = bookCatalog[bookId];
+                if (cat) {
+                    var intIdx = 0;
+                    for (var i = 0; i < cat.intervals.length; i++) {
+                        if (cat.intervals[i].semana === week) { intIdx = i; break; }
+                    }
+                    if (!newRp.bookProgress[bookId] || absolutePage > newRp.bookProgress[bookId].currentPage) {
+                        newRp.bookProgress[bookId] = { currentInterval: intIdx, currentPage: absolutePage };
+                    }
+                }
+            }
+            // Marcar livros da semana atual como 'lendo'
+            if (week === cw) {
+                newRp.library[bookId] = 'lendo';
+            }
+        });
+    }
+
+    // Migrar library existente
+    if (rp.library) {
+        Object.keys(rp.library).forEach(function(k) {
+            if (!newRp.library[k]) newRp.library[k] = rp.library[k];
+        });
+    }
+
+    return newRp;
+}
+
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 function formatDateKey(date) {
     var d = new Date(date);
@@ -427,7 +522,8 @@ async function loadFromServer() {
                 BuJo.state.projects = s.projects || [];
                 BuJo.state.futureLog = s.futureLog || [];
                 BuJo.state.notes = s.notes || [];
-                BuJo.state.readingProgress = s.readingProgress || { noturna: { currentPage: 0 }, currentWeek: 1, books: {} };
+                var rp = s.readingProgress || { bookProgress: {}, library: {}, history: {} };
+                BuJo.state.readingProgress = rp._migrated ? rp : migrateReadingState(rp);
                 return true;
             }
         }
@@ -467,6 +563,7 @@ function getEventsForDate(dateStr) {
 
 async function init() {
     document.getElementById('main-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted-foreground);">Carregando...</div>';
+    buildBookCatalog();
     updateHeaderDate();
     bindNavEvents();
     await loadFromServer();
@@ -683,16 +780,20 @@ function getCurrentOrNextEvent(events) {
 }
 
 function getReadingSummary() {
-    var cw = BuJo.state.readingProgress.currentWeek || 1;
-    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
-    if (!wd) return null;
-
-    var ek = 'sem' + cw + '_esp', sk = 'sem' + cw + '_sec';
-    var ep = BuJo.state.readingProgress.books[ek] || 0, sp = BuJo.state.readingProgress.books[sk] || 0;
-    var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1, st = wd.secular.pFim - wd.secular.pInicio + 1;
-    var ePct = Math.round((ep / et) * 100), sPct = Math.round((sp / st) * 100);
-
-    return 'Esp: ' + ePct + '% · Cul: ' + sPct + '%';
+    var library = BuJo.state.readingProgress.library || {};
+    var lendo = Object.keys(library).filter(function(k) { return library[k] === 'lendo'; });
+    if (lendo.length === 0) return null;
+    var parts = [];
+    lendo.forEach(function(bookId) {
+        var cat = bookCatalog[bookId];
+        if (!cat) return;
+        var bp = BuJo.state.readingProgress.bookProgress[bookId];
+        var cp = bp ? bp.currentPage : 0;
+        var pct = Math.round((cp / cat.totalPages) * 100);
+        var shortTitle = cat.title.length > 15 ? cat.title.substring(0, 15) + '…' : cat.title;
+        parts.push(shortTitle + ' ' + pct + '%');
+    });
+    return parts.slice(0, 3).join(' · ');
 }
 
 function renderDaySpiritualHabits(dateStr, dow, thirdSunday) {
@@ -1062,10 +1163,12 @@ function showEditEntryModal(id) {
     var typeOptions = '<option value="task"' + (entry.type === 'task' ? ' selected' : '') + '>' + BuJo.symbols.task + ' Tarefa</option>' +
         '<option value="event"' + (entry.type === 'event' ? ' selected' : '') + '>' + BuJo.symbols.event + ' Evento</option>' +
         '<option value="note"' + (entry.type === 'note' ? ' selected' : '') + '>' + BuJo.symbols.note + ' Nota</option>';
+    var dateDisplay = entry.date ? entry.date.split('-').reverse().join('/') : '';
     showModal('<div class="modal-title">Editar Registro</div>' +
         '<div class="form-group"><label>Tipo</label><select id="edit-entry-type">' + typeOptions + '</select></div>' +
         '<div class="form-group"><label>Texto</label><textarea id="edit-entry-text" rows="3">' + entry.text + '</textarea></div>' +
-        '<div class="form-group"><label>Data</label><input type="date" id="edit-entry-date" value="' + entry.date + '"></div>' +
+        '<div class="form-group"><label>Data (DD/MM/AAAA)</label><input type="text" id="edit-entry-date" value="' + dateDisplay + '" placeholder="DD/MM/AAAA"></div>' +
+        '<div class="form-group"><label style="display:inline;cursor:pointer;"><input type="checkbox" id="edit-entry-starred"' + (entry.starred ? ' checked' : '') + '> ★ Destacar</label></div>' +
         '<div class="modal-actions" style="justify-content:space-between;">' +
         '<span class="btn" style="background:#dc2626;color:#fff;border-color:#dc2626;" onclick="deleteEntry(\'' + id + '\')">Excluir</span>' +
         '<div style="display:flex;gap:10px;"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="editEntry(\'' + id + '\')">Salvar</span></div></div>');
@@ -1076,12 +1179,21 @@ function editEntry(id) {
     if (!entry) return;
     var newText = document.getElementById('edit-entry-text').value.trim();
     var newType = document.getElementById('edit-entry-type').value;
-    var newDate = document.getElementById('edit-entry-date').value;
+    var newDateRaw = document.getElementById('edit-entry-date').value.trim();
+    var starred = document.getElementById('edit-entry-starred').checked;
     if (!newText) return;
+    // Converter DD/MM/AAAA para YYYY-MM-DD
+    var dateParts = newDateRaw.split('/');
+    var newDate = dateParts.length === 3 ? dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0] : entry.date;
     entry.text = newText;
     entry.type = newType;
     entry.date = newDate;
     if (newType !== 'task') entry.status = 'pending';
+    // Se marcou estrela, remove de outros do mesmo dia
+    if (starred) {
+        BuJo.state.entries.forEach(function(e) { if (e.date === newDate && e.id !== id) e.starred = false; });
+    }
+    entry.starred = starred;
     saveState();
     closeModal();
     if (daySectionOverlay) {
@@ -1233,10 +1345,6 @@ function bindDaySectionEvents(section, dateStr) {
             el.onclick = function() { duplicateToNextDay(el.getAttribute('data-id')); };
         });
 
-        // Clique na estrela para marcar/desmarcar
-        document.querySelectorAll('.section-entry-star[data-id]').forEach(function(el) {
-            el.onclick = function() { toggleEntryStar(el.getAttribute('data-id')); };
-        });
     }
 
     if (section === 'eventos') {
@@ -1313,19 +1421,6 @@ function duplicateToNextDay(id) {
     refreshDaySection('registros');
 }
 
-function toggleEntryStar(id) {
-    var entry = BuJo.state.entries.find(function(e) { return e.id === id; });
-    if (!entry) return;
-    // Remove estrela de outros registros do mesmo dia
-    var dateStr = entry.date;
-    BuJo.state.entries.forEach(function(e) {
-        if (e.date === dateStr && e.id !== id) e.starred = false;
-    });
-    // Alterna a estrela deste registro
-    entry.starred = !entry.starred;
-    saveState();
-    refreshDaySection('registros');
-}
 
 function renderDaySectionEventos(dateStr) {
     var calendarEvents = getEventsForDate(dateStr);
@@ -1348,16 +1443,15 @@ function renderDaySectionRegistros(dateStr) {
     var dayEntries = BuJo.state.entries.filter(function(e) { return e.date === dateStr; });
     var html = '<div class="card">';
     html += '<div style="font-size:0.9rem;color:var(--muted-foreground);padding:8px 0;border-bottom:1px dotted var(--border);margin-bottom:10px;">';
-    html += BuJo.symbols.task + ' tarefa &nbsp;&nbsp;' + BuJo.symbols.taskDone + ' feito &nbsp;&nbsp;' + BuJo.symbols.taskMigrated + ' migrado &nbsp;&nbsp;' + BuJo.symbols.event + ' evento &nbsp;&nbsp;' + BuJo.symbols.note + ' nota &nbsp;&nbsp;★ estrela</div>';
+    html += BuJo.symbols.task + ' tarefa &nbsp;&nbsp;' + BuJo.symbols.taskDone + ' feito &nbsp;&nbsp;' + BuJo.symbols.taskMigrated + ' migrado &nbsp;&nbsp;' + BuJo.symbols.event + ' evento &nbsp;&nbsp;' + BuJo.symbols.note + ' nota</div>';
 
     if (dayEntries.length === 0) {
         html += '<p style="color:var(--muted-foreground);font-style:italic;">Nenhuma entrada...</p>';
     } else {
         dayEntries.forEach(function(e) {
             var symbol = e.type === 'note' ? BuJo.symbols.note : e.type === 'event' ? BuJo.symbols.event : e.status === 'done' ? BuJo.symbols.taskDone : e.status === 'migrated' ? BuJo.symbols.taskMigrated : BuJo.symbols.task;
-            var starStyle = e.starred ? 'color:#f59e0b;' : 'color:var(--muted-foreground);opacity:0.4;';
             html += '<div class="entry" style="padding:12px 0;">';
-            html += '<span class="section-entry-star" data-id="' + e.id + '" style="cursor:pointer;font-size:1rem;margin-right:6px;' + starStyle + '">★</span>';
+            if (e.starred) html += '<span style="font-size:1rem;margin-right:6px;color:#f59e0b;">★</span>';
             html += '<span class="entry-symbol section-entry-symbol" data-id="' + e.id + '" style="font-size:1.2rem;">' + symbol + '</span>';
             html += '<span class="entry-text section-entry-text' + (e.status === 'done' ? ' done' : '') + '" data-id="' + e.id + '" style="font-size:var(--font-size-lg);cursor:pointer;">' + e.text + '</span>';
             if (e.status === 'migrated') {
@@ -1430,43 +1524,28 @@ function renderDaySectionMortificacoes(dateStr) {
 }
 
 function renderDaySectionLeituras() {
-    var cw = BuJo.state.readingProgress.currentWeek || 1;
-    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
-    var noturna = BuJo.readingPlan.noturna;
-    var np = BuJo.state.readingProgress.noturna.currentPage || 0;
-    var nPct = Math.round((np / noturna.paginas) * 100);
-
+    var library = BuJo.state.readingProgress.library || {};
+    var lendo = Object.keys(library).filter(function(k) { return library[k] === 'lendo'; });
     var html = '<div class="card">';
-    html += '<div style="margin-bottom:20px;">';
-    html += '<div style="font-weight:700;font-size:var(--font-size-lg);margin-bottom:8px;">Leitura Noturna</div>';
-    html += '<div style="font-size:var(--font-size-base);margin-bottom:8px;">' + noturna.titulo + ' - ' + noturna.autor + '</div>';
-    html += '<div class="reading-progress"><div class="reading-progress-bar" style="height:16px;"><div class="reading-progress-fill" style="width:' + nPct + '%;"></div></div><span class="reading-percent" style="font-size:var(--font-size-lg);">' + nPct + '%</span></div>';
-    html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);">Página ' + np + ' de ' + noturna.paginas + '</div>';
-    html += '</div>';
 
-    if (wd) {
-        var ek = 'sem' + cw + '_esp', sk = 'sem' + cw + '_sec';
-        var ep = BuJo.state.readingProgress.books[ek] || 0, sp = BuJo.state.readingProgress.books[sk] || 0;
-        var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1, st = wd.secular.pFim - wd.secular.pInicio + 1;
-        var ePct = Math.round((ep / et) * 100), sPct = Math.round((sp / st) * 100);
+    if (lendo.length === 0) {
+        html += '<p style="color:var(--muted-foreground);font-style:italic;text-align:center;padding:20px;">Nenhum livro em leitura. Vá para Leituras e marque livros como "Lendo".</p>';
+    } else {
+        lendo.forEach(function(bookId) {
+            var cat = bookCatalog[bookId];
+            if (!cat) return;
+            var bp = BuJo.state.readingProgress.bookProgress[bookId] || { currentInterval: 0, currentPage: 0 };
+            var pct = cat.totalPages > 0 ? Math.round((bp.currentPage / cat.totalPages) * 100) : 0;
+            var categoryLabel = cat.category === 'espiritual' ? 'Espiritual' : 'Cultural';
 
-        html += '<div style="margin-bottom:20px;padding:16px;background:var(--secondary);border-radius:var(--radius);">';
-        html += '<div style="font-weight:700;font-size:var(--font-size-lg);margin-bottom:12px;">Semana ' + cw + ' - ' + wd.bloco + '</div>';
-
-        html += '<div style="margin-bottom:16px;">';
-        html += '<div><span class="book-type" style="background:#4a5568;color:#fff;">Espiritual</span></div>';
-        html += '<div style="font-weight:600;margin:8px 0;">' + wd.espiritual.titulo + '</div>';
-        html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);margin-bottom:8px;">' + wd.espiritual.autor + ' (p. ' + wd.espiritual.pInicio + '-' + wd.espiritual.pFim + ')</div>';
-        html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + ePct + '%;"></div></div><span class="reading-percent">' + ePct + '%</span></div>';
-        html += '</div>';
-
-        html += '<div>';
-        html += '<div><span class="book-type" style="background:#718096;color:#fff;">Secular</span></div>';
-        html += '<div style="font-weight:600;margin:8px 0;">' + wd.secular.titulo + '</div>';
-        html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);margin-bottom:8px;">' + wd.secular.autor + ' (p. ' + wd.secular.pInicio + '-' + wd.secular.pFim + ')</div>';
-        html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + sPct + '%;"></div></div><span class="reading-percent">' + sPct + '%</span></div>';
-        html += '</div>';
-        html += '</div>';
+            html += '<div style="margin-bottom:20px;">';
+            html += '<div><span class="book-type ' + cat.category + '">' + categoryLabel + '</span></div>';
+            html += '<div style="font-weight:600;margin:8px 0;">' + cat.title + '</div>';
+            html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);margin-bottom:8px;">' + cat.author + '</div>';
+            html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + pct + '%;"></div></div><span class="reading-percent">' + pct + '%</span></div>';
+            html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);">Página ' + bp.currentPage + ' de ' + cat.totalPages + '</div>';
+            html += '</div>';
+        });
     }
 
     html += '<div style="margin-top:20px;text-align:center;"><span class="btn btn-primary" onclick="closeDaySection();setView(\'leituras\');" style="padding:14px 24px;">Ir para Leituras Completas</span></div>';
@@ -1583,34 +1662,26 @@ function addNote() {
 }
 
 function renderDayReading() {
-    var cw = BuJo.state.readingProgress.currentWeek || 1;
-    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
-    var noturna = BuJo.readingPlan.noturna;
-    var np = BuJo.state.readingProgress.noturna.currentPage || 0;
-    var nPct = Math.round((np / noturna.paginas) * 100);
+    var library = BuJo.state.readingProgress.library || {};
+    var lendo = Object.keys(library).filter(function(k) { return library[k] === 'lendo'; });
+    var html = '';
 
-    var html = '<div style="margin-bottom:12px;">';
-    html += '<div style="font-weight:600;">Noturna: ' + noturna.titulo + '</div>';
-    html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + nPct + '%;"></div></div><span class="reading-percent">' + nPct + '%</span></div></div>';
+    lendo.forEach(function(bookId) {
+        var cat = bookCatalog[bookId];
+        if (!cat) return;
+        var bp = BuJo.state.readingProgress.bookProgress[bookId] || { currentInterval: 0, currentPage: 0 };
+        var pct = cat.totalPages > 0 ? Math.round((bp.currentPage / cat.totalPages) * 100) : 0;
+        html += '<div style="margin-bottom:8px;"><span class="book-type">' + (cat.category === 'espiritual' ? 'Espiritual' : 'Cultural') + '</span> ' + cat.title + ' <strong>' + pct + '%</strong></div>';
+    });
 
-    if (wd) {
-        var ek = 'sem' + cw + '_esp', sk = 'sem' + cw + '_sec';
-        var ep = BuJo.state.readingProgress.books[ek] || 0, sp = BuJo.state.readingProgress.books[sk] || 0;
-        var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1, st = wd.secular.pFim - wd.secular.pInicio + 1;
-        var ePct = Math.round((ep / et) * 100), sPct = Math.round((sp / st) * 100);
-
-        html += '<div style="margin-bottom:8px;"><span class="book-type">Espiritual</span> ' + wd.espiritual.titulo + ' <strong>' + ePct + '%</strong></div>';
-        html += '<div style="margin-bottom:12px;"><span class="book-type">Secular</span> ' + wd.secular.titulo + ' <strong>' + sPct + '%</strong></div>';
-    }
-    html += '<div style="text-align:center;"><span class="btn" onclick="setView(\'leituras\')">Ir para Leituras</span></div>';
+    if (lendo.length === 0) html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);">Nenhum livro em leitura</div>';
+    html += '<div style="text-align:center;margin-top:8px;"><span class="btn" onclick="setView(\'leituras\')">Ir para Leituras</span></div>';
     return html;
 }
 
 function renderLeituras() {
-    var cw = BuJo.state.readingProgress.currentWeek || 1;
-    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === cw; });
-    var noturna = BuJo.readingPlan.noturna;
     var library = BuJo.state.readingProgress.library || {};
+    var allBooks = getAllBooksFromPlan();
 
     var html = '<div class="reading-grid">';
 
@@ -1618,53 +1689,13 @@ function renderLeituras() {
     html += '<div class="reading-col-left">';
     html += '<div class="reading-col-title">Lendo</div>';
 
-    // Leitura Noturna
-    html += renderReadingCard({
-        id: 'noturna',
-        category: 'espiritual',
-        title: noturna.titulo,
-        author: noturna.autor,
-        totalPages: noturna.paginas,
-        currentPage: BuJo.state.readingProgress.noturna.currentPage || 0,
-        weekGoal: null,
-        isNoturna: true
-    });
+    var lendo = allBooks.filter(function(b) { return library[b.id] === 'lendo'; });
 
-    // Livro Espiritual da Semana
-    if (wd) {
-        var ek = 'sem' + cw + '_esp';
-        var ep = BuJo.state.readingProgress.books[ek] || 0;
-        var epPage = ep > 0 ? wd.espiritual.pInicio + ep - 1 : 0;
-        var et = wd.espiritual.pFim - wd.espiritual.pInicio + 1;
-
-        html += renderReadingCard({
-            id: ek,
-            category: 'espiritual',
-            title: wd.espiritual.titulo,
-            author: wd.espiritual.autor,
-            totalPages: wd.espiritual.pFim,
-            currentPage: epPage,
-            weekGoal: { start: wd.espiritual.pInicio, end: wd.espiritual.pFim, read: ep, total: et },
-            bloco: wd.bloco,
-            week: cw
-        });
-
-        // Livro Cultural/Secular da Semana
-        var sk = 'sem' + cw + '_sec';
-        var sp = BuJo.state.readingProgress.books[sk] || 0;
-        var spPage = sp > 0 ? wd.secular.pInicio + sp - 1 : 0;
-        var st = wd.secular.pFim - wd.secular.pInicio + 1;
-
-        html += renderReadingCard({
-            id: sk,
-            category: 'cultural',
-            title: wd.secular.titulo,
-            author: wd.secular.autor,
-            totalPages: wd.secular.pFim,
-            currentPage: spPage,
-            weekGoal: { start: wd.secular.pInicio, end: wd.secular.pFim, read: sp, total: st },
-            bloco: wd.bloco,
-            week: cw
+    if (lendo.length === 0) {
+        html += '<div style="color:var(--muted-foreground);font-style:italic;padding:20px;text-align:center;">Nenhum livro em leitura. Marque livros como "Lendo" na Biblioteca.</div>';
+    } else {
+        lendo.forEach(function(b) {
+            html += renderReadingCard(b);
         });
     }
 
@@ -1674,13 +1705,25 @@ function renderLeituras() {
     html += '<div class="reading-col-right">';
     html += '<div class="reading-col-title">Biblioteca</div>';
 
-    // Obter todos os livros únicos do cronograma
-    var allBooks = getAllBooksFromPlan();
-
-    // Categorizar livros
-    var proximas = allBooks.filter(function(b) { return (library[b.id] || 'nao_iniciado') === 'proximas'; });
+    var lendoBib = allBooks.filter(function(b) { return library[b.id] === 'lendo'; });
+    var proximas = allBooks.filter(function(b) { return library[b.id] === 'proximas'; });
     var concluidos = allBooks.filter(function(b) { return library[b.id] === 'concluido'; });
     var naoIniciados = allBooks.filter(function(b) { return !library[b.id] || library[b.id] === 'nao_iniciado'; });
+
+    // Lendo
+    if (lendoBib.length > 0) {
+        html += '<div class="library-section">';
+        html += '<div class="library-section-title">Lendo</div>';
+        lendoBib.forEach(function(b) {
+            var bp = BuJo.state.readingProgress.bookProgress[b.id] || { currentPage: 0 };
+            var pct = b.totalPages > 0 ? Math.round((bp.currentPage / b.totalPages) * 100) : 0;
+            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
+            html += '<span class="item-title">' + b.title + '</span>';
+            html += '<span class="item-status">' + pct + '%</span>';
+            html += '</div>';
+        });
+        html += '</div>';
+    }
 
     // Próximas Leituras
     html += '<div class="library-section">';
@@ -1737,40 +1780,43 @@ function renderLeituras() {
 }
 
 function renderReadingCard(book) {
-    var pct = book.totalPages > 0 ? Math.round((book.currentPage / book.totalPages) * 100) : 0;
-    var categoryClass = book.category === 'espiritual' ? 'espiritual' : 'cultural';
-    var categoryLabel = book.category === 'espiritual' ? 'Espiritual' : 'Cultural';
+    var cat = bookCatalog[book.id];
+    if (!cat) return '';
+    var bp = BuJo.state.readingProgress.bookProgress[book.id] || { currentInterval: 0, currentPage: 0 };
+    var pct = cat.totalPages > 0 ? Math.round((bp.currentPage / cat.totalPages) * 100) : 0;
+    var categoryClass = cat.category === 'espiritual' ? 'espiritual' : 'cultural';
+    var categoryLabel = cat.category === 'espiritual' ? 'Espiritual' : 'Cultural';
 
     var html = '<div class="reading-book-card">';
 
-    // Header: Categoria e Total de Páginas
+    // Header
     html += '<div class="book-header">';
     html += '<span class="book-type ' + categoryClass + '">' + categoryLabel + '</span>';
-    html += '<span class="book-pages">' + book.totalPages + ' págs</span>';
+    html += '<span class="book-pages">' + cat.totalPages + ' págs</span>';
     html += '</div>';
 
     // Título e Autor
-    html += '<div class="book-title">' + book.title + '</div>';
-    html += '<div class="book-author">' + book.author + '</div>';
+    html += '<div class="book-title">' + cat.title + '</div>';
+    html += '<div class="book-author">' + cat.author + '</div>';
 
-    // Barra de progresso
+    // Barra de progresso geral
     html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + pct + '%;"></div></div><span class="reading-percent">' + pct + '%</span></div>';
 
-    // Registro de páginas
-    if (book.isNoturna) {
-        html += '<div style="display:flex;align-items:center;margin-top:8px;">Página: <input type="number" class="reading-input" value="' + book.currentPage + '" min="0" max="' + book.totalPages + '" onchange="updateNoturna(this.value)" style="margin-left:8px;margin-right:8px;"> / ' + book.totalPages + '</div>';
-    } else if (book.weekGoal) {
-        var goalPct = Math.round((book.weekGoal.read / book.weekGoal.total) * 100);
-        var isComplete = goalPct >= 100;
-        var currentPageValue = book.currentPage > 0 ? book.currentPage : '';
+    // Input de página (absoluta)
+    html += '<div style="display:flex;align-items:center;margin-top:8px;">Página: <input type="number" class="reading-input" value="' + (bp.currentPage || '') + '" min="0" max="' + cat.totalPages + '" placeholder="0" onchange="updateBookPageNew(\'' + book.id + '\',this.value)" style="margin-left:8px;margin-right:8px;"> / ' + cat.totalPages + '</div>';
 
-        html += '<div style="display:flex;align-items:center;margin-top:8px;">Página: <input type="number" class="reading-input" value="' + currentPageValue + '" min="' + book.weekGoal.start + '" max="' + book.weekGoal.end + '" placeholder="' + book.weekGoal.start + '" onchange="updateBookPage(\'' + book.id + '\',' + book.weekGoal.start + ',' + book.weekGoal.end + ',this.value)" style="margin-left:8px;margin-right:8px;width:70px;"> / ' + book.weekGoal.end + '</div>';
+    // Meta do intervalo atual (se existir)
+    if (cat.intervals.length > 1 && bp.currentInterval < cat.intervals.length) {
+        var interval = cat.intervals[bp.currentInterval];
+        var intervalRead = bp.currentPage >= interval.pInicio ? Math.min(bp.currentPage - interval.pInicio + 1, interval.pFim - interval.pInicio + 1) : 0;
+        var intervalTotal = interval.pFim - interval.pInicio + 1;
+        var intervalPct = Math.round((intervalRead / intervalTotal) * 100);
+        var isComplete = intervalPct >= 100;
 
-        // Meta da Semana
         html += '<div class="week-goal' + (isComplete ? ' week-goal-complete' : '') + '">';
-        html += '<strong>Meta Semana ' + book.week + ':</strong> p.' + book.weekGoal.start + '–' + book.weekGoal.end + ' (' + goalPct + '%)';
-        if (isComplete) {
-            html += '<div style="margin-top:6px;"><span class="btn btn-primary" onclick="advanceToNextWeek()" style="padding:6px 12px;font-size:0.85rem;">Avançar Semana →</span></div>';
+        html += '<strong>Trecho ' + (bp.currentInterval + 1) + '/' + cat.intervals.length + ':</strong> p.' + interval.pInicio + '–' + interval.pFim + ' (' + intervalPct + '%)';
+        if (isComplete && bp.currentInterval < cat.intervals.length - 1) {
+            html += '<div style="margin-top:6px;"><span class="btn btn-primary" onclick="advanceInterval(\'' + book.id + '\')" style="padding:6px 12px;font-size:0.85rem;">Avançar Trecho →</span></div>';
         }
         html += '</div>';
     }
@@ -1781,32 +1827,16 @@ function renderReadingCard(book) {
 
 function getAllBooksFromPlan() {
     var books = [];
-    var seen = {};
-
-    BuJo.readingPlan.cronograma.forEach(function(w) {
-        var espKey = w.espiritual.titulo;
-        if (!seen[espKey]) {
-            seen[espKey] = true;
-            books.push({
-                id: 'book_esp_' + espKey.replace(/\s+/g, '_').toLowerCase(),
-                title: w.espiritual.titulo,
-                author: w.espiritual.autor,
-                type: 'Esp'
-            });
-        }
-
-        var secKey = w.secular.titulo;
-        if (!seen[secKey]) {
-            seen[secKey] = true;
-            books.push({
-                id: 'book_sec_' + secKey.replace(/\s+/g, '_').toLowerCase(),
-                title: w.secular.titulo,
-                author: w.secular.autor,
-                type: 'Cul'
-            });
-        }
+    Object.keys(bookCatalog).forEach(function(id) {
+        var cat = bookCatalog[id];
+        books.push({
+            id: id,
+            title: cat.title,
+            author: cat.author,
+            type: cat.category === 'espiritual' ? 'Esp' : 'Cul',
+            totalPages: cat.totalPages
+        });
     });
-
     return books;
 }
 
@@ -1832,56 +1862,52 @@ function showBookStatusModal(bookId) {
 function changeBookStatus(bookId, status) {
     if (!BuJo.state.readingProgress.library) BuJo.state.readingProgress.library = {};
     BuJo.state.readingProgress.library[bookId] = status;
+    // Inicializar bookProgress ao mudar para 'lendo'
+    if (status === 'lendo' && !BuJo.state.readingProgress.bookProgress[bookId]) {
+        BuJo.state.readingProgress.bookProgress[bookId] = { currentInterval: 0, currentPage: 0 };
+    }
     saveState();
     closeModal();
     render();
 }
 
-function advanceToNextWeek() {
-    var nw = BuJo.state.readingProgress.currentWeek + 1;
-    if (nw <= 104) {
-        BuJo.state.readingProgress.currentWeek = nw;
-        saveState();
-        render();
-    }
-}
+function updateBookPageNew(bookId, value) {
+    var page = parseInt(value) || 0;
+    var cat = bookCatalog[bookId];
+    if (!cat) return;
+    if (page < 0) page = 0;
+    if (page > cat.totalPages) page = cat.totalPages;
 
-function getBookNameFromKey(bookKey) {
-    var match = bookKey.match(/sem(\d+)_(esp|sec)/);
-    if (!match) return bookKey;
-    var week = parseInt(match[1]);
-    var type = match[2] === 'esp' ? 'Espiritual' : 'Secular';
-    var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === week; });
-    if (!wd) return bookKey;
-    var book = type === 'Espiritual' ? wd.espiritual : wd.secular;
-    return book.titulo;
-}
-
-function updateNoturna(v) {
-    var page = parseInt(v) || 0;
-    var dateStr = formatDateKey(agoraCorrigido());
-    if (!BuJo.state.readingProgress.noturna.history) BuJo.state.readingProgress.noturna.history = {};
-    BuJo.state.readingProgress.noturna.history[dateStr] = page;
-    BuJo.state.readingProgress.noturna.currentPage = page;
-    saveState(); render();
-}
-function updateBook(k, v) { BuJo.state.readingProgress.books[k] = parseInt(v) || 0; saveState(); render(); }
-function updateBookPage(bookKey, pInicio, pFim, pageValue) {
-    var page = parseInt(pageValue);
-    if (isNaN(page) || page < pInicio) {
-        BuJo.state.readingProgress.books[bookKey] = 0;
-    } else if (page > pFim) {
-        BuJo.state.readingProgress.books[bookKey] = pFim - pInicio + 1;
-    } else {
-        BuJo.state.readingProgress.books[bookKey] = page - pInicio + 1;
+    if (!BuJo.state.readingProgress.bookProgress[bookId]) {
+        BuJo.state.readingProgress.bookProgress[bookId] = { currentInterval: 0, currentPage: 0 };
     }
+    BuJo.state.readingProgress.bookProgress[bookId].currentPage = page;
+
+    // Histórico
     var dateStr = formatDateKey(agoraCorrigido());
     if (!BuJo.state.readingProgress.history) BuJo.state.readingProgress.history = {};
     if (!BuJo.state.readingProgress.history[dateStr]) BuJo.state.readingProgress.history[dateStr] = {};
-    BuJo.state.readingProgress.history[dateStr][bookKey] = page;
+    BuJo.state.readingProgress.history[dateStr][bookId] = page;
+
+    // Auto-complete: se página >= total, mover para concluído
+    if (page >= cat.totalPages) {
+        if (!BuJo.state.readingProgress.library) BuJo.state.readingProgress.library = {};
+        BuJo.state.readingProgress.library[bookId] = 'concluido';
+    }
+
     saveState(); render();
 }
-function navWeek(d) { var nw = BuJo.state.readingProgress.currentWeek + d; if (nw >= 1 && nw <= 104) { BuJo.state.readingProgress.currentWeek = nw; saveState(); render(); } }
+
+function advanceInterval(bookId) {
+    var cat = bookCatalog[bookId];
+    if (!cat) return;
+    var bp = BuJo.state.readingProgress.bookProgress[bookId];
+    if (!bp) return;
+    if (bp.currentInterval < cat.intervals.length - 1) {
+        bp.currentInterval++;
+        saveState(); render();
+    }
+}
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
