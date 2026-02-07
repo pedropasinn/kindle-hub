@@ -136,7 +136,7 @@ app.post('/api/tasks', async (req, res) => {
       created_at: new Date().toISOString()
     };
 
-    await db.set(`task:${id}`, JSON.stringify(task));
+    await db.set(`task:${id}`, task);
     res.json(task);
   } catch (error) {
     console.error('Erro ao criar tarefa:', error);
@@ -147,7 +147,7 @@ app.post('/api/tasks', async (req, res) => {
 app.put('/api/tasks/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const task = JSON.parse(await db.get(`task:${id}`));
+    const task = await db.get(`task:${id}`);
 
     if (!task) {
       return res.status(404).json({ error: 'Tarefa não encontrada' });
@@ -164,7 +164,7 @@ app.put('/api/tasks/:id', async (req, res) => {
       task.due_date = due_date;
     }
 
-    await db.set(`task:${id}`, JSON.stringify(task));
+    await db.set(`task:${id}`, task);
     res.json({ success: true });
   } catch (error) {
     console.error('Erro ao atualizar tarefa:', error);
@@ -347,7 +347,7 @@ app.post('/api/habits/save', async (req, res) => {
     // Salvar cada hábito como chave separada no formato: habit_history:YYYY-MM-DD:habit_name
     for (const [habitName, completed] of Object.entries(habits)) {
       const key = `habit_history:${date}:${habitName}`;
-      await db.set(key, JSON.stringify({ date, habitName, completed, created_at: new Date().toISOString() }));
+      await db.set(key, { date, habitName, completed, created_at: new Date().toISOString() });
     }
 
     res.json({ success: true });
@@ -364,7 +364,7 @@ app.get('/api/habits/history', async (req, res) => {
     const history = [];
 
     for (const key of historyKeys) {
-      const record = JSON.parse(await db.get(key));
+      const record = await db.get(key);
       if (record) {
         const recordDate = new Date(record.date);
         const daysAgo = Math.floor((new Date() - recordDate) / (1000 * 60 * 60 * 24));
@@ -394,7 +394,7 @@ app.get('/api/habits/analytics', async (req, res) => {
     const records = [];
 
     for (const key of historyKeys) {
-      const record = JSON.parse(await db.get(key));
+      const record = await db.get(key);
       if (record) {
         const recordDate = new Date(record.date);
         const daysAgo = Math.floor((new Date() - recordDate) / (1000 * 60 * 60 * 24));
@@ -946,7 +946,7 @@ app.post('/api/sync/jornal', async (req, res) => {
   try {
     const state = req.body;
     const timestamp = new Date().toISOString();
-    await db.set('sync:jornal_state', JSON.stringify({ state, timestamp }));
+    await db.set('sync:jornal_state', { state, timestamp });
     res.json({ success: true, timestamp });
   } catch (error) {
     console.error('Erro ao salvar jornal no KV:', error);
@@ -961,8 +961,7 @@ app.get('/api/sync/jornal', async (req, res) => {
     if (!data) {
       return res.json({ state: null, message: 'Nenhum dado salvo' });
     }
-    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-    res.json(parsed);
+    res.json(data);
   } catch (error) {
     console.error('Erro ao carregar jornal do KV:', error);
     res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
@@ -974,7 +973,7 @@ app.post('/api/sync/nihongo', async (req, res) => {
   try {
     const state = req.body;
     const timestamp = new Date().toISOString();
-    await db.set('sync:nihongo_state', JSON.stringify({ state, timestamp }));
+    await db.set('sync:nihongo_state', { state, timestamp });
     res.json({ success: true, timestamp });
   } catch (error) {
     console.error('Erro ao salvar nihongo no KV:', error);
@@ -989,8 +988,7 @@ app.get('/api/sync/nihongo', async (req, res) => {
     if (!data) {
       return res.json({ state: null, message: 'Nenhum dado salvo' });
     }
-    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-    res.json(parsed);
+    res.json(data);
   } catch (error) {
     console.error('Erro ao carregar nihongo do KV:', error);
     res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
@@ -1002,7 +1000,7 @@ app.post('/api/sync/plano', async (req, res) => {
   try {
     const state = req.body;
     const timestamp = new Date().toISOString();
-    await db.set('sync:plano_state', JSON.stringify({ state, timestamp }));
+    await db.set('sync:plano_state', { state, timestamp });
     res.json({ success: true, timestamp });
   } catch (error) {
     console.error('Erro ao salvar plano no KV:', error);
@@ -1017,8 +1015,7 @@ app.get('/api/sync/plano', async (req, res) => {
     if (!data) {
       return res.json({ state: null, message: 'Nenhum dado salvo' });
     }
-    const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-    res.json(parsed);
+    res.json(data);
   } catch (error) {
     console.error('Erro ao carregar plano do KV:', error);
     res.status(500).json({ error: 'Erro ao carregar dados', details: error.message });
@@ -1094,13 +1091,12 @@ app.get('/api/anotacoes', async (req, res) => {
     for (const key of keysArray) {
       if (!key.endsWith(':counter')) {
         try {
-          const noteData = await db.get(key);
-          if (noteData) {
-            const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
+          const note = await db.get(key);
+          if (note) {
             annotations.push(note);
           }
-        } catch (parseErr) {
-          console.error(`Erro ao parsear nota ${key}:`, parseErr.message);
+        } catch (err) {
+          console.error(`Erro ao buscar nota ${key}:`, err.message);
         }
       }
     }
@@ -1133,13 +1129,12 @@ app.get('/api/anotacoes', async (req, res) => {
 // Obter uma anotação específica
 app.get('/api/anotacoes/:id', async (req, res) => {
   try {
-    const noteData = await db.get(`note:${req.params.id}`);
+    const note = await db.get(`note:${req.params.id}`);
 
-    if (!noteData) {
+    if (!note) {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
 
-    const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
     res.json(note);
   } catch (error) {
     console.error('Erro ao buscar anotação:', error);
@@ -1165,7 +1160,7 @@ app.post('/api/anotacoes', async (req, res) => {
       updatedTime: new Date().toISOString()
     };
 
-    await db.set(`note:${id}`, JSON.stringify(newAnnotation));
+    await db.set(`note:${id}`, newAnnotation);
     await saveNoteMd(newAnnotation);
     console.log('[API] Anotação salva com sucesso:', newAnnotation.id);
 
@@ -1179,13 +1174,12 @@ app.post('/api/anotacoes', async (req, res) => {
 // Atualizar anotação
 app.put('/api/anotacoes/:id', async (req, res) => {
   try {
-    const noteData = await db.get(`note:${req.params.id}`);
+    const note = await db.get(`note:${req.params.id}`);
 
-    if (!noteData) {
+    if (!note) {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
 
-    const note = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
     const { title, content, tags } = req.body;
 
     const updatedNote = {
@@ -1196,7 +1190,7 @@ app.put('/api/anotacoes/:id', async (req, res) => {
       updatedTime: new Date().toISOString()
     };
 
-    await db.set(`note:${req.params.id}`, JSON.stringify(updatedNote));
+    await db.set(`note:${req.params.id}`, updatedNote);
 
     // Atualizar arquivo .md (apagar antigo se título mudou)
     if (note.title !== updatedNote.title) {
@@ -1214,13 +1208,11 @@ app.put('/api/anotacoes/:id', async (req, res) => {
 // Excluir anotação
 app.delete('/api/anotacoes/:id', async (req, res) => {
   try {
-    const noteData = await db.get(`note:${req.params.id}`);
+    const noteToDelete = await db.get(`note:${req.params.id}`);
 
-    if (!noteData) {
+    if (!noteToDelete) {
       return res.status(404).json({ error: 'Anotação não encontrada' });
     }
-
-    const noteToDelete = typeof noteData === 'string' ? JSON.parse(noteData) : noteData;
     await db.del(`note:${req.params.id}`);
     await deleteNoteMd(noteToDelete);
 
@@ -1276,8 +1268,26 @@ app.get('/plano-inclinado', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'plano-inclinado.html'));
 });
 
+// Rota de health check
+app.get('/api/health', async (req, res) => {
+  const dbOk = await db.ping();
+  res.json({
+    status: dbOk ? 'ok' : 'degraded',
+    db: dbOk ? 'connected' : 'disconnected',
+    dbType: db.isRemote ? 'upstash' : 'local'
+  });
+});
+
 // Inicializar todas as integrações
 async function initializeServices() {
+  // Testar conexão com banco de dados
+  const dbOk = await db.ping();
+  if (dbOk) {
+    console.log('✅ Banco de dados conectado' + (db.isRemote ? ' (Upstash)' : ' (local)'));
+  } else {
+    console.error('❌ FALHA na conexão com o banco de dados! Verifique UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN no .env');
+  }
+
   await loadGoogleAuth();
   loadNotionClient();
 

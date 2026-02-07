@@ -4,14 +4,30 @@ const fs = require('fs');
 const path = require('path');
 
 class SheetsDB {
-  constructor(spreadsheetId) {
+  constructor(spreadsheetId, serviceAccount) {
     this.spreadsheetId = spreadsheetId;
+    this.serviceAccount = serviceAccount || null;
     this.sheets = null;
     this.auth = null;
   }
 
   async init() {
-    // Tentar usar Service Account primeiro (recomendado para WSL)
+    // Opção 1: Service Account injetada via parâmetro
+    if (this.serviceAccount) {
+      try {
+        this.auth = new google.auth.GoogleAuth({
+          credentials: this.serviceAccount,
+          scopes: ['https://www.googleapis.com/auth/spreadsheets']
+        });
+        this.sheets = google.sheets({ version: 'v4', auth: this.auth });
+        console.log('📊 Google Sheets usando Service Account (injetada)');
+        return true;
+      } catch (error) {
+        console.warn('⚠️  Erro ao usar Service Account injetada:', error.message);
+      }
+    }
+
+    // Opção 2: Arquivo local
     const serviceAccountPath = path.join(__dirname, 'service-account.json');
 
     if (fs.existsSync(serviceAccountPath)) {
