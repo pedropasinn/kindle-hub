@@ -94,44 +94,6 @@
         .note-item { padding: 14px; border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 12px; }
         .note-date { font-size: var(--font-size-xs); color: var(--muted-foreground); margin-bottom: 6px; }
         .note-type { display: inline-block; font-size: var(--font-size-xs); padding: 2px 8px; background: var(--secondary); border-radius: 4px; margin-right: 8px; }
-        /* Leituras */
-        .nav-tab.leituras { background: var(--secondary); border-color: var(--border); }
-        .nav-tab.leituras.active { background: var(--primary); color: #fff; }
-        .reading-card { border-left: 4px solid var(--primary); }
-        .reading-card.noturna { background: var(--secondary); }
-        .reading-progress { display: -webkit-box; display: flex; -webkit-box-align: center; align-items: center; margin: 10px 0; }
-        .reading-progress-bar { -webkit-box-flex: 1; flex: 1; height: 12px; background: var(--secondary); border-radius: 6px; overflow: hidden; margin-right: 10px; }
-        .reading-progress-fill { height: 100%; border-radius: 6px; background: var(--primary); }
-        .reading-percent { font-weight: 700; min-width: 50px; text-align: right; }
-        .reading-meta { font-size: var(--font-size-xs); color: var(--muted-foreground); }
-        .reading-input { width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 0.5rem; text-align: center; }
-        .stats-grid { display: -webkit-box; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
-        .stat-box { text-align: center; padding: 16px; background: var(--secondary); border-radius: var(--radius); width: 48%; margin-right: 2%; margin-bottom: 12px; }
-        .stat-value { font-size: 1.8rem; font-weight: 700; }
-        .stat-label { font-size: var(--font-size-xs); color: var(--muted-foreground); text-transform: uppercase; }
-        .book-type { font-size: var(--font-size-xs); padding: 2px 8px; border-radius: 4px; font-weight: 600; background: #ccc; color: #333; }
-        .book-type.espiritual { background: #4a5568; color: #fff; }
-        .book-type.cultural { background: #718096; color: #fff; }
-        /* Reading Grid Layout */
-        .reading-grid { display: flex; gap: 16px; }
-        .reading-col-left { flex: 1.2; }
-        .reading-col-right { flex: 0.8; }
-        .reading-col-title { font-size: var(--font-size-lg); font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); }
-        .reading-book-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
-        .reading-book-card .book-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .reading-book-card .book-title { font-weight: 700; font-size: var(--font-size-base); }
-        .reading-book-card .book-author { font-size: var(--font-size-sm); color: var(--muted-foreground); }
-        .reading-book-card .book-pages { font-size: var(--font-size-xs); color: var(--muted-foreground); }
-        .reading-book-card .book-meta { font-size: var(--font-size-xs); color: var(--muted-foreground); margin-top: 4px; }
-        .reading-book-card .week-goal { background: var(--secondary); padding: 8px 10px; border-radius: 6px; margin-top: 10px; font-size: var(--font-size-sm); }
-        .reading-book-card .week-goal-complete { background: #dcfce7; border: 1px solid #22c55e; }
-        .library-section { margin-bottom: 16px; }
-        .library-section-title { font-size: var(--font-size-xs); text-transform: uppercase; color: var(--muted-foreground); font-weight: 600; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .library-item { padding: 10px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .library-item:active { background: var(--secondary); }
-        .library-item .item-title { font-size: var(--font-size-sm); font-weight: 500; }
-        .library-item .item-status { font-size: var(--font-size-xs); color: var(--muted-foreground); }
-        @media (max-width: 600px) { .reading-grid { flex-direction: column; } }
         /* Week View */
         .week-grid { display: flex; flex-direction: column; }
         .week-row { display: flex; margin-bottom: 12px; }
@@ -181,7 +143,6 @@
             <span class="nav-tab" data-view="semana">Semana</span>
             <span class="nav-tab" data-view="mes">Mês</span>
             <span class="nav-tab" data-view="plano">Plano</span>
-            <span class="nav-tab leituras" data-view="leituras">Leituras</span>
             <span class="nav-tab" data-view="notas">Notas</span>
         </div>
     </header>
@@ -204,7 +165,6 @@ var BuJo = {
         futureLog: [],
         notes: [],
         calendarEvents: [],
-        readingProgress: { bookProgress: {}, library: {}, history: {} }
     },
     symbols: { task: '•', taskDone: '✕', taskMigrated: '→', event: '○', note: '–' },
     dailySpiritualHabits: [
@@ -236,213 +196,9 @@ var BuJo = {
         { id: 'estatistica', name: 'Estatística', dailyGoal: 2, description: '2 blocos de estudo' },
         { id: 'tenis-mesa', name: 'Tênis Mesa', dailyGoal: 1, description: '1 treino', weekDays: [1, 5, 6] }
     ],
-    readingPlan: {
-        noturna: { titulo: 'Vida de Cristo', autor: 'Fulton Sheen', paginas: 1015 },
-        cronograma: [
-            { semana: 1, espiritual: { titulo: 'Cristianismo puro e simples', autor: 'C.S. Lewis', pInicio: 1, pFim: 58 }, secular: { titulo: 'Viagem a Alfa Centauri', autor: 'Michael D. O\'Brien', pInicio: 1, pFim: 122 }, bloco: 'Fundamentos da Fé' },
-            { semana: 2, espiritual: { titulo: 'Cristianismo puro e simples', autor: 'C.S. Lewis', pInicio: 59, pFim: 116 }, secular: { titulo: 'Viagem a Alfa Centauri', autor: 'Michael D. O\'Brien', pInicio: 123, pFim: 244 }, bloco: 'Fundamentos da Fé' },
-            { semana: 3, espiritual: { titulo: 'Cristianismo puro e simples', autor: 'C.S. Lewis', pInicio: 117, pFim: 174 }, secular: { titulo: 'Viagem a Alfa Centauri', autor: 'Michael D. O\'Brien', pInicio: 245, pFim: 366 }, bloco: 'Fundamentos da Fé' },
-            { semana: 4, espiritual: { titulo: 'Cristianismo puro e simples', autor: 'C.S. Lewis', pInicio: 175, pFim: 232 }, secular: { titulo: 'Viagem a Alfa Centauri', autor: 'Michael D. O\'Brien', pInicio: 367, pFim: 488 }, bloco: 'Fundamentos da Fé' },
-            { semana: 5, espiritual: { titulo: 'Cristianismo puro e simples', autor: 'C.S. Lewis', pInicio: 233, pFim: 288 }, secular: { titulo: 'Viagem a Alfa Centauri', autor: 'Michael D. O\'Brien', pInicio: 489, pFim: 608 }, bloco: 'Fundamentos da Fé' },
-            { semana: 6, espiritual: { titulo: 'Cartas de um diabo a seu aprendiz', autor: 'C.S. Lewis', pInicio: 1, pFim: 42 }, secular: { titulo: 'Memórias póstumas de Brás Cubas', autor: 'Machado de Assis', pInicio: 1, pFim: 66 }, bloco: 'Fundamentos da Fé' },
-            { semana: 7, espiritual: { titulo: 'Cartas de um diabo a seu aprendiz', autor: 'C.S. Lewis', pInicio: 43, pFim: 84 }, secular: { titulo: 'Memórias póstumas de Brás Cubas', autor: 'Machado de Assis', pInicio: 67, pFim: 132 }, bloco: 'Fundamentos da Fé' },
-            { semana: 8, espiritual: { titulo: 'Cartas de um diabo a seu aprendiz', autor: 'C.S. Lewis', pInicio: 85, pFim: 126 }, secular: { titulo: 'Memórias póstumas de Brás Cubas', autor: 'Machado de Assis', pInicio: 133, pFim: 198 }, bloco: 'Fundamentos da Fé' },
-            { semana: 9, espiritual: { titulo: 'Cartas de um diabo a seu aprendiz', autor: 'C.S. Lewis', pInicio: 127, pFim: 168 }, secular: { titulo: 'Memórias póstumas de Brás Cubas', autor: 'Machado de Assis', pInicio: 199, pFim: 264 }, bloco: 'Fundamentos da Fé' },
-            { semana: 10, espiritual: { titulo: 'Cartas de um diabo a seu aprendiz', autor: 'C.S. Lewis', pInicio: 169, pFim: 208 }, secular: { titulo: 'Memórias póstumas de Brás Cubas', autor: 'Machado de Assis', pInicio: 265, pFim: 332 }, bloco: 'Fundamentos da Fé' },
-            { semana: 11, espiritual: { titulo: 'A abolição do homem', autor: 'C.S. Lewis', pInicio: 1, pFim: 26 }, secular: { titulo: 'Fundamentos de antropologia', autor: 'Ricardo Yepes Stork', pInicio: 1, pFim: 76 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 12, espiritual: { titulo: 'A abolição do homem', autor: 'C.S. Lewis', pInicio: 27, pFim: 52 }, secular: { titulo: 'Fundamentos de antropologia', autor: 'Ricardo Yepes Stork', pInicio: 77, pFim: 152 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 13, espiritual: { titulo: 'A abolição do homem', autor: 'C.S. Lewis', pInicio: 53, pFim: 78 }, secular: { titulo: 'Fundamentos de antropologia', autor: 'Ricardo Yepes Stork', pInicio: 153, pFim: 228 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 14, espiritual: { titulo: 'A abolição do homem', autor: 'C.S. Lewis', pInicio: 79, pFim: 104 }, secular: { titulo: 'Fundamentos de antropologia', autor: 'Ricardo Yepes Stork', pInicio: 229, pFim: 304 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 15, espiritual: { titulo: 'A abolição do homem', autor: 'C.S. Lewis', pInicio: 105, pFim: 128 }, secular: { titulo: 'Fundamentos de antropologia', autor: 'Ricardo Yepes Stork', pInicio: 305, pFim: 380 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 16, espiritual: { titulo: 'Confissões de um Converso', autor: 'Robert H. Benson', pInicio: 1, pFim: 45 }, secular: { titulo: 'Personalismo', autor: 'Emmanuel Mounier', pInicio: 1, pFim: 46 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 17, espiritual: { titulo: 'Confissões de um Converso', autor: 'Robert H. Benson', pInicio: 46, pFim: 90 }, secular: { titulo: 'Personalismo', autor: 'Emmanuel Mounier', pInicio: 47, pFim: 92 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 18, espiritual: { titulo: 'Confissões de um Converso', autor: 'Robert H. Benson', pInicio: 91, pFim: 136 }, secular: { titulo: 'Personalismo', autor: 'Emmanuel Mounier', pInicio: 93, pFim: 139 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 19, espiritual: { titulo: 'Gabriel Marcel e Edith Stein', autor: 'Urbano Zilles', pInicio: 1, pFim: 32 }, secular: { titulo: 'A antropologia personalista de Mounier', autor: 'A.J. Severino', pInicio: 1, pFim: 53 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 20, espiritual: { titulo: 'Gabriel Marcel e Edith Stein', autor: 'Urbano Zilles', pInicio: 33, pFim: 64 }, secular: { titulo: 'A antropologia personalista de Mounier', autor: 'A.J. Severino', pInicio: 54, pFim: 106 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 21, espiritual: { titulo: 'Gabriel Marcel e Edith Stein', autor: 'Urbano Zilles', pInicio: 65, pFim: 94 }, secular: { titulo: 'A antropologia personalista de Mounier', autor: 'A.J. Severino', pInicio: 107, pFim: 158 }, bloco: 'Pessoa e Antropologia' },
-            { semana: 22, espiritual: { titulo: 'As Moradas do Castelo Interior', autor: 'Sta. Teresa d Ávila', pInicio: 1, pFim: 64 }, secular: { titulo: 'Mapa do mundo pessoal', autor: 'Julián Marías', pInicio: 1, pFim: 37 }, bloco: 'Vida Interior I' },
-            { semana: 23, espiritual: { titulo: 'As Moradas do Castelo Interior', autor: 'Sta. Teresa d Ávila', pInicio: 65, pFim: 128 }, secular: { titulo: 'Mapa do mundo pessoal', autor: 'Julián Marías', pInicio: 38, pFim: 74 }, bloco: 'Vida Interior I' },
-            { semana: 24, espiritual: { titulo: 'As Moradas do Castelo Interior', autor: 'Sta. Teresa d Ávila', pInicio: 129, pFim: 192 }, secular: { titulo: 'Mapa do mundo pessoal', autor: 'Julián Marías', pInicio: 75, pFim: 111 }, bloco: 'Vida Interior I' },
-            { semana: 25, espiritual: { titulo: 'As Moradas do Castelo Interior', autor: 'Sta. Teresa d Ávila', pInicio: 193, pFim: 254 }, secular: { titulo: 'Mapa do mundo pessoal', autor: 'Julián Marías', pInicio: 112, pFim: 148 }, bloco: 'Vida Interior I' },
-            { semana: 26, espiritual: { titulo: 'São Bernardo de Claraval', autor: 'Daniel-Rops', pInicio: 1, pFim: 32 }, secular: { titulo: 'A educação sentimental', autor: 'Julián Marías', pInicio: 1, pFim: 60 }, bloco: 'Vida Interior I' },
-            { semana: 27, espiritual: { titulo: 'São Bernardo de Claraval', autor: 'Daniel-Rops', pInicio: 33, pFim: 64 }, secular: { titulo: 'A educação sentimental', autor: 'Julián Marías', pInicio: 61, pFim: 120 }, bloco: 'Vida Interior I' },
-            { semana: 28, espiritual: { titulo: 'São Bernardo de Claraval', autor: 'Daniel-Rops', pInicio: 65, pFim: 96 }, secular: { titulo: 'A educação sentimental', autor: 'Julián Marías', pInicio: 121, pFim: 180 }, bloco: 'Vida Interior I' },
-            { semana: 29, espiritual: { titulo: 'São Bernardo de Claraval', autor: 'Daniel-Rops', pInicio: 97, pFim: 128 }, secular: { titulo: 'A educação sentimental', autor: 'Julián Marías', pInicio: 181, pFim: 240 }, bloco: 'Vida Interior I' },
-            { semana: 30, espiritual: { titulo: 'Introdução ao Cristianismo', autor: 'Joseph Ratzinger', pInicio: 1, pFim: 54 }, secular: { titulo: 'O mito do Papa de Hitler', autor: 'David G. Dalin', pInicio: 1, pFim: 45 }, bloco: 'Cristo e a História' },
-            { semana: 31, espiritual: { titulo: 'Introdução ao Cristianismo', autor: 'Joseph Ratzinger', pInicio: 55, pFim: 108 }, secular: { titulo: 'O mito do Papa de Hitler', autor: 'David G. Dalin', pInicio: 46, pFim: 90 }, bloco: 'Cristo e a História' },
-            { semana: 32, espiritual: { titulo: 'Introdução ao Cristianismo', autor: 'Joseph Ratzinger', pInicio: 109, pFim: 162 }, secular: { titulo: 'O mito do Papa de Hitler', autor: 'David G. Dalin', pInicio: 91, pFim: 135 }, bloco: 'Cristo e a História' },
-            { semana: 33, espiritual: { titulo: 'Introdução ao Cristianismo', autor: 'Joseph Ratzinger', pInicio: 163, pFim: 216 }, secular: { titulo: 'O mito do Papa de Hitler', autor: 'David G. Dalin', pInicio: 136, pFim: 180 }, bloco: 'Cristo e a História' },
-            { semana: 34, espiritual: { titulo: 'Introdução ao Cristianismo', autor: 'Joseph Ratzinger', pInicio: 217, pFim: 272 }, secular: { titulo: 'O mito do Papa de Hitler', autor: 'David G. Dalin', pInicio: 181, pFim: 224 }, bloco: 'Cristo e a História' },
-            { semana: 35, espiritual: { titulo: 'Relatório sobre a fé', autor: 'Messori/Ratzinger', pInicio: 1, pFim: 54 }, secular: { titulo: 'Comunismo', autor: 'Jordán B. Genta', pInicio: 1, pFim: 40 }, bloco: 'Cristo e a História' },
-            { semana: 36, espiritual: { titulo: 'Relatório sobre a fé', autor: 'Messori/Ratzinger', pInicio: 55, pFim: 108 }, secular: { titulo: 'Comunismo', autor: 'Jordán B. Genta', pInicio: 41, pFim: 80 }, bloco: 'Cristo e a História' },
-            { semana: 37, espiritual: { titulo: 'Relatório sobre a fé', autor: 'Messori/Ratzinger', pInicio: 109, pFim: 162 }, secular: { titulo: 'Comunismo', autor: 'Jordán B. Genta', pInicio: 81, pFim: 120 }, bloco: 'Cristo e a História' },
-            { semana: 38, espiritual: { titulo: 'Relatório sobre a fé', autor: 'Messori/Ratzinger', pInicio: 163, pFim: 216 }, secular: { titulo: 'Comunismo', autor: 'Jordán B. Genta', pInicio: 121, pFim: 160 }, bloco: 'Cristo e a História' },
-            { semana: 39, espiritual: { titulo: 'Relatório sobre a fé', autor: 'Messori/Ratzinger', pInicio: 217, pFim: 272 }, secular: { titulo: 'Comunismo', autor: 'Jordán B. Genta', pInicio: 161, pFim: 200 }, bloco: 'Cristo e a História' },
-            { semana: 40, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 1, pFim: 46 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 1, pFim: 55 }, bloco: 'Literatura Russa I' },
-            { semana: 41, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 47, pFim: 92 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 56, pFim: 110 }, bloco: 'Literatura Russa I' },
-            { semana: 42, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 93, pFim: 138 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 111, pFim: 165 }, bloco: 'Literatura Russa I' },
-            { semana: 43, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 139, pFim: 184 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 166, pFim: 220 }, bloco: 'Literatura Russa I' },
-            { semana: 44, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 185, pFim: 230 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 221, pFim: 275 }, bloco: 'Literatura Russa I' },
-            { semana: 45, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 231, pFim: 276 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 276, pFim: 330 }, bloco: 'Literatura Russa I' },
-            { semana: 46, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 277, pFim: 322 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 331, pFim: 385 }, bloco: 'Literatura Russa I' },
-            { semana: 47, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 323, pFim: 368 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 386, pFim: 440 }, bloco: 'Literatura Russa I' },
-            { semana: 48, espiritual: { titulo: 'A vida vale a pena ser vivida', autor: 'Fulton Sheen', pInicio: 369, pFim: 416 }, secular: { titulo: 'Dostoievski: Sementes da revolta', autor: 'Joseph Frank', pInicio: 441, pFim: 496 }, bloco: 'Literatura Russa I' },
-            { semana: 49, espiritual: { titulo: 'Cartas de Amor de uma Santa', autor: 'Gianna B. Molla', pInicio: 1, pFim: 36 }, secular: { titulo: 'A última ao cadafalso', autor: 'Gertrud von le Fort', pInicio: 1, pFim: 48 }, bloco: 'Amor e Vocação' },
-            { semana: 50, espiritual: { titulo: 'Cartas de Amor de uma Santa', autor: 'Gianna B. Molla', pInicio: 37, pFim: 72 }, secular: { titulo: 'A última ao cadafalso', autor: 'Gertrud von le Fort', pInicio: 49, pFim: 96 }, bloco: 'Amor e Vocação' },
-            { semana: 51, espiritual: { titulo: 'Cartas de Amor de uma Santa', autor: 'Gianna B. Molla', pInicio: 73, pFim: 108 }, secular: { titulo: 'A última ao cadafalso', autor: 'Gertrud von le Fort', pInicio: 97, pFim: 144 }, bloco: 'Amor e Vocação' },
-            { semana: 52, espiritual: { titulo: 'Cartas de Amor de uma Santa', autor: 'Gianna B. Molla', pInicio: 109, pFim: 144 }, secular: { titulo: 'A última ao cadafalso', autor: 'Gertrud von le Fort', pInicio: 145, pFim: 192 }, bloco: 'Amor e Vocação' },
-            { semana: 53, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 1, pFim: 50 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 1, pFim: 47 }, bloco: 'Amor e Vocação' },
-            { semana: 54, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 51, pFim: 100 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 48, pFim: 94 }, bloco: 'Amor e Vocação' },
-            { semana: 55, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 101, pFim: 150 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 95, pFim: 141 }, bloco: 'Amor e Vocação' },
-            { semana: 56, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 151, pFim: 200 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 142, pFim: 188 }, bloco: 'Amor e Vocação' },
-            { semana: 57, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 201, pFim: 250 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 189, pFim: 235 }, bloco: 'Amor e Vocação' },
-            { semana: 58, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 251, pFim: 300 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 236, pFim: 282 }, bloco: 'Amor e Vocação' },
-            { semana: 59, espiritual: { titulo: 'Amor e responsabilidade', autor: 'Karol Wojtyla', pInicio: 301, pFim: 354 }, secular: { titulo: 'Otelo', autor: 'William Shakespeare', pInicio: 283, pFim: 328 }, bloco: 'Amor e Vocação' },
-            { semana: 60, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 1, pFim: 42 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 1, pFim: 53 }, bloco: 'Literatura Russa II' },
-            { semana: 61, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 43, pFim: 84 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 54, pFim: 106 }, bloco: 'Literatura Russa II' },
-            { semana: 62, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 85, pFim: 126 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 107, pFim: 159 }, bloco: 'Literatura Russa II' },
-            { semana: 63, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 127, pFim: 168 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 160, pFim: 212 }, bloco: 'Literatura Russa II' },
-            { semana: 64, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 169, pFim: 210 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 213, pFim: 265 }, bloco: 'Literatura Russa II' },
-            { semana: 65, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 211, pFim: 252 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 266, pFim: 318 }, bloco: 'Literatura Russa II' },
-            { semana: 66, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 253, pFim: 294 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 319, pFim: 371 }, bloco: 'Literatura Russa II' },
-            { semana: 67, espiritual: { titulo: 'Caminhar com Jesus', autor: 'Álvaro del Portillo', pInicio: 295, pFim: 336 }, secular: { titulo: 'Dostoievski: Anos de provação', autor: 'Joseph Frank', pInicio: 372, pFim: 424 }, bloco: 'Literatura Russa II' },
-            { semana: 68, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 1, pFim: 41 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 1, pFim: 59 }, bloco: 'Literatura Russa II' },
-            { semana: 69, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 42, pFim: 82 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 60, pFim: 118 }, bloco: 'Literatura Russa II' },
-            { semana: 70, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 83, pFim: 123 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 119, pFim: 177 }, bloco: 'Literatura Russa II' },
-            { semana: 71, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 124, pFim: 164 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 178, pFim: 236 }, bloco: 'Literatura Russa II' },
-            { semana: 72, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 165, pFim: 205 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 237, pFim: 295 }, bloco: 'Literatura Russa II' },
-            { semana: 73, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 206, pFim: 246 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 296, pFim: 354 }, bloco: 'Literatura Russa II' },
-            { semana: 74, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 247, pFim: 287 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 355, pFim: 413 }, bloco: 'Literatura Russa II' },
-            { semana: 75, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 288, pFim: 328 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 414, pFim: 472 }, bloco: 'Literatura Russa II' },
-            { semana: 76, espiritual: { titulo: 'As cerejeiras em flor', autor: 'José Miguel Cejas', pInicio: 329, pFim: 368 }, secular: { titulo: 'Dostoievski: Efeitos da libertação', autor: 'Joseph Frank', pInicio: 473, pFim: 528 }, bloco: 'Literatura Russa II' },
-            { semana: 77, espiritual: { titulo: 'A economia das parábolas', autor: 'Robert A. Sirico', pInicio: 1, pFim: 31 }, secular: { titulo: 'A Grande Depressão Americana', autor: 'Murray N. Rothbard', pInicio: 1, pFim: 63 }, bloco: 'Economia e Sociedade' },
-            { semana: 78, espiritual: { titulo: 'A economia das parábolas', autor: 'Robert A. Sirico', pInicio: 32, pFim: 62 }, secular: { titulo: 'A Grande Depressão Americana', autor: 'Murray N. Rothbard', pInicio: 64, pFim: 126 }, bloco: 'Economia e Sociedade' },
-            { semana: 79, espiritual: { titulo: 'A economia das parábolas', autor: 'Robert A. Sirico', pInicio: 63, pFim: 93 }, secular: { titulo: 'A Grande Depressão Americana', autor: 'Murray N. Rothbard', pInicio: 127, pFim: 189 }, bloco: 'Economia e Sociedade' },
-            { semana: 80, espiritual: { titulo: 'A economia das parábolas', autor: 'Robert A. Sirico', pInicio: 94, pFim: 124 }, secular: { titulo: 'A Grande Depressão Americana', autor: 'Murray N. Rothbard', pInicio: 190, pFim: 252 }, bloco: 'Economia e Sociedade' },
-            { semana: 81, espiritual: { titulo: 'A economia das parábolas', autor: 'Robert A. Sirico', pInicio: 125, pFim: 155 }, secular: { titulo: 'A Grande Depressão Americana', autor: 'Murray N. Rothbard', pInicio: 253, pFim: 315 }, bloco: 'Economia e Sociedade' },
-            { semana: 82, espiritual: { titulo: 'A economia das parábolas', autor: 'Robert A. Sirico', pInicio: 156, pFim: 184 }, secular: { titulo: 'A Grande Depressão Americana', autor: 'Murray N. Rothbard', pInicio: 316, pFim: 378 }, bloco: 'Economia e Sociedade' },
-            { semana: 83, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 1, pFim: 45 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 1, pFim: 52 }, bloco: 'Economia e Sociedade' },
-            { semana: 84, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 46, pFim: 90 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 53, pFim: 104 }, bloco: 'Economia e Sociedade' },
-            { semana: 85, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 91, pFim: 135 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 105, pFim: 156 }, bloco: 'Economia e Sociedade' },
-            { semana: 86, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 136, pFim: 180 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 157, pFim: 208 }, bloco: 'Economia e Sociedade' },
-            { semana: 87, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 181, pFim: 225 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 209, pFim: 260 }, bloco: 'Economia e Sociedade' },
-            { semana: 88, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 226, pFim: 270 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 261, pFim: 312 }, bloco: 'Economia e Sociedade' },
-            { semana: 89, espiritual: { titulo: 'Cristianismo e economia', autor: 'Élio E. Gasda', pInicio: 271, pFim: 312 }, secular: { titulo: 'Manual do Perfeito Idiota', autor: 'Mendoza et al.', pInicio: 313, pFim: 364 }, bloco: 'Economia e Sociedade' },
-            { semana: 90, espiritual: { titulo: 'O que há de errado com o mundo', autor: 'G.K. Chesterton', pInicio: 1, pFim: 55 }, secular: { titulo: 'As ideias têm consequências', autor: 'Richard M. Weaver', pInicio: 1, pFim: 52 }, bloco: 'Pensamento e Cultura' },
-            { semana: 91, espiritual: { titulo: 'O que há de errado com o mundo', autor: 'G.K. Chesterton', pInicio: 56, pFim: 110 }, secular: { titulo: 'As ideias têm consequências', autor: 'Richard M. Weaver', pInicio: 53, pFim: 104 }, bloco: 'Pensamento e Cultura' },
-            { semana: 92, espiritual: { titulo: 'O que há de errado com o mundo', autor: 'G.K. Chesterton', pInicio: 111, pFim: 165 }, secular: { titulo: 'As ideias têm consequências', autor: 'Richard M. Weaver', pInicio: 105, pFim: 156 }, bloco: 'Pensamento e Cultura' },
-            { semana: 93, espiritual: { titulo: 'O que há de errado com o mundo', autor: 'G.K. Chesterton', pInicio: 166, pFim: 218 }, secular: { titulo: 'As ideias têm consequências', autor: 'Richard M. Weaver', pInicio: 157, pFim: 208 }, bloco: 'Pensamento e Cultura' },
-            { semana: 94, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 1, pFim: 58 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 1, pFim: 60 }, bloco: 'Literatura Russa III' },
-            { semana: 95, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 59, pFim: 116 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 61, pFim: 120 }, bloco: 'Literatura Russa III' },
-            { semana: 96, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 117, pFim: 174 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 121, pFim: 180 }, bloco: 'Literatura Russa III' },
-            { semana: 97, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 175, pFim: 232 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 181, pFim: 240 }, bloco: 'Literatura Russa III' },
-            { semana: 98, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 233, pFim: 290 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 241, pFim: 300 }, bloco: 'Literatura Russa III' },
-            { semana: 99, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 291, pFim: 348 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 301, pFim: 360 }, bloco: 'Literatura Russa III' },
-            { semana: 100, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 349, pFim: 406 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 361, pFim: 420 }, bloco: 'Literatura Russa III' },
-            { semana: 101, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 407, pFim: 464 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 421, pFim: 480 }, bloco: 'Literatura Russa III' },
-            { semana: 102, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 465, pFim: 522 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 481, pFim: 540 }, bloco: 'Literatura Russa III' },
-            { semana: 103, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 523, pFim: 580 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 541, pFim: 600 }, bloco: 'Literatura Russa III' },
-            { semana: 104, espiritual: { titulo: 'O Catecismo', autor: 'Fulton J. Sheen', pInicio: 581, pFim: 639 }, secular: { titulo: 'Dostoievski: Anos milagrosos', autor: 'Joseph Frank', pInicio: 601, pFim: 662 }, bloco: 'Literatura Russa III' }
-        ]
-    },
     dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
     dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 };
-
-// ============= CATÁLOGO DE LIVROS =============
-var bookCatalog = {};
-
-function buildBookCatalog() {
-    var catalog = {};
-    // Vida de Cristo (noturna) como livro regular
-    catalog['book_esp_vida_de_cristo'] = {
-        id: 'book_esp_vida_de_cristo',
-        title: BuJo.readingPlan.noturna.titulo,
-        author: BuJo.readingPlan.noturna.autor,
-        category: 'espiritual',
-        totalPages: BuJo.readingPlan.noturna.paginas,
-        intervals: [{ pInicio: 1, pFim: BuJo.readingPlan.noturna.paginas }]
-    };
-
-    // Extrair livros únicos do cronograma
-    var seen = {};
-    BuJo.readingPlan.cronograma.forEach(function(w) {
-        // Espiritual
-        var espKey = 'book_esp_' + w.espiritual.titulo.replace(/\s+/g, '_').toLowerCase();
-        if (!seen[espKey]) {
-            seen[espKey] = true;
-            catalog[espKey] = { id: espKey, title: w.espiritual.titulo, author: w.espiritual.autor, category: 'espiritual', totalPages: 0, intervals: [] };
-        }
-        catalog[espKey].intervals.push({ pInicio: w.espiritual.pInicio, pFim: w.espiritual.pFim, semana: w.semana });
-        if (w.espiritual.pFim > catalog[espKey].totalPages) catalog[espKey].totalPages = w.espiritual.pFim;
-
-        // Secular
-        var secKey = 'book_sec_' + w.secular.titulo.replace(/\s+/g, '_').toLowerCase();
-        if (!seen[secKey]) {
-            seen[secKey] = true;
-            catalog[secKey] = { id: secKey, title: w.secular.titulo, author: w.secular.autor, category: 'cultural', totalPages: 0, intervals: [] };
-        }
-        catalog[secKey].intervals.push({ pInicio: w.secular.pInicio, pFim: w.secular.pFim, semana: w.semana });
-        if (w.secular.pFim > catalog[secKey].totalPages) catalog[secKey].totalPages = w.secular.pFim;
-    });
-
-    bookCatalog = catalog;
-}
-
-function migrateReadingState(rp) {
-    if (rp._migrated) return rp;
-    var newRp = { bookProgress: {}, library: {}, history: rp.history || {}, _migrated: true };
-
-    // Migrar noturna
-    if (rp.noturna && rp.noturna.currentPage) {
-        newRp.bookProgress['book_esp_vida_de_cristo'] = { currentInterval: 0, currentPage: rp.noturna.currentPage };
-        newRp.library['book_esp_vida_de_cristo'] = 'lendo';
-    }
-
-    // Migrar livros do cronograma
-    var cw = rp.currentWeek || 1;
-    if (rp.books) {
-        Object.keys(rp.books).forEach(function(key) {
-            var match = key.match(/sem(\d+)_(esp|sec)/);
-            if (!match) return;
-            var week = parseInt(match[1]);
-            var type = match[2];
-            var wd = BuJo.readingPlan.cronograma.find(function(w) { return w.semana === week; });
-            if (!wd) return;
-            var bookData = type === 'esp' ? wd.espiritual : wd.secular;
-            var prefix = type === 'esp' ? 'book_esp_' : 'book_sec_';
-            var bookId = prefix + bookData.titulo.replace(/\s+/g, '_').toLowerCase();
-            var pagesRead = rp.books[key] || 0;
-            if (pagesRead > 0) {
-                var absolutePage = bookData.pInicio + pagesRead - 1;
-                // Encontrar o intervalo correto
-                var cat = bookCatalog[bookId];
-                if (cat) {
-                    var intIdx = 0;
-                    for (var i = 0; i < cat.intervals.length; i++) {
-                        if (cat.intervals[i].semana === week) { intIdx = i; break; }
-                    }
-                    if (!newRp.bookProgress[bookId] || absolutePage > newRp.bookProgress[bookId].currentPage) {
-                        newRp.bookProgress[bookId] = { currentInterval: intIdx, currentPage: absolutePage };
-                    }
-                }
-            }
-            // Marcar livros da semana atual como 'lendo'
-            if (week === cw) {
-                newRp.library[bookId] = 'lendo';
-            }
-        });
-    }
-
-    // Migrar library existente
-    if (rp.library) {
-        Object.keys(rp.library).forEach(function(k) {
-            if (!newRp.library[k]) newRp.library[k] = rp.library[k];
-        });
-    }
-
-    return newRp;
-}
 
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 function formatDateKey(date) {
@@ -490,8 +246,7 @@ async function syncToServer() {
             mortifications: BuJo.state.mortifications,
             projects: BuJo.state.projects,
             futureLog: BuJo.state.futureLog,
-            notes: BuJo.state.notes,
-            readingProgress: BuJo.state.readingProgress
+            notes: BuJo.state.notes
         };
         var response = await fetch('/api/sync/jornal', {
             method: 'POST',
@@ -522,8 +277,6 @@ async function loadFromServer() {
                 BuJo.state.projects = s.projects || [];
                 BuJo.state.futureLog = s.futureLog || [];
                 BuJo.state.notes = s.notes || [];
-                var rp = s.readingProgress || { bookProgress: {}, library: {}, history: {} };
-                BuJo.state.readingProgress = rp._migrated ? rp : migrateReadingState(rp);
                 return true;
             }
         }
@@ -563,7 +316,6 @@ function getEventsForDate(dateStr) {
 
 async function init() {
     document.getElementById('main-content').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted-foreground);">Carregando...</div>';
-    buildBookCatalog();
     updateHeaderDate();
     bindNavEvents();
     await loadFromServer();
@@ -584,9 +336,8 @@ function bindNavEvents() {
 function setView(view) {
     BuJo.state.currentView = view;
     document.querySelectorAll('.nav-tab').forEach(function(t) {
-        var isLeituras = t.getAttribute('data-view') === 'leituras';
         var isActive = t.getAttribute('data-view') === view;
-        t.className = 'nav-tab' + (isLeituras ? ' leituras' : '') + (isActive ? ' active' : '');
+        t.className = 'nav-tab' + (isActive ? ' active' : '');
     });
     render();
 }
@@ -598,7 +349,6 @@ function render() {
     else if (view === 'semana') main.innerHTML = renderWeekView();
     else if (view === 'mes') main.innerHTML = renderMonthView();
     else if (view === 'plano') main.innerHTML = renderPlanoVida();
-    else if (view === 'leituras') main.innerHTML = renderLeituras();
     else if (view === 'notas') main.innerHTML = renderNotas();
     bindViewEvents();
 }
@@ -645,13 +395,9 @@ function bindViewEvents() {
     });
     
     var addMortBtn = document.getElementById('add-mort-btn');
-    var addProjectBtn = document.getElementById('add-project-btn');
-    var addFutureBtn = document.getElementById('add-future-btn');
     var addNoteBtn = document.getElementById('add-note-btn');
     var saveNotesBtn = document.getElementById('save-notes-btn');
     if (addMortBtn) addMortBtn.onclick = showAddMortModal;
-    if (addProjectBtn) addProjectBtn.onclick = showAddProjectModal;
-    if (addFutureBtn) addFutureBtn.onclick = showAddFutureModal;
     if (addNoteBtn) addNoteBtn.onclick = showAddNoteModal;
     if (saveNotesBtn) saveNotesBtn.onclick = saveAllNotes;
     
@@ -693,9 +439,6 @@ function renderDayView() {
 
     // Encontrar registro estrela
     var starEntry = dayEntries.find(function(e) { return e.starred; });
-
-    // Obter resumo de leituras
-    var readingSummary = getReadingSummary();
 
     var html = '<div class="card">';
     html += '<div class="card-title"' + titleStyle + '><span class="btn" id="prev-date" style="line-height:1;"><img src="/icones/seta.png" style="transform:rotate(180deg);width:20px;height:20px;"></span>';
@@ -745,15 +488,6 @@ function renderDayView() {
     if (mortsCount > 0) html += '<span class="day-btn-badge">' + mortsCount + '</span>';
     html += '</div>';
 
-    // LEITURAS DO DIA
-    html += '<div class="day-btn" onclick="openDaySection(\'leituras\')">';
-    html += '<div style="flex:1;"><div class="day-btn-label">Leituras do Dia</div>';
-    if (readingSummary) {
-        html += '<div style="font-size:var(--font-size-xs);color:var(--muted-foreground);margin-top:2px;">' + readingSummary + '</div>';
-    }
-    html += '</div>';
-    html += '</div>';
-
     html += '</div>';
     return html;
 }
@@ -777,23 +511,6 @@ function getCurrentOrNextEvent(events) {
         }
     }
     return events[0].summary; // retorna o primeiro se nenhum for atual
-}
-
-function getReadingSummary() {
-    var library = BuJo.state.readingProgress.library || {};
-    var lendo = Object.keys(library).filter(function(k) { return library[k] === 'lendo'; });
-    if (lendo.length === 0) return null;
-    var parts = [];
-    lendo.forEach(function(bookId) {
-        var cat = bookCatalog[bookId];
-        if (!cat) return;
-        var bp = BuJo.state.readingProgress.bookProgress[bookId];
-        var cp = bp ? bp.currentPage : 0;
-        var pct = Math.round((cp / cat.totalPages) * 100);
-        var shortTitle = cat.title.length > 15 ? cat.title.substring(0, 15) + '…' : cat.title;
-        parts.push(shortTitle + ' ' + pct + '%');
-    });
-    return parts.slice(0, 3).join(' · ');
 }
 
 function renderDaySpiritualHabits(dateStr, dow, thirdSunday) {
@@ -1293,7 +1010,6 @@ function openDaySection(section) {
     else if (section === 'registros') title = 'Registros';
     else if (section === 'plano') title = 'Plano de Vida';
     else if (section === 'mortificacoes') title = 'Mortificações';
-    else if (section === 'leituras') title = 'Leituras do Dia';
     else if (section === 'exame') title = 'Exame de Consciência';
 
     html += '<span class="modal-full-title">' + title + '</span>';
@@ -1304,7 +1020,6 @@ function openDaySection(section) {
     else if (section === 'registros') html += renderDaySectionRegistros(dateStr);
     else if (section === 'plano') html += renderDaySectionPlano(dateStr, dow, thirdSunday);
     else if (section === 'mortificacoes') html += renderDaySectionMortificacoes(dateStr);
-    else if (section === 'leituras') html += renderDaySectionLeituras();
     else if (section === 'exame') html += renderDaySectionExame();
 
     html += '</div>';
@@ -1523,36 +1238,6 @@ function renderDaySectionMortificacoes(dateStr) {
     return html;
 }
 
-function renderDaySectionLeituras() {
-    var library = BuJo.state.readingProgress.library || {};
-    var lendo = Object.keys(library).filter(function(k) { return library[k] === 'lendo'; });
-    var html = '<div class="card">';
-
-    if (lendo.length === 0) {
-        html += '<p style="color:var(--muted-foreground);font-style:italic;text-align:center;padding:20px;">Nenhum livro em leitura. Vá para Leituras e marque livros como "Lendo".</p>';
-    } else {
-        lendo.forEach(function(bookId) {
-            var cat = bookCatalog[bookId];
-            if (!cat) return;
-            var bp = BuJo.state.readingProgress.bookProgress[bookId] || { currentInterval: 0, currentPage: 0 };
-            var pct = cat.totalPages > 0 ? Math.round((bp.currentPage / cat.totalPages) * 100) : 0;
-            var categoryLabel = cat.category === 'espiritual' ? 'Espiritual' : 'Cultural';
-
-            html += '<div style="margin-bottom:20px;">';
-            html += '<div><span class="book-type ' + cat.category + '">' + categoryLabel + '</span></div>';
-            html += '<div style="font-weight:600;margin:8px 0;">' + cat.title + '</div>';
-            html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);margin-bottom:8px;">' + cat.author + '</div>';
-            html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + pct + '%;"></div></div><span class="reading-percent">' + pct + '%</span></div>';
-            html += '<div style="font-size:var(--font-size-sm);color:var(--muted-foreground);">Página ' + bp.currentPage + ' de ' + cat.totalPages + '</div>';
-            html += '</div>';
-        });
-    }
-
-    html += '<div style="margin-top:20px;text-align:center;"><span class="btn btn-primary" onclick="closeDaySection();setView(\'leituras\');" style="padding:14px 24px;">Ir para Leituras Completas</span></div>';
-    html += '</div>';
-    return html;
-}
-
 function renderDaySectionExame() {
     var html = '<div style="padding:0 4px;line-height:1.8;">';
 
@@ -1562,17 +1247,17 @@ function renderDaySectionExame() {
 
     html += '<div style="margin-bottom:24px;">';
     html += '<p style="font-size:var(--font-size-base);margin-bottom:16px;"><strong>"Muitos vivem como anjos no meio do mundo. - Tu… por que não? (C122)"</strong></p>';
-    html += '<p style="font-size:var(--font-size-sm);color:var(--muted-foreground);padding-left:12px;border-left:3px solid var(--border);">Usei o telefone enquanto estava deitado? Tirei ele do modo sono sem necessidade? Fiquei usando ele até tarde?</p>';
+    html += '<p style="font-size:var(--font-size-sm);padding-left:12px;border-left:3px solid var(--border);">Usei o telefone enquanto estava deitado? Tirei ele do modo sono sem necessidade? Fiquei usando ele até tarde?</p>';
     html += '</div>';
 
     html += '<div style="margin-bottom:24px;">';
     html += '<p style="font-size:var(--font-size-base);margin-bottom:16px;"><strong>"Põe um motivo sobrenatural na tua atividade profissional de cada dia, e terás santificado o trabalho. (C359)"</strong></p>';
-    html += '<p style="font-size:var(--font-size-sm);color:var(--muted-foreground);padding-left:12px;border-left:3px solid var(--border);">Lembrei de pedir graças antes de estudar? Deixei me distrair durante o estudo? Agradeci o tempo de estudo?</p>';
+    html += '<p style="font-size:var(--font-size-sm);padding-left:12px;border-left:3px solid var(--border);">Lembrei de pedir graças antes de estudar? Deixei me distrair durante o estudo? Agradeci o tempo de estudo?</p>';
     html += '</div>';
 
     html += '<div style="margin-bottom:24px;">';
     html += '<p style="font-size:var(--font-size-base);margin-bottom:16px;"><strong>"Estar ocioso é coisa que não se compreende num homem com alma de apóstolo. (C358)"</strong></p>';
-    html += '<p style="font-size:var(--font-size-sm);color:var(--muted-foreground);padding-left:12px;border-left:3px solid var(--border);">Lembrei das jaculatórias habituais? Vivi bem o tempo da tarde? Levei a sério o meu apostolado planejado?</p>';
+    html += '<p style="font-size:var(--font-size-sm);padding-left:12px;border-left:3px solid var(--border);">Lembrei das jaculatórias habituais? Vivi bem o tempo da tarde? Levei a sério o meu apostolado planejado?</p>';
     html += '</div>';
 
     html += '<div style="margin-top:30px;padding-top:20px;border-top:2px solid var(--primary);">';
@@ -1610,42 +1295,6 @@ function addMortification(dateStr) {
     }
 }
 
-function showAddProjectModal() {
-    showModal('<div class="modal-title">Novo Projeto</div>' +
-        '<div class="form-group"><label>Nome</label><input type="text" id="project-name"></div>' +
-        '<div class="form-group"><label>Próxima Ação</label><input type="text" id="project-next"></div>' +
-        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="addProject()">Criar</span></div>');
-}
-function addProject() {
-    var name = document.getElementById('project-name').value.trim();
-    if (!name) return;
-    var newProject = { id: generateId(), name: name, nextAction: document.getElementById('project-next').value, status: 'Em andamento', createdAt: new Date().toISOString() };
-    BuJo.state.projects.push(newProject);
-    saveState(); closeModal(); render();
-}
-
-function showAddFutureModal() {
-    var now = new Date(), options = '';
-    for (var i = 0; i < 12; i++) {
-        var d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        options += '<option value="' + getMonthKey(d) + '">' + d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) + '</option>';
-    }
-    showModal('<div class="modal-title">Adicionar ao Future Log</div>' +
-        '<div class="form-group"><label>Mês</label><select id="future-month">' + options + '</select></div>' +
-        '<div class="form-group"><label>Dia (opcional)</label><input type="number" id="future-day" min="1" max="31" placeholder="Ex: 15"></div>' +
-        '<div class="form-group"><label>Descrição</label><input type="text" id="future-text" placeholder="Ex: Aniversário"></div>' +
-        '<div class="modal-actions"><span class="btn" onclick="closeModal()">Cancelar</span><span class="btn btn-primary" onclick="addFutureEntry()">Adicionar</span></div>');
-}
-function addFutureEntry() {
-    var text = document.getElementById('future-text').value.trim();
-    if (!text) return;
-    var month = document.getElementById('future-month').value;
-    var day = document.getElementById('future-day').value || null;
-    var newEntry = { id: generateId(), month: month, day: day, text: text, createdAt: new Date().toISOString() };
-    BuJo.state.futureLog.push(newEntry);
-    saveState(); closeModal(); render();
-}
-
 function showAddNoteModal() {
     showModal('<div class="modal-title">Nova Nota</div>' +
         '<div class="form-group"><label>Tipo (opcional)</label><input type="text" id="note-type" placeholder="Ex: Reflexão, Ideia"></div>' +
@@ -1659,254 +1308,6 @@ function addNote() {
     var newNote = { id: generateId(), text: text, type: noteType, createdAt: new Date().toISOString() };
     BuJo.state.notes.push(newNote);
     saveState(); closeModal(); render();
-}
-
-function renderDayReading() {
-    var library = BuJo.state.readingProgress.library || {};
-    var lendo = Object.keys(library).filter(function(k) { return library[k] === 'lendo'; });
-    var html = '';
-
-    lendo.forEach(function(bookId) {
-        var cat = bookCatalog[bookId];
-        if (!cat) return;
-        var bp = BuJo.state.readingProgress.bookProgress[bookId] || { currentInterval: 0, currentPage: 0 };
-        var pct = cat.totalPages > 0 ? Math.round((bp.currentPage / cat.totalPages) * 100) : 0;
-        html += '<div style="margin-bottom:8px;"><span class="book-type">' + (cat.category === 'espiritual' ? 'Espiritual' : 'Cultural') + '</span> ' + cat.title + ' <strong>' + pct + '%</strong></div>';
-    });
-
-    if (lendo.length === 0) html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);">Nenhum livro em leitura</div>';
-    html += '<div style="text-align:center;margin-top:8px;"><span class="btn" onclick="setView(\'leituras\')">Ir para Leituras</span></div>';
-    return html;
-}
-
-function renderLeituras() {
-    var library = BuJo.state.readingProgress.library || {};
-    var allBooks = getAllBooksFromPlan();
-
-    var html = '<div class="reading-grid">';
-
-    // ===== COLUNA ESQUERDA: LENDO =====
-    html += '<div class="reading-col-left">';
-    html += '<div class="reading-col-title">Lendo</div>';
-
-    var lendo = allBooks.filter(function(b) { return library[b.id] === 'lendo'; });
-
-    if (lendo.length === 0) {
-        html += '<div style="color:var(--muted-foreground);font-style:italic;padding:20px;text-align:center;">Nenhum livro em leitura. Marque livros como "Lendo" na Biblioteca.</div>';
-    } else {
-        lendo.forEach(function(b) {
-            html += renderReadingCard(b);
-        });
-    }
-
-    html += '</div>';
-
-    // ===== COLUNA DIREITA: BIBLIOTECA =====
-    html += '<div class="reading-col-right">';
-    html += '<div class="reading-col-title">Biblioteca</div>';
-
-    var lendoBib = allBooks.filter(function(b) { return library[b.id] === 'lendo'; });
-    var proximas = allBooks.filter(function(b) { return library[b.id] === 'proximas'; });
-    var concluidos = allBooks.filter(function(b) { return library[b.id] === 'concluido'; });
-    var naoIniciados = allBooks.filter(function(b) { return !library[b.id] || library[b.id] === 'nao_iniciado'; });
-
-    // Lendo
-    if (lendoBib.length > 0) {
-        html += '<div class="library-section">';
-        html += '<div class="library-section-title">Lendo</div>';
-        lendoBib.forEach(function(b) {
-            var bp = BuJo.state.readingProgress.bookProgress[b.id] || { currentPage: 0 };
-            var pct = b.totalPages > 0 ? Math.round((bp.currentPage / b.totalPages) * 100) : 0;
-            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
-            html += '<span class="item-title">' + b.title + '</span>';
-            html += '<span class="item-status">' + pct + '%</span>';
-            html += '</div>';
-        });
-        html += '</div>';
-    }
-
-    // Próximas Leituras
-    html += '<div class="library-section">';
-    html += '<div class="library-section-title">Próximas Leituras</div>';
-    if (proximas.length === 0) {
-        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);font-style:italic;">Nenhum livro</div>';
-    } else {
-        proximas.forEach(function(b) {
-            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
-            html += '<span class="item-title">' + b.title + '</span>';
-            html += '<span class="item-status">' + b.type + '</span>';
-            html += '</div>';
-        });
-    }
-    html += '</div>';
-
-    // Concluídos
-    html += '<div class="library-section">';
-    html += '<div class="library-section-title">Concluído</div>';
-    if (concluidos.length === 0) {
-        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);font-style:italic;">Nenhum livro</div>';
-    } else {
-        concluidos.forEach(function(b) {
-            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
-            html += '<span class="item-title">' + b.title + '</span>';
-            html += '<span class="item-status">✓</span>';
-            html += '</div>';
-        });
-    }
-    html += '</div>';
-
-    // Não Iniciados
-    html += '<div class="library-section">';
-    html += '<div class="library-section-title">Não Iniciado</div>';
-    if (naoIniciados.length === 0) {
-        html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-sm);font-style:italic;">Nenhum livro</div>';
-    } else {
-        naoIniciados.slice(0, 10).forEach(function(b) {
-            html += '<div class="library-item" onclick="showBookStatusModal(\'' + b.id + '\')">';
-            html += '<span class="item-title">' + b.title + '</span>';
-            html += '<span class="item-status">' + b.type + '</span>';
-            html += '</div>';
-        });
-        if (naoIniciados.length > 10) {
-            html += '<div style="color:var(--muted-foreground);font-size:var(--font-size-xs);text-align:center;padding:8px;">+' + (naoIniciados.length - 10) + ' livros</div>';
-        }
-    }
-    html += '</div>';
-
-    html += '</div>'; // fim col-right
-    html += '</div>'; // fim reading-grid
-
-    return html;
-}
-
-function renderReadingCard(book) {
-    var cat = bookCatalog[book.id];
-    if (!cat) return '';
-    var bp = BuJo.state.readingProgress.bookProgress[book.id] || { currentInterval: 0, currentPage: 0 };
-    var pct = cat.totalPages > 0 ? Math.round((bp.currentPage / cat.totalPages) * 100) : 0;
-    var categoryClass = cat.category === 'espiritual' ? 'espiritual' : 'cultural';
-    var categoryLabel = cat.category === 'espiritual' ? 'Espiritual' : 'Cultural';
-
-    var html = '<div class="reading-book-card">';
-
-    // Header
-    html += '<div class="book-header">';
-    html += '<span class="book-type ' + categoryClass + '">' + categoryLabel + '</span>';
-    html += '<span class="book-pages">' + cat.totalPages + ' págs</span>';
-    html += '</div>';
-
-    // Título e Autor
-    html += '<div class="book-title">' + cat.title + '</div>';
-    html += '<div class="book-author">' + cat.author + '</div>';
-
-    // Barra de progresso geral
-    html += '<div class="reading-progress"><div class="reading-progress-bar"><div class="reading-progress-fill" style="width:' + pct + '%;"></div></div><span class="reading-percent">' + pct + '%</span></div>';
-
-    // Input de página (absoluta)
-    html += '<div style="display:flex;align-items:center;margin-top:8px;">Página: <input type="number" class="reading-input" value="' + (bp.currentPage || '') + '" min="0" max="' + cat.totalPages + '" placeholder="0" onchange="updateBookPageNew(\'' + book.id + '\',this.value)" style="margin-left:8px;margin-right:8px;"> / ' + cat.totalPages + '</div>';
-
-    // Meta do intervalo atual (se existir)
-    if (cat.intervals.length > 1 && bp.currentInterval < cat.intervals.length) {
-        var interval = cat.intervals[bp.currentInterval];
-        var intervalRead = bp.currentPage >= interval.pInicio ? Math.min(bp.currentPage - interval.pInicio + 1, interval.pFim - interval.pInicio + 1) : 0;
-        var intervalTotal = interval.pFim - interval.pInicio + 1;
-        var intervalPct = Math.round((intervalRead / intervalTotal) * 100);
-        var isComplete = intervalPct >= 100;
-
-        html += '<div class="week-goal' + (isComplete ? ' week-goal-complete' : '') + '">';
-        html += '<strong>Trecho ' + (bp.currentInterval + 1) + '/' + cat.intervals.length + ':</strong> p.' + interval.pInicio + '–' + interval.pFim + ' (' + intervalPct + '%)';
-        if (isComplete && bp.currentInterval < cat.intervals.length - 1) {
-            html += '<div style="margin-top:6px;"><span class="btn btn-primary" onclick="advanceInterval(\'' + book.id + '\')" style="padding:6px 12px;font-size:0.85rem;">Avançar Trecho →</span></div>';
-        }
-        html += '</div>';
-    }
-
-    html += '</div>';
-    return html;
-}
-
-function getAllBooksFromPlan() {
-    var books = [];
-    Object.keys(bookCatalog).forEach(function(id) {
-        var cat = bookCatalog[id];
-        books.push({
-            id: id,
-            title: cat.title,
-            author: cat.author,
-            type: cat.category === 'espiritual' ? 'Esp' : 'Cul',
-            totalPages: cat.totalPages
-        });
-    });
-    return books;
-}
-
-function showBookStatusModal(bookId) {
-    var library = BuJo.state.readingProgress.library || {};
-    var currentStatus = library[bookId] || 'nao_iniciado';
-
-    var statusOptions = [
-        { value: 'lendo', label: 'Lendo' },
-        { value: 'proximas', label: 'Próximas Leituras' },
-        { value: 'concluido', label: 'Concluído' },
-        { value: 'nao_iniciado', label: 'Não Iniciado' }
-    ];
-
-    var optionsHtml = statusOptions.map(function(opt) {
-        var selected = opt.value === currentStatus ? ' style="background:var(--primary);color:#fff;"' : '';
-        return '<div class="library-item" onclick="changeBookStatus(\'' + bookId + '\',\'' + opt.value + '\')"' + selected + '><span class="item-title">' + opt.label + '</span>' + (opt.value === currentStatus ? '<span>✓</span>' : '') + '</div>';
-    }).join('');
-
-    showModal('<div class="modal-title">Alterar Estado</div>' + optionsHtml + '<div class="modal-actions"><span class="btn" onclick="closeModal()">Fechar</span></div>');
-}
-
-function changeBookStatus(bookId, status) {
-    if (!BuJo.state.readingProgress.library) BuJo.state.readingProgress.library = {};
-    BuJo.state.readingProgress.library[bookId] = status;
-    // Inicializar bookProgress ao mudar para 'lendo'
-    if (status === 'lendo' && !BuJo.state.readingProgress.bookProgress[bookId]) {
-        BuJo.state.readingProgress.bookProgress[bookId] = { currentInterval: 0, currentPage: 0 };
-    }
-    saveState();
-    closeModal();
-    render();
-}
-
-function updateBookPageNew(bookId, value) {
-    var page = parseInt(value) || 0;
-    var cat = bookCatalog[bookId];
-    if (!cat) return;
-    if (page < 0) page = 0;
-    if (page > cat.totalPages) page = cat.totalPages;
-
-    if (!BuJo.state.readingProgress.bookProgress[bookId]) {
-        BuJo.state.readingProgress.bookProgress[bookId] = { currentInterval: 0, currentPage: 0 };
-    }
-    BuJo.state.readingProgress.bookProgress[bookId].currentPage = page;
-
-    // Histórico
-    var dateStr = formatDateKey(agoraCorrigido());
-    if (!BuJo.state.readingProgress.history) BuJo.state.readingProgress.history = {};
-    if (!BuJo.state.readingProgress.history[dateStr]) BuJo.state.readingProgress.history[dateStr] = {};
-    BuJo.state.readingProgress.history[dateStr][bookId] = page;
-
-    // Auto-complete: se página >= total, mover para concluído
-    if (page >= cat.totalPages) {
-        if (!BuJo.state.readingProgress.library) BuJo.state.readingProgress.library = {};
-        BuJo.state.readingProgress.library[bookId] = 'concluido';
-    }
-
-    saveState(); render();
-}
-
-function advanceInterval(bookId) {
-    var cat = bookCatalog[bookId];
-    if (!cat) return;
-    var bp = BuJo.state.readingProgress.bookProgress[bookId];
-    if (!bp) return;
-    if (bp.currentInterval < cat.intervals.length - 1) {
-        bp.currentInterval++;
-        saveState(); render();
-    }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
